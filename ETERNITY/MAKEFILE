@@ -1,0 +1,52 @@
+.autodepend
+
+# Makefile
+
+ARCH = arch\msdos
+
+BINDIR = ..\BIN
+
+TPC = TPC -M -L -E$(BINDIR) -I..\QUICKCRT -U$(BINDIR);..\QUICKCRT
+
+ETERNITY_FILES = \
+	PGM_CALL.TPU \
+	ETERNITY.BIN
+
+PGM_FILES = PGM.EXE
+
+pgm: $(PGM_FILES)
+	
+eternity: instools $(ETERNITY_FILES)
+
+ins: 
+	$(TPC) install.pas
+
+instools:
+	$(TPC) addlic.pas
+	$(TPC) add2ins.pas
+	$(TPC) exesize.pas
+	$(TPC) splice.pas
+	$(BINDIR)\addlic.exe
+	
+insbuild:
+	$(TPC) install.pas
+	$(BINDIR)\exesize.exe $(BINDIR)\install.exe
+	$(TPC) install.pas
+	$(BINDIR)\add2ins $(BINDIR)
+
+installer: instools insbuild	
+
+.pas.tpu: 
+    @if not exist $(BINDIR) mkdir $(BINDIR)
+	$(TPC) $*.pas
+
+.pas.exe: 
+    @if not exist $(BINDIR) mkdir $(BINDIR)
+	$(TPC) $*.pas
+	
+.pas.bin: 
+    @if not exist $(BINDIR) mkdir $(BINDIR)
+	$(TPC) $*.pas
+	copy $(BINDIR)\$*.EXE $(BINDIR)\$*.BIN
+	del $(BINDIR)\$*.EXE
+	

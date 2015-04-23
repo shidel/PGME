@@ -1,0 +1,134 @@
+.autodepend
+
+# Primary Makefile
+
+ARCH = arch\msdos
+
+BINDIR = BIN
+INSDIR = INSTALL
+
+default:
+	make clean
+	make -S templates
+	make -S install
+
+pgm:
+	CD ETERNITY
+	MAKE -S pgm
+	CD..
+
+ins:
+	CD ETERNITY
+	MAKE -S ins
+	CD..
+	
+instools:
+	CD ETERNITY
+	MAKE -S instools
+	CD..
+	
+eternity: qcrt pgm
+	CD ETERNITY
+	MAKE -S ETERNITY
+	CD..
+
+qcrt:
+	CD QUICKCRT
+	MAKE -S QCRT
+	CD..
+
+qtest:
+	CD QUICKCRT
+	MAKE -S QTEST
+	CD..
+	
+test: qtest
+	
+theme1: 
+	bin\pgm.exe
+	$(BINDIR)\splice $(BINDIR)\TEMPLATE.THM $(BINDIR)\DEFAULT.THM
+	del $(BINDIR)\DEFAULT.THM
+	$(BINDIR)\splice $(BINDIR)\TEMPLATE.KMP $(BINDIR)\DEFAULT.KMP
+	del $(BINDIR)\DEFAULT.KMP
+	$(BINDIR)\splice $(BINDIR)\TEMPLATE.LNG $(BINDIR)\DEFAULT.LNG
+	del $(BINDIR)\DEFAULT.LNG
+
+theme2: 
+	bin\efntdsgn.exe
+	$(BINDIR)\splice $(BINDIR)\TEMPLATE.THM $(BINDIR)\DEFAULT.THM
+	del $(BINDIR)\DEFAULT.THM
+	$(BINDIR)\splice $(BINDIR)\TEMPLATE.KMP $(BINDIR)\DEFAULT.KMP
+	del $(BINDIR)\DEFAULT.KMP
+	$(BINDIR)\splice $(BINDIR)\TEMPLATE.LNG $(BINDIR)\DEFAULT.LNG
+	del $(BINDIR)\DEFAULT.LNG
+	
+theme3: 
+	bin\install.exe
+	$(BINDIR)\splice $(BINDIR)\TEMPLATE.THM $(BINDIR)\DEFAULT.THM
+	del $(BINDIR)\DEFAULT.THM
+	$(BINDIR)\splice $(BINDIR)\TEMPLATE.KMP $(BINDIR)\DEFAULT.KMP
+	del $(BINDIR)\DEFAULT.KMP
+	$(BINDIR)\splice $(BINDIR)\TEMPLATE.LNG $(BINDIR)\DEFAULT.LNG
+	del $(BINDIR)\DEFAULT.LNG
+		
+templates: bin	
+	CD QUICKCRT
+	make -S templates
+	CD ..
+	
+	make -S pgm eternity etools esavers instools ins
+	make -S theme3
+	make -S theme2
+	make -S theme1
+		
+	CD QUICKCRT
+	make notemplates
+	CD ..
+	
+bin:
+	@if not exist $(BINDIR) mkdir $(BINDIR)
+	
+addins:
+	copy ETERNITY\*.TXT $(BINDIR)
+	copy FONTS\*.FNT $(BINDIR)
+	copy CUSTOM\*.* $(BINDIR)
+	
+installer:  
+	CD ETERNITY
+	make -S installer
+	CD..
+	@if not exist $(INSDIR) mkdir $(INSDIR)
+	copy $(BINDIR)\INSTALL.TMP $(INSDIR)\INSTALL.EXE
+	del $(BINDIR)\INSTALL.TMP
+	
+efntdsgn: qcrt
+	CD ETOOLS
+	MAKE -S efntdsgn
+	CD..
+	
+etools: qcrt
+	CD etools
+	make -S all
+	CD..
+
+esavers: qcrt
+	CD esaver
+	make -S all
+	CD..
+
+all: bin pgm eternity etools esavers installer 
+
+install: bin addins all 
+
+clean: do_clean
+
+distclean: do_clean
+
+do_clean:
+	if exist $(BINDIR) del $(BINDIR)\*.*
+	if exist $(BINDIR) rmdir $(BINDIR)
+	if exist $(INSDIR) del $(INSDIR)\*.*
+	if exist $(INSDIR) rmdir $(INSDIR)
+	if exist QUICKCRT\$(BINDIR) del QUICKCRT\$(BINDIR)\*.*
+	if exist QUICKCRT\$(BINDIR) rmdir QUICKCRT\$(BINDIR)
+		
