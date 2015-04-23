@@ -1,0 +1,34 @@
+.autodepend
+
+# Makefile
+
+ARCH = arch\msdos
+
+BINDIR = ..\BIN
+
+TPC = TPC -M -L -E$(BINDIR) -I..\QUICKCRT -U$(BINDIR);..\QUICKCRT
+
+all: blanker.scr atom.scr
+
+templates: blanker.pmi atom.pmi
+	
+.pas.pmi:
+    @if not exist $(BINDIR) mkdir $(BINDIR)
+	$(TPC) $*.pas
+	$(BINDIR)\$*.EXE
+	del $(BINDIR)\$*.EXE
+
+.pas.tpu: 
+    @if not exist $(BINDIR) mkdir $(BINDIR)
+	$(TPC) $*.pas
+
+.pas.exe: 
+    @if not exist $(BINDIR) mkdir $(BINDIR)
+	$(TPC) $*.pas
+	
+.pas.scr: 
+    @if not exist $(BINDIR) mkdir $(BINDIR)
+	$(TPC) $*.pas
+	copy $(BINDIR)\$*.EXE $(BINDIR)\$*.SCR
+	del $(BINDIR)\$*.EXE
+

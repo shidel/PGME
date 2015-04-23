@@ -1,0 +1,21 @@
+.autodepend
+
+# Makefile
+
+ARCH = arch\msdos
+
+BINDIR = ..\BIN
+
+TPC = TPC -M -L -E$(BINDIR) -I..\QUICKCRT -U$(BINDIR);..\QUICKCRT
+
+efntdsgn: efntdsgn.exe	
+
+all: efntdsgn
+
+.pas.tpu: 
+    @if not exist $(BINDIR) mkdir $(BINDIR)
+	$(TPC) $*.pas
+
+.pas.exe: 
+    @if not exist $(BINDIR) mkdir $(BINDIR)
+	$(TPC) $*.pas

@@ -1,0 +1,24 @@
+Things TO-DO on PGME:
+
+
+Current Build Instructions:
+
+	requires Turbo Pascal 7 and TP7's BCC make utility (included in TP7 bin dir)
+
+	make
+
+Bugs and Known Issues:
+	
+Maybe Eventual Improvements:
+	
+	Convert PMGE Launcher to assembly.
+	General perfomance enhancements.
+
+Todo PGME: 
+
+	Help System!!!
+
+	Make PGM_Call into QIPC
+
+	Special Effects
+	
