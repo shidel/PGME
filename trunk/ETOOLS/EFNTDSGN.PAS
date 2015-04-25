@@ -35,6 +35,11 @@ type
 			PWLabel, PHLabel, PSLabel, PCLabel, PALabel : PLabel;
 		procedure BeforeShow; virtual;
 		procedure CheckLocal(var AEvent : TEvent); virtual;
+		function GetCharDialog : PCharacterMap; virtual;
+		function GetLoadDialog : PFileDialog; virtual;
+		function GetSaveDialog : PFileDialog; virtual;
+		function GetInfoDialog : PDialog; virtual;
+		procedure CreateAllForTemplate; virtual; { Creates all when building templates }
 	public
 		constructor Create;
 		destructor Destroy; virtual;
@@ -51,6 +56,67 @@ begin
 		ObjectClass := class_TFontDesigner
 	else
 		ObjectClass := inherited ObjectClass(AName);
+end;
+
+function TETool.GetCharDialog;
+begin
+	if Not Assigned(PCharMap) then begin
+		PCharMap := New(PCharacterMap, Create(@Self, 'Characters')); 
+		ApplySettings(PCharMap);
+	end;
+	GetCharDialog := PCharMap;
+end;
+
+function TETool.GetLoadDialog;
+begin
+	if Not Assigned(PLoad) then begin
+		PLoad := New(POpenDialog, Create(@Self, 'DIALOG.LOAD'));
+		with POpenDialog(PLoad)^ do begin
+			SetTitle('Load Font');	
+			AddFilter('Font Files (*.FNT)');
+			AddFilter('All Files (*.*)');
+		end;
+		ApplySettings(PLoad);
+	end;
+	GetLoadDialog := PLoad;
+end;
+
+function TETool.GetSaveDialog;
+begin
+	if Not Assigned(PSave) then begin
+		PSave := New(PSaveDialog, Create(@Self, 'DIALOG.SAVE'));
+		with PSaveDialog(PSave)^ do begin
+			SetTitle('Save Font As');	
+			AddFilter('Font Files (*.FNT)');
+			AddFilter('All Files (*.*)');
+		end;	
+		ApplySettings(PSave);
+	end;
+	GetSaveDialog := PSave;
+end;
+
+function TETool.GetInfoDialog;
+var
+	B : TBounds;
+begin
+	if Not Assigned(PInfo) then begin
+		PInfo := New(PDialog, Create(@Self, 'DIALOG.INFO'));
+		with PDialog(PInfo)^ do begin
+			Bounds(1,1,40,13, B);
+			SetBounds(B);
+			SetTitle('Font Information');	
+		end; 
+		ApplySettings(PInfo);
+	end;
+	GetInfoDialog := PInfo;
+end;
+
+procedure TETool.CreateAllForTemplate;
+begin
+	GetCharDialog;
+	GetLoadDialog;
+	GetSaveDialog;
+	GetInfoDialog;
 end;
 
 constructor TETool.Create;
@@ -176,7 +242,7 @@ begin
 		Bounds(1, L^.Top + 1, BWide - 2, 1, B);
 		FHAlign := AlignLeft;
 		SetBounds(B);
-		SetCaption('0; Width: %0');
+		SetCaption('0[Z2]; Width: %0');
 		L := PWLabel;
 	end;
 	
@@ -186,7 +252,7 @@ begin
 		Bounds(1, L^.Top + 1, BWide - 2 , 1, B);
 		FHAlign := AlignLeft;
 		SetBounds(B);
-		SetCaption('0;Height: %0');
+		SetCaption('0[Z2];Height: %0');
 		L := PHLabel;
 	end;
 
@@ -217,7 +283,7 @@ begin
 		Bounds(1, L^.Top + 1, BWide - 2, 1, B);
 		FHAlign := AlignLeft;
 		SetBounds(B);
-		SetCaption('0;ASCII: "%0"');
+		SetCaption('0[X1];ASCII: "%0"');
 		L := PALabel;
 	end;
 	
@@ -227,7 +293,7 @@ begin
 		Bounds(1, L^.Top + 1, BWide - 2 , 1, B);
 		FHAlign := AlignLeft;
 		SetBounds(B);
-		SetCaption('0;VALUE: 0x%0h');
+		SetCaption('0[L5];VALUE: 0x%0h');
 		L := PCLabel;
 	end;
 
@@ -241,27 +307,11 @@ begin
 	T^.SetBounds(B);
 	L := T;
 	
-	PCharMap := New(PCharacterMap, Create(@Self, 'Characters')); 
+	PCharMap := nil;
+	PLoad := nil;
+	PSave := nil;
+	PInfo := nil;
 
-	PLoad := New(POpenDialog, Create(@Self, 'DIALOG.LOAD'));
-	with POpenDialog(PLoad)^ do begin
-		SetTitle('Load Font');	
-		AddFilter('Font Files (*.FNT)');
-		AddFilter('All Files (*.*)');
-	end;
-	PSave := New(PSaveDialog, Create(@Self, 'DIALOG.SAVE'));
-	with PSaveDialog(PSave)^ do begin
-		SetTitle('Save Font As');	
-		AddFilter('Font Files (*.FNT)');
-		AddFilter('All Files (*.*)');
-	end;
-	
-	PInfo := New(PDialog, Create(@Self, 'DIALOG.INFO'));
-	with PDialog(PInfo)^ do begin
-		Bounds(1,1,40,13, B);
-		SetBounds(B);
-		SetTitle('Font Information');	
-	end; 
 	FClrScr := True;
 end;
 
@@ -277,8 +327,7 @@ begin
 	GotoXY(1, WhereY);
 	TextAttr := $07;
 	ClrEOL;
-end;
-	
+end;	
 	
 procedure TETool.CheckLocal(var AEvent : TEvent); 
 var
@@ -287,15 +336,19 @@ begin
 	if AEvent.What = evCommand then
 		case AEvent.Command of
 			cmOpenFile : begin 
+				GetLoadDialog;
 				T := PLoad^.ShowModal;
 			end;
 			cmSaveFile, cmSaveFileAs : begin 
+				GetSaveDialog;
 				T := PSave^.ShowModal;
 			end;
-			cmFileInfo : begin 
+			cmFileInfo : begin
+				GetInfoDialog; 
 				T := PInfo^.ShowModal;
 			end;
 			cmCharMap : begin
+				GetCharDialog;
 				T := PCharMap^.ShowModal;
 				if T > mrNoResult then begin
 					AEvent.what := evKeyboard;
