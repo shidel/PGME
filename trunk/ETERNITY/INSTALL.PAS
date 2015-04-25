@@ -420,7 +420,7 @@ begin
 	AddHelpText ('');
 	AddHelpText ('The installer is a strictly modal program. Like a wizard. It walks through one');
 	AddHelpText ('dialog after another until it is finished. Then, it closes. The source');
-	AddHelpText ('for the installer demonstrates one way this can be accomplished using the ');
+	AddHelpText ('for the installer demonstrates one way this can be accomplished using the');
 	AddHelpText ('QuickCrt framework. Basically, it creates the entire application');
 	AddHelpText ('and all dialog boxes. Then before the Application object is executed');
 	AddHelpText ('it pushes a command into the QCrt event que. The application starts');
