@@ -93,7 +93,7 @@ addins:
 	copy FONTS\*.FNT $(BINDIR)
 	copy CUSTOM\*.* $(BINDIR)
 	
-installer:  
+installer:
 	CD ETERNITY
 	make -S installer
 	CD..
@@ -129,6 +129,9 @@ do_clean:
 	if exist $(BINDIR) rmdir $(BINDIR)
 	if exist $(INSDIR) del $(INSDIR)\*.*
 	if exist $(INSDIR) rmdir $(INSDIR)
+	if exist ETERNITY\INSTALL.INC del ETERNITY\INSTALL.INC
+	if exist ETERNITY\LICENSE.INC del ETERNITY\LICENSE.INC
+	
 	if exist QUICKCRT\$(BINDIR) del QUICKCRT\$(BINDIR)\*.*
 	if exist QUICKCRT\$(BINDIR) rmdir QUICKCRT\$(BINDIR)
 		

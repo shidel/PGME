@@ -18,17 +18,20 @@ pgm: $(PGM_FILES)
 	
 eternity: instools $(ETERNITY_FILES)
 
-ins: 
+incs:
+	@if not exist INSTALL.INC  copy INSTALL.PRE INSTALL.INC
+
+ins: incs
 	$(TPC) install.pas
 
-instools:
+instools: incs
 	$(TPC) addlic.pas
 	$(TPC) add2ins.pas
 	$(TPC) exesize.pas
 	$(TPC) splice.pas
 	$(BINDIR)\addlic.exe
 	
-insbuild:
+insbuild: incs
 	$(TPC) install.pas
 	$(BINDIR)\exesize.exe $(BINDIR)\install.exe
 	$(TPC) install.pas
