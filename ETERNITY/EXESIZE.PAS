@@ -1,11 +1,11 @@
+{ Copyright 2015 Jerome Shidel }
+
 (* 
 		
 	This project and related files are subject to either the terms
 	specified in the included LICENSE.TXT file or the GNU GPLv2.0.
 	
 *)
-
-{ Copyright 1992-2015 Jerome Shidel }
 
 {$M 2048,0,0}
 program Install_Exe_Size_Calculator;
