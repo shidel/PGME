@@ -4,8 +4,18 @@ Things TO-DO on PGME:
 Current Build Instructions:
 
 	requires Turbo Pascal 7 and TP7's BCC make utility (included in TP7 bin dir)
+	
+	requires trunk of QuickCrt placed in QUICKCRT subdirectory.
 
 	make
+	
+Current Project Timeline:
+
+	Finish Eternity Font Designer 
+	
+	Actually start PGME
+	
+	Create Eternity Keymapping utility
 
 Bugs and Known Issues:
 	
@@ -14,11 +24,7 @@ Maybe Eventual Improvements:
 	Convert PMGE Launcher to assembly.
 	General perfomance enhancements.
 
-Todo PGME: 
-
-	Help System!!!
-
-	Make PGM_Call into QIPC
-
-	Special Effects
-	
+Todo: 
+		
+	Theme Request Language
+	Language Request Font & Keyboard
