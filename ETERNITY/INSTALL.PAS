@@ -417,13 +417,25 @@ var
 begin
 	inherited Create(nil, 'Installer');
 	SetHelpText ('This is the Program Manager Eternity Edition Installer.');
+	AddHelpText ('');
+	AddHelpText ('The installer is a strictly modal program. Like a wizard. It walks through one');
+	AddHelpText ('dialog after another until it is finished. Then, it closes. The source');
+	AddHelpText ('for the installer demonstrates one way this can be accomplished using the ');
+	AddHelpText ('QuickCrt framework. Basically, it creates the entire application');
+	AddHelpText ('and all dialog boxes. Then before the Application object is executed');
+	AddHelpText ('it pushes a command into the QCrt event que. The application starts');
+	AddHelpText ('and sees the event causing the first dialog to be executed.');
+	AddHelpText ('If the dialog closes with a good result, then it pushes the command');
+	AddHelpText ('to trigger the next dialog. The last dialog pushes a cmQuit to');
+	AddHelpText ('close the program. There are several other ways to accomplish the');
+	AddHelpText ('same result, but this is one of the easiest. ');
 	{ Get Total size of this installer }
 	{ Create Welcome Dialog }
 	PWelcome := New(PMessageBox, Create(@Self, 'Welcome'));
 	with PMessageBox(PWelcome)^ do begin
 		SetHelpText ('This is the Installers welcome dialog box.');
 		AddHelpText ('');
-		AddHelpText ('It shows the approximate space required for a full installation.');
+		AddHelpText ('It shows the approximate amount of space required for a full installation.');
 		Bounds(5,10,60,12, B);
 		SetBounds(B);
 		SetTitle('Program Manager Eternity Installer');	
@@ -456,8 +468,8 @@ begin
 	with PMessageBox(PLicense)^ do begin
 		SetHelpText ('This is the Installers License Information box.');
 		AddHelpText ('');
-		AddHelpText ('It shows the license that this version of the Program Manager has');
-		AddHelpText ('been released under.');
+		AddHelpText ('It shows information reguarding the license that this version');
+		AddHelpText ('of the Program Manager has been released under.');
 		if Pos('invalid', SoftwareLicense) > 0 then begin
 			SetBackground($4);
 			SetTextColor($F);
@@ -491,10 +503,9 @@ begin
 	with PMessageBox(POptions)^ do begin
 		SetHelpText ('This is the Installers Options dialog box. ');
 		AddHelpText ('');
-		AddHelpText ('It provides');
-		AddHelpText ('a way to change several of default installation options.');
-		AddHelpText ('Also, If a previous version the PGM Eternity was installed,');
-		AddHelpText ('It will attempt to configure itself to the same location settings.');
+		AddHelpText ('It provides a way to change several of default installation options.');
+		AddHelpText ('Also, if a previous version the PGM Eternity was installed,');
+		AddHelpText ('it will attempt to configure itself to the same settings.');
 		Bounds(5,10,60,12, B);
 		SetBounds(B);
 		SetTitle('Installation Options');	
@@ -591,9 +602,8 @@ begin
 	with PMessageBox(PInstall)^ do begin
 		SetHelpText ('This is the Installers Installation box.');
 		AddHelpText ('');
-		AddHelpText ('It shows');
-		AddHelpText ('progress of the installation. Just wait for the "Done" button');
-		AddHelpText ('to appear.');
+		AddHelpText ('It shows the progress of the installation.');
+		AddHelpText ('Just wait for the "Done" button to appear.');
 		Bounds(5,10,70,10, B);
 		SetBounds(B);
 		SetTitle('Installing Eternity');	
