@@ -19,7 +19,8 @@ const
 	AppTitle = 'Eternity Font Designer';
 	AppID = 'EFNTDSGN';
 	
-	cmDemo  = cmUser + 4;
+	cmDemo  = cmUser + 1;
+	cmTooBig = cmDemo + 1;
 
 {$DEFINE INTERFACE}
 
