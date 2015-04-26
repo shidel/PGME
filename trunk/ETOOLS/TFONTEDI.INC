@@ -20,7 +20,8 @@ type
 		FMUL, FOFS : TPoint;
 		FNullChar : Char;
 		FNullColor,
-		FDemoColor : Integer; 
+		FDemoColor,
+		FContColor : Integer; 
 		procedure SetCurrentBounds(AValue : TBounds); virtual;
 	public
 			FFont : PFont;
@@ -55,6 +56,7 @@ begin
 	FNullChar := 'X';
 	FNullColor := TextAttr and $F0 + $08;
 	FDemoColor := $0E;
+	FContColor := $0D;
 	FMUL.X := 1;
 	FMUL.Y := 1;
 	FOFS.X := 0;
@@ -184,9 +186,10 @@ begin
 
 		Window(1,1,Lo(ScreenMax) + 1, Hi(ScreenMax) + 1);
 		if Fader then
-			FadeOutDAC(0,256,FDefaultDAC^)
-		else
-			ClrScr;
+			FadeOutDAC(0,256,FDefaultDAC^);
+
+		TextAttr := $07;
+		ClrScr;
 
 		FFont.SetEnabled(False);
 
@@ -201,14 +204,23 @@ begin
 			PutEvent(Event);
 
 		if Fader then
-			FadeOutDAC(0,256,FDefaultDAC^)
-		else
-			ClrScr;
+			FadeOutDAC(0,256,FDefaultDAC^);
+
+		TextAttr := $07;
+		ClrScr;
+		
 		Self.FFont^.SetEnabled(False);		
 		if Fader then
 			WriteDac(0,256,TempDac);
+		
 		SetQCrtState(QCrtSettings);	
+		
 		FFont.SetEnabled(True);
+		
+		CheckScroll := False;
+		CheckCursor := False;
+		HideCursor;
+
 		if Assigned(Screen) then
 			begin
 				Temp := GetVideoPtr;
@@ -236,13 +248,16 @@ begin
 	ClrScr;
 	for I := 0 to 255 do begin
 		
-		gotoXY (1 + (I and $F) * 2, 1 + I shr 4 );
+		gotoXY (8 + (I and $1F) * 2, 2 + I shr 5 );
 		FWrite(Chr(I));
 		
 	end;
 	FWriteLn('');
 	FWriteLn('');
-	FWriteLn('Press a key or move the Mouse to return.');
+	TextAttr := FContColor;
+	FWriteLn(CSpace('Press a key or move the Mouse to return.', Lo(ScreenMax) + 1));
+	TextAttr := FDemoColor;
+	
 	CopyToVideo;
 end;
 
