@@ -24,12 +24,14 @@ const
 	cmDemo  = cmUser + 4;
 
 type 
+	PETool = ^TETool;
 	TETool = object (TApplication)
 	public { protected }
 		function  ObjectClass ( AName : String ) : String; virtual;
 	public { protected }
-			PCharMap : PCharacterMap;
 			PEFont : PFont;
+			FCurrentChar : integer;
+			PCharMap : PCharacterMap;
 			PLoad, PSave : PFileDialog;
 			PInfo : PDialog;
 			PWLabel, PHLabel, PSLabel, PCLabel, PALabel : PLabel;
@@ -48,6 +50,45 @@ type
 { --- Global Variables --- }
 var
 	ETool : TETool;
+	
+procedure FormatFontStatus (AVisual : PControl; var AValue : String); far;
+var
+	D : TFormatData;
+begin
+	with PETool(Application)^ do begin
+		if AVisual = PControl(PWLabel) then begin
+			D.ID := fmtInteger;
+			D.IntegerValue := PEFont^.GetWidth;
+			AValue := FormatStr(AValue, D, 1);
+		end else 
+		if AVisual = PControl(PHLabel) then begin
+			D.ID := fmtInteger;
+			D.IntegerValue := PEFont^.GetHeight;
+			AValue := FormatStr(AValue, D, 1);
+		end else 
+		if AVisual = PControl(PSLabel) then begin
+			D.ID := fmtInteger;
+			D.IntegerValue := PEFont^.GetSize;
+			AValue := FormatStr(AValue, D, 1);
+		end else 
+		if AVisual = PControl(PCLabel) then begin
+			D.ID := fmtString;
+			if FCurrentChar >= 0 then 
+				D.StringValue := HexByte(FCurrentChar)
+			else
+				D.StringValue := '??';
+			AValue := FormatStr(AValue, D, 1);
+		end else 
+		if AVisual = PControl(PALabel) then begin
+			D.ID := fmtString;
+			if FCurrentChar >= 0 then 
+				D.StringValue := Char(FCurrentChar)
+			else
+				D.StringValue := '';
+			AValue := FormatStr(AValue, D, 1);
+		end;
+	end;
+end;
 	
 { --- TETool --- }
 function TETool.ObjectClass ( AName : String ) : String; 
@@ -128,6 +169,7 @@ var
 begin
 	inherited Create(nil, AppID);
 	FInfo.Settitle(AppTitle);
+	FCurrentChar := -1;
 	TextAttr := $1F;
 	P := New(PWindow, Create(@Self, 'Main'));
 	with PWindow(P)^ do begin
@@ -236,8 +278,9 @@ begin
 	PEFont := New(PFont, Create('EDIT_FONT'));
 
 	TextAttr := $17;
-	PWLabel := New(PLabel, Create(P, 'WIDE'));
+	PWLabel := New(PLabel, Create(P, 'WIDTH'));
 	with PLabel(PWLabel) ^ do begin
+		OnFormat := FormatFontStatus;
 		SetAnchors(alRight);  
 		Bounds(1, L^.Top + 1, BWide - 2, 1, B);
 		FHAlign := AlignLeft;
@@ -246,8 +289,9 @@ begin
 		L := PWLabel;
 	end;
 	
-	PHLabel := New(PLabel, Create(P, 'Height'));
+	PHLabel := New(PLabel, Create(P, 'HEIGHT'));
 	with PLabel(PHLabel) ^ do begin
+		OnFormat := FormatFontStatus;
 		SetAnchors(alRight);  
 		Bounds(1, L^.Top + 1, BWide - 2 , 1, B);
 		FHAlign := AlignLeft;
@@ -258,6 +302,7 @@ begin
 
 	PSLabel := New(PLabel, Create(P, 'SIZE'));
 	with PLabel(PSLabel) ^ do begin
+		OnFormat := FormatFontStatus;
 		SetAnchors(alRight);  
 		Bounds(1, L^.Top + 1, BWide - 2, 1, B);
 		FHAlign := AlignLeft;
@@ -279,6 +324,7 @@ begin
 	TextAttr := $17;
 	PALabel := New(PLabel, Create(P, 'ASCII'));
 	with PLabel(PALabel) ^ do begin
+		OnFormat := FormatFontStatus;
 		SetAnchors(alRight);  
 		Bounds(1, L^.Top + 1, BWide - 2, 1, B);
 		FHAlign := AlignLeft;
@@ -287,13 +333,14 @@ begin
 		L := PALabel;
 	end;
 	
-	PCLabel := New(PLabel, Create(P, 'Code'));
+	PCLabel := New(PLabel, Create(P, 'CODE'));
 	with PLabel(PCLabel) ^ do begin
+		OnFormat := FormatFontStatus;
 		SetAnchors(alRight);  
 		Bounds(1, L^.Top + 1, BWide - 2 , 1, B);
 		FHAlign := AlignLeft;
 		SetBounds(B);
-		SetCaption('0[L5];VALUE: 0x%0h');
+		SetCaption('0[Z2];VALUE: 0x%0h');
 		L := PCLabel;
 	end;
 
