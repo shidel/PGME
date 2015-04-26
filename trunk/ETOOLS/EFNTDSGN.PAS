@@ -11,7 +11,7 @@
 program Eternity_Font_Designer; { X Series }
 
 uses QCrt, QErrors, QStrings, QDos, QFiles, QMore, QFmtStr,
-	QObjects, QControls, QFileDlg;
+	QObjects, QControls, QFileDlg, QBios;
 
 {$I ..\ETERNITY\LICENSE.INC}
 
@@ -365,6 +365,7 @@ begin
 	inherited CheckLocal(AEvent);
 end;
 
+procedure Execute;
 begin
 	Write('Starting ' + AppTitle + '...');
 	ETool.Create;
@@ -376,4 +377,8 @@ begin
 	ClrEol;	
 	TextAttr := $07;
 	WriteLn;
-end.
+end;
+		 
+begin
+	Execute;
+end.
