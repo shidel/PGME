@@ -543,8 +543,7 @@ begin
 	TextAttr := $07;
 	WriteLn;
 end;
-		 
+
 begin
 	Execute; 
-	WriteLn(FontHeight);
 end.
