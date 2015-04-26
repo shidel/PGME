@@ -22,15 +22,83 @@ const
 	AppID = 'EFNTDSGN';
 	
 	cmDemo  = cmUser + 4;
+	
+type 
+	PFontEdit = ^TFontEdit;
+	TFontEdit = object(TBox)
+	public { protected }
+		FNullChar : Char;
+		FNullColor : Integer; 
+		procedure SetCurrentBounds(AValue : TBounds); virtual;
+	public
+			FFont : PFont;
+			FCurrent : integer;
+		constructor Create(AParent : PControl; AName : String);
+		destructor Destroy; virtual;
+		procedure Draw; virtual;
+	end;
+	
+constructor TFontEdit.Create;
+begin
+	inherited Create(AParent, AName);
+	FFont := New(PFont, Create('EDITFONT'));
+	FStyle := bxSingle;
+	FShadow := False;
+	FCurrent := -1;
+	FNullChar := 'X';
+	FNullColor := TextAttr and $F0 + $08;
+end;
 
+destructor TFontEdit.Destroy;
+begin
+	if Assigned(FFont) then Dispose(FFont, Destroy);
+	inherited Destroy;
+end;
+
+procedure TFontEdit.SetCurrentBounds(AValue : TBounds); 
+var
+	ExtraSize : integer;
+begin
+	ExtraSize := 0;
+	if FBorder then Inc(ExtraSize, 2);
+	if FShadow then Inc(ExtraSize, 2);
+	{ if running in less than an 8x10 font then dont do doublewide } 
+	if FontHeight < 8 then 
+		AValue.Width := 8 + ExtraSize
+	else
+		AValue.Width := 8 * 2 + ExtraSize;
+	{ Fix Height }
+	if FShadow then Dec(ExtraSize, 1);
+	if Assigned(FFont) and (FFont^.GetHeight > 0) then 
+		AValue.Height := FFont^.GetHeight + ExtraSize
+	else
+		AValue.Height := 16 + ExtraSize;
+	inherited SetCurrentBounds(AValue);
+end;
+
+procedure TFontEdit.Draw;
+var
+	C : Char;
+begin
+	Inherited Draw;
+	if FCUrrent = -1 then begin
+		C := TextChar;
+		TextAttr := FNullColor;
+		TextChar := FNullChar;
+		ClrScr;
+		TextChar := C;
+		Exit;
+	end;
+end;
+
+{ ----- TETool ----- }
 type 
 	PETool = ^TETool;
 	TETool = object (TApplication)
 	public { protected }
 		function  ObjectClass ( AName : String ) : String; virtual;
 	public { protected }
-			PEFont : PFont;
-			FCurrentChar : integer;
+			PEditor : PFontEdit;
 			PCharMap : PCharacterMap;
 			PLoad, PSave : PFileDialog;
 			PInfo : PDialog;
@@ -55,34 +123,35 @@ procedure FormatFontStatus (AVisual : PControl; var AValue : String); far;
 var
 	D : TFormatData;
 begin
+	if Not Assigned( PETool(Application)^.PEditor ) then exit;
 	with PETool(Application)^ do begin
 		if AVisual = PControl(PWLabel) then begin
 			D.ID := fmtInteger;
-			D.IntegerValue := PEFont^.GetWidth;
+			D.IntegerValue := PEditor^.FFont^.GetWidth;
 			AValue := FormatStr(AValue, D, 1);
 		end else 
 		if AVisual = PControl(PHLabel) then begin
 			D.ID := fmtInteger;
-			D.IntegerValue := PEFont^.GetHeight;
+			D.IntegerValue := PEditor^.FFont^.GetHeight;
 			AValue := FormatStr(AValue, D, 1);
 		end else 
 		if AVisual = PControl(PSLabel) then begin
 			D.ID := fmtInteger;
-			D.IntegerValue := PEFont^.GetSize;
+			D.IntegerValue := PEditor^.FFont^.GetSize;
 			AValue := FormatStr(AValue, D, 1);
 		end else 
 		if AVisual = PControl(PCLabel) then begin
 			D.ID := fmtString;
-			if FCurrentChar >= 0 then 
-				D.StringValue := HexByte(FCurrentChar)
+			if PEditor^.FCurrent >= 0 then 
+				D.StringValue := HexByte(PEditor^.FCurrent)
 			else
 				D.StringValue := '??';
 			AValue := FormatStr(AValue, D, 1);
 		end else 
 		if AVisual = PControl(PALabel) then begin
 			D.ID := fmtString;
-			if FCurrentChar >= 0 then 
-				D.StringValue := Char(FCurrentChar)
+			if PEditor^.FCurrent >= 0 then 
+				D.StringValue := Char(PEditor^.FCurrent)
 			else
 				D.StringValue := '';
 			AValue := FormatStr(AValue, D, 1);
@@ -169,7 +238,7 @@ var
 begin
 	inherited Create(nil, AppID);
 	FInfo.Settitle(AppTitle);
-	FCurrentChar := -1;
+
 	TextAttr := $1F;
 	P := New(PWindow, Create(@Self, 'Main'));
 	with PWindow(P)^ do begin
@@ -183,6 +252,12 @@ begin
 		SetMainWindow(True);
 	end;
 
+	TextAttr := $0F;
+	PEditor := New(PFontEdit, Create(P, 'EDITOR'));
+	with PEditor^ do begin
+		Bounds( 8, 3, 10, 10,B);
+		SetBounds(B);
+	end;
 	TextAttr := $2E;
 	T := New(PButton, Create(P, 'QUIT'));
 	with PButton(T) ^ do begin
@@ -211,12 +286,23 @@ begin
 	T^.SetBounds(B);
 	
 	TextAttr := $2F;
-	T := New(PButton, Create(P, 'LOAD'));
+	T := New(PButton, Create(P, 'NEW'));
 	with PButton(T) ^ do begin
 		SetAnchors(alRight);  
 		Bounds(1, 1, BWide, 1, B);
 		SetBounds(B);
-		SetCaption('Load');
+		SetCaption('Create Font');
+		SetCommand(cmNewFile); 
+		L := T;
+	end;
+
+	TextAttr := $2F;
+	T := New(PButton, Create(P, 'LOAD'));
+	with PButton(T) ^ do begin
+		SetAnchors(alRight);  
+		Bounds(1, L^.Top + 1, BWide, 1, B);
+		SetBounds(B);
+		SetCaption('Load Font');
 		SetCommand(cmOpenFile); 
 		L := T;
 	end;
@@ -227,7 +313,7 @@ begin
 		SetAnchors(alRight);  
 		Bounds(1, L^.Top + 1, BWide, 1, B);
 		SetBounds(B);
-		SetCaption('Save');
+		SetCaption('Save Font');
 		SetCommand(cmSaveFileAs); 
 		L := T;
 	end;
@@ -274,8 +360,6 @@ begin
 	T^.SetAnchors(abLeft or abTop or abRight);
 	T^.SetBounds(B);
 	L := T;
-
-	PEFont := New(PFont, Create('EDIT_FONT'));
 
 	TextAttr := $17;
 	PWLabel := New(PLabel, Create(P, 'WIDTH'));
@@ -358,13 +442,12 @@ begin
 	PLoad := nil;
 	PSave := nil;
 	PInfo := nil;
-
+	
 	FClrScr := True;
 end;
 
 destructor TETool.Destroy;
 begin
-	if Assigned(PEFont) then Dispose(PEFont, Destroy);
 	inherited Destroy;
 end;
 
