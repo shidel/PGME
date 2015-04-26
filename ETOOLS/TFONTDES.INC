@@ -21,6 +21,7 @@ type
 			PNew : PNewFontDialog;
 			PLoad, PSave : PFileDialog;
 			PInfo : PInfoDialog;
+			PSaveBtn : PButton;
 			PWLabel, PHLabel, PSLabel, PCLabel, PALabel : PLabel;
 		procedure BeforeShow; virtual;
 		procedure CheckLocal(var AEvent : TEvent); virtual;
@@ -248,8 +249,10 @@ begin
 		Bounds(1, L^.Top + 1, BWide, 1, B);
 		SetBounds(B);
 		SetCaption('Save Font');
-		SetCommand(cmSaveFileAs); 
+		SetCommand(cmSaveFileAs);
+		SetEnabled(False);
 		L := T;
+		PSaveBtn := PButton(T);
 	end;
 (*
 	TextAttr := $2F;
@@ -379,6 +382,7 @@ begin
 	end;
 		
 	FClrScr := True;
+	
 end;
 
 destructor TETool.Destroy;
@@ -409,6 +413,7 @@ begin
 				T := PLoad^.ShowModal;
 				if T = mrOK then begin
 					PEditor^.Load(PLoad^.GetFileName);
+					PSaveBtn^.SetEnabled(PEditor^.FFont^.GetFileName <> '');
 				end;
 				Update;
 			end;

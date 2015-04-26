@@ -137,10 +137,15 @@ end;
 procedure TFontEdit.Load(AFilename : String); 
 begin
 	FFont^.SetFileName(AFilename);
+	if FFont^.GetHeight > GetMaxHeight then begin
+		FFont^.Clear;
+		PutCommand(cmTooBig, @Self);
+	end;
 	FCurrent := -1;
 	if FFont^.GetFileName <> '' then begin
-		FCurrent := 65;
+		FCurrent := 65;		
 	end;
+	SetCurrentBounds(FRBounds);
 end;
 
 procedure TFontEdit.Save(AFilename : String);
