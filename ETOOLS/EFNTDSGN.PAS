@@ -25,6 +25,7 @@ const
 
 {$I TFontEdit.inc}
 {$I TNewFont.inc}
+{$I TInfoDialog.inc}
 
 {$UNDEF INTERFACE}
 
@@ -34,6 +35,7 @@ const
 
 {$I TFontEdit.inc}
 {$I TNewFont.inc}
+{$I TInfoDialog.inc}
 
 {$UNDEF IMPLEMENTATION}
 

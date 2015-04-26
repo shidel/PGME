@@ -408,19 +408,22 @@ begin
 				GetLoadDialog;
 				T := PLoad^.ShowModal;
 				if T = mrOK then begin
-					PEditor^.FFont^.SetFileName(PLoad^.GetFileName);
+					PEditor^.Load(PLoad^.GetFileName);
 				end;
+				Update;
 			end;
 			cmSaveFile, cmSaveFileAs : begin 
 				GetSaveDialog;
 				T := PSave^.ShowModal;
 				if T = mrOK then begin
-					PEditor^.FFont^.SaveToFile(PSave^.GetFileName);
+					PEditor^.Save(PSave^.GetFileName);
 				end;
 			end;
 			cmFileInfo : begin
 				GetInfoDialog; 
 				T := PInfo^.ShowModal;
+				if T = mrOK then 
+					Update;
 			end;
 			cmCharMap : begin
 				GetCharDialog;
@@ -434,7 +437,9 @@ begin
 				end;
 				ClearEvent(AEvent);
 			end;
-			cmDemo : begin
+			cmDemo, cmCopy : begin
+				ClearEvent(AEvent);
+				PEditor^.Demo;
 			end;
 		end;
 	inherited CheckLocal(AEvent);

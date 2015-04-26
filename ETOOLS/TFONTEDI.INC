@@ -28,6 +28,9 @@ type
 		destructor Destroy; virtual;
 		procedure Draw; virtual;
 		function GetMaxHeight : integer; virtual;
+		procedure Load(AFilename : String); virtual;
+		procedure Save(AFilename : String); virtual;
+		procedure Demo; virtual;
 	end;
 {$ENDIF}
 
@@ -130,4 +133,24 @@ begin
 		Exit;
 	end;
 end;
+
+procedure TFontEdit.Load(AFilename : String); 
+begin
+	FFont^.SetFileName(AFilename);
+	FCurrent := -1;
+	if FFont^.GetFileName <> '' then begin
+		FCurrent := 65;
+	end;
+end;
+
+procedure TFontEdit.Save(AFilename : String);
+begin
+	FFont^.SaveToFile(AFilename);
+end;
+
+procedure TFontEdit.Demo;
+begin
+end;
+
+
 {$ENDIF}
