@@ -7,9 +7,15 @@
 	
 *)
 
+{$IFDEF INTERFACE}
+const
+	class_TFontEdit = 'TFontEdit';
+
 type 
 	PFontEdit = ^TFontEdit;
 	TFontEdit = object(TBox)
+	public { protected }
+		function  ObjectClass ( AName : String ) : String; virtual;
 	public { protected }
 		FMUL, FOFS : TPoint;
 		FNullChar : Char;
@@ -23,7 +29,17 @@ type
 		procedure Draw; virtual;
 		function GetMaxHeight : integer; virtual;
 	end;
-	
+{$ENDIF}
+
+{$IFDEF IMPLEMENTATION}
+function TFontEdit.ObjectClass ( AName : String ) : String; 
+begin
+	if (AName = '') or (AName = class_TFontEdit) then 
+		ObjectClass := class_TFontEdit
+	else
+		ObjectClass := inherited ObjectClass(AName);
+end;
+
 constructor TFontEdit.Create;
 begin
 	inherited Create(AParent, AName);
@@ -114,3 +130,4 @@ begin
 		Exit;
 	end;
 end;
+{$ENDIF}

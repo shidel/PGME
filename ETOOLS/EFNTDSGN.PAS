@@ -15,16 +15,27 @@ uses QCrt, QErrors, QStrings, QDos, QFiles, QMore, QFmtStr,
 
 {$I ..\ETERNITY\LICENSE.INC}
 
-const
-	class_TFontDesigner = 'TFontDesigner';
-	
+const	
 	AppTitle = 'Eternity Font Designer';
 	AppID = 'EFNTDSGN';
 	
 	cmDemo  = cmUser + 4;
-	
+
+{$DEFINE INTERFACE}
+
 {$I TFontEdit.inc}
+{$I TNewFont.inc}
+
+{$UNDEF INTERFACE}
+
 {$I TFontDesigner.inc}
+
+{$DEFINE IMPLEMENTATION}
+
+{$I TFontEdit.inc}
+{$I TNewFont.inc}
+
+{$UNDEF IMPLEMENTATION}
 
 procedure Execute;
 begin

@@ -7,7 +7,9 @@
 	
 *)
 
-{ ----- TETool ----- }
+const
+	class_TFontDesigner = 'TFontDesigner';
+
 type 
 	PETool = ^TETool;
 	TETool = object (TApplication)
@@ -16,12 +18,14 @@ type
 	public { protected }
 			PEditor : PFontEdit;
 			PCharMap : PCharacterMap;
+			PNew : PNewFontDialog;
 			PLoad, PSave : PFileDialog;
-			PInfo : PDialog;
+			PInfo : PInfoDialog;
 			PWLabel, PHLabel, PSLabel, PCLabel, PALabel : PLabel;
 		procedure BeforeShow; virtual;
 		procedure CheckLocal(var AEvent : TEvent); virtual;
 		function GetCharDialog : PCharacterMap; virtual;
+		function GetNewDialog : PNewFontDialog; virtual;
 		function GetLoadDialog : PFileDialog; virtual;
 		function GetSaveDialog : PFileDialog; virtual;
 		function GetInfoDialog : PDialog; virtual;
@@ -93,6 +97,15 @@ begin
 	GetCharDialog := PCharMap;
 end;
 
+function TETool.GetNewDialog;
+begin
+	if Not Assigned(PNew) then begin
+		PNew := New(PNewFontDialog, Create(@Self, 'DIALOG.NEW'));
+		ApplySettings(PNew);
+	end;
+	GetNewDialog := PNew;
+end;
+
 function TETool.GetLoadDialog;
 begin
 	if Not Assigned(PLoad) then begin
@@ -122,16 +135,9 @@ begin
 end;
 
 function TETool.GetInfoDialog;
-var
-	B : TBounds;
 begin
 	if Not Assigned(PInfo) then begin
-		PInfo := New(PDialog, Create(@Self, 'DIALOG.INFO'));
-		with PDialog(PInfo)^ do begin
-			Bounds(1,1,40,13, B);
-			SetBounds(B);
-			SetTitle('Font Information');	
-		end; 
+		PInfo := New(PInfoDialog, Create(@Self, 'DIALOG.INFO'));
 		ApplySettings(PInfo);
 	end;
 	GetInfoDialog := PInfo;
@@ -140,6 +146,7 @@ end;
 procedure TETool.CreateAllForTemplate;
 begin
 	GetCharDialog;
+	GetNewDialog;
 	GetLoadDialog;
 	GetSaveDialog;
 	GetInfoDialog;
@@ -154,6 +161,12 @@ var
 begin
 	inherited Create(nil, AppID);
 	FInfo.Settitle(AppTitle);
+	
+	PCharMap := nil;
+	PNew := nil;
+	PLoad := nil;
+	PSave := nil;
+	PInfo := nil;
 
 	TextAttr := $1F;
 	P := New(PWindow, Create(@Self, 'Main'));
@@ -364,12 +377,7 @@ begin
 		SetBounds(B);
 		L := T;
 	end;
-	
-	PCharMap := nil;
-	PLoad := nil;
-	PSave := nil;
-	PInfo := nil;
-	
+		
 	FClrScr := True;
 end;
 
@@ -392,13 +400,23 @@ var
 begin
 	if AEvent.What = evCommand then
 		case AEvent.Command of
+			cmNewFile : begin 
+				GetNewDialog;
+				T := PNew^.ShowModal;
+			end;
 			cmOpenFile : begin 
 				GetLoadDialog;
 				T := PLoad^.ShowModal;
+				if T = mrOK then begin
+					PEditor^.FFont^.SetFileName(PLoad^.GetFileName);
+				end;
 			end;
 			cmSaveFile, cmSaveFileAs : begin 
 				GetSaveDialog;
 				T := PSave^.ShowModal;
+				if T = mrOK then begin
+					PEditor^.FFont^.SaveToFile(PSave^.GetFileName);
+				end;
 			end;
 			cmFileInfo : begin
 				GetInfoDialog; 
