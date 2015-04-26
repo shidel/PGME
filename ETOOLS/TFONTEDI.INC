@@ -19,7 +19,8 @@ type
 	public { protected }
 		FMUL, FOFS : TPoint;
 		FNullChar : Char;
-		FNullColor : Integer; 
+		FNullColor,
+		FDemoColor : Integer; 
 		procedure SetCurrentBounds(AValue : TBounds); virtual;
 	public
 			FFont : PFont;
@@ -31,6 +32,7 @@ type
 		procedure Load(AFilename : String); virtual;
 		procedure Save(AFilename : String); virtual;
 		procedure Demo; virtual;
+		procedure DemoFont(NullDac : boolean); virtual;
 	end;
 {$ENDIF}
 
@@ -52,6 +54,7 @@ begin
 	FCurrent := -1;
 	FNullChar := 'X';
 	FNullColor := TextAttr and $F0 + $08;
+	FDemoColor := $0E;
 	FMUL.X := 1;
 	FMUL.Y := 1;
 	FOFS.X := 0;
@@ -154,8 +157,93 @@ begin
 end;
 
 procedure TFontEdit.Demo;
+var
+	TempDac : array[0..$300] of byte;
+	Fader : boolean;
+	Size : integer;
+	Screen, Temp : Pointer;
+	Event : TEvent;
+	QCrtSettings : TQCrtSettings;
+	
 begin
+	with Application^ do begin
+		FillChar(TempDac, Sizeof(TempDac), 0);
+		FConfig.OpenSection('DISPLAY');
+		Fader := StrBool(FConfig.GetValue('USE_FADER', BoolStr(FUseFader)))
+			and StrBool(FConfig.GetValue('USE_DAC', BoolStr(FUseDAC)));	
+		Screen := nil;
+		GetQCrtState(QCrtSettings);
+
+		Size := GetVideoSize;
+		Temp := GetVideoPtr;
+		if Not MemCheck(Size) then Halt(erInsufficient_Memory);
+		GetMem(Screen, Size);
+		SetVideoPtr(Screen);
+		CopyFromVideo;
+		SetVideoPtr(Temp);
+
+		Window(1,1,Lo(ScreenMax) + 1, Hi(ScreenMax) + 1);
+		if Fader then
+			FadeOutDAC(0,256,FDefaultDAC^)
+		else
+			ClrScr;
+
+		FFont.SetEnabled(False);
+
+		DemoFont(Fader);	
+		
+		if Fader then
+			FadeInDAC(0,256,FDefaultDAC^);
+
+		ClearEvent(Event);
+		While Event.What = evNothing do GetEvent(Event);
+		if (Event.What or evKeyboard <> evKeyboard) or (Event.What and evMouse <> evMouse) then
+			PutEvent(Event);
+
+		if Fader then
+			FadeOutDAC(0,256,FDefaultDAC^)
+		else
+			ClrScr;
+		Self.FFont^.SetEnabled(False);		
+		if Fader then
+			WriteDac(0,256,TempDac);
+		SetQCrtState(QCrtSettings);	
+		FFont.SetEnabled(True);
+		if Assigned(Screen) then
+			begin
+				Temp := GetVideoPtr;
+				SetVideoPtr(Screen);
+				CopyToVideo;
+				SetVideoPtr(Temp);
+				FreeMem(Screen, Size);
+			end;
+		if Fader then
+			FadeInDAC(0,256,FDefaultDAC^);
+				
+	end;
 end;
 
+procedure TFontEdit.DemoFont;
+var	
+	I : Integer;
+	TempDac : array[0..$300] of byte;
+begin
+	FillChar(TempDac, Sizeof(TempDac), 0);
+	FFont^.SetEnabled(True);
+	if NullDac then
+		WriteDac(0,256,TempDac);
+	TextAttr := FDemoColor;
+	ClrScr;
+	for I := 0 to 255 do begin
+		
+		gotoXY (1 + (I and $F) * 2, 1 + I shr 4 );
+		FWrite(Chr(I));
+		
+	end;
+	FWriteLn('');
+	FWriteLn('');
+	FWriteLn('Press a key or move the Mouse to return.');
+	CopyToVideo;
+end;
 
 {$ENDIF}
