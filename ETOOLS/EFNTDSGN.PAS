@@ -27,6 +27,7 @@ type
 	PFontEdit = ^TFontEdit;
 	TFontEdit = object(TBox)
 	public { protected }
+		FMUL, FOFS : TPoint;
 		FNullChar : Char;
 		FNullColor : Integer; 
 		procedure SetCurrentBounds(AValue : TBounds); virtual;
@@ -36,6 +37,7 @@ type
 		constructor Create(AParent : PControl; AName : String);
 		destructor Destroy; virtual;
 		procedure Draw; virtual;
+		function GetMaxHeight : integer; virtual;
 	end;
 	
 constructor TFontEdit.Create;
@@ -47,6 +49,10 @@ begin
 	FCurrent := -1;
 	FNullChar := 'X';
 	FNullColor := TextAttr and $F0 + $08;
+	FMUL.X := 1;
+	FMUL.Y := 1;
+	FOFS.X := 0;
+	FOFS.Y := 0;
 end;
 
 destructor TFontEdit.Destroy;
@@ -62,18 +68,47 @@ begin
 	ExtraSize := 0;
 	if FBorder then Inc(ExtraSize, 2);
 	if FShadow then Inc(ExtraSize, 2);
+	FMUL.X := 1;
+	FMUL.Y := 1;
+	FOFS.X := 0;
+	FOFS.Y := 0;
+	
+	if (Application^.FFont.GetEnabled) and (Application^.FFont.GetHeight >= 12) then 
+		FMUL.X := 2;
+		
+	if ExtraSize > 0 then begin
+		Inc(FOFS.X);
+		Inc(FOFS.Y);
+	end;
 	{ if running in less than an 8x10 font then dont do doublewide } 
-	if FontHeight < 8 then 
-		AValue.Width := 8 + ExtraSize
-	else
-		AValue.Width := 8 * 2 + ExtraSize;
+	AValue.Width := 8 * FMUL.X + ExtraSize;
 	{ Fix Height }
 	if FShadow then Dec(ExtraSize, 1);
+	
 	if Assigned(FFont) and (FFont^.GetHeight > 0) then 
-		AValue.Height := FFont^.GetHeight + ExtraSize
+		AValue.Height := FFont^.GetHeight
 	else
-		AValue.Height := 16 + ExtraSize;
+		AValue.Height := FontHeight;
+
+	if AValue.Height > GetMaxHeight then 
+		AValue.Height := GetMaxHeight;
+		
+	AValue.Height := AValue.Height * FMUL.Y + ExtraSize;
+	AValue.Top := (PControl(Parent)^.Height div 2) - (AValue.Height div 2);
 	inherited SetCurrentBounds(AValue);
+end;
+
+function TFontEdit.GetMaxHeight : integer;
+var
+	ExtraSize : integer;
+begin
+	ExtraSize := 0;
+	if FBorder then Inc(ExtraSize, 2);
+	if FShadow then Inc(ExtraSize, 1);
+	GetMaxHeight := (PControl(Parent)^.Height div FMUL.Y) -
+	  (PControl(Parent)^.FMargin.Top) -
+	  (PControl(Parent)^.FMargin.Bottom) -
+	  ExtraSize - 2;
 end;
 
 procedure TFontEdit.Draw;
@@ -317,7 +352,7 @@ begin
 		SetCommand(cmSaveFileAs); 
 		L := T;
 	end;
-
+(*
 	TextAttr := $2F;
 	T := New(PButton, Create(P, 'CHAR'));
 	with PButton(T) ^ do begin
@@ -350,7 +385,7 @@ begin
 		SetCommand(cmDemo); 
 		L := T;
 	end;
-	
+*)
 	{ Side Line Top }
 	TextAttr := $1F;
 	Bounds(P^.Width - BWide - 2, L^.Top + 1, BWide + 2, 1, B);
@@ -510,5 +545,6 @@ begin
 end;
 		 
 begin
-	Execute;
+	Execute; 
+	WriteLn(FontHeight);
 end.
