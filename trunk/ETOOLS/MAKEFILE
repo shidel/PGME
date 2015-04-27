@@ -10,9 +10,7 @@ TPC = TPC -M -L -E$(BINDIR) -I..\QUICKCRT -U$(BINDIR);..\QUICKCRT
 
 efntdsgn: efntdsgn.exe	
 
-eloadfnt: eloadfnt.exe
-
-all: efntdsgn eloadfnt
+all: efntdsgn qfntload.exe qfnt2raw.exe raw2qfnt.exe
 
 .pas.tpu: 
     @if not exist $(BINDIR) mkdir $(BINDIR)
