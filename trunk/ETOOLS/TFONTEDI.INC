@@ -210,13 +210,14 @@ begin
 		ClrScr;
 		
 		Self.FFont^.SetEnabled(False);		
-		if Fader then
-			WriteDac(0,256,TempDac);
 		
 		SetQCrtState(QCrtSettings);	
 		
 		FFont.SetEnabled(True);
 		
+		if Fader then
+			WriteDac(0,256,TempDac);
+
 		CheckScroll := False;
 		CheckCursor := False;
 		HideCursor;
@@ -258,7 +259,6 @@ begin
 	FWriteLn(CSpace('Press a key or move the Mouse to return.', Lo(ScreenMax) + 1));
 	TextAttr := FDemoColor;
 	
-	CopyToVideo;
 end;
 
 {$ENDIF}
