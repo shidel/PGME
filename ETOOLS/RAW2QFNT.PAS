@@ -12,6 +12,10 @@ program Eternity_Font_Convert_from_RAW_data; { X Series }
 
 {$I ..\ETERNITY\LICENSE.INC}
 
+const
+	AppTitle = 'QuickCrt Raw to Font Converter';
+	AppID = 'QRAW2FNT';
+		
 procedure Execute;
 begin
 end;
