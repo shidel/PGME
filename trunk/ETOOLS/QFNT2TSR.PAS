@@ -12,6 +12,10 @@ program Eternity_Font_To_Terminate_And_Stay_Resident; { X Series }
 
 {$I ..\ETERNITY\LICENSE.INC}
 
+const
+	AppTitle = 'QuickCrt Font TSR Creator';
+	AppID = 'QFNT2TSR';
+		
 procedure Execute;
 begin
 end;

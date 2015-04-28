@@ -15,11 +15,8 @@ uses QBIOS;
 {$I ..\ETERNITY\LICENSE.INC}
 
 const
-	class_TFontLoader = 'TFontLoader';
-	
-	AppTitle = 'Eternity Font Loader';
-	AppID = 'ELOADFNT';
-
+	AppTitle = 'QuickCrt Font Loader';
+	AppID = 'QLOADFNT';
 		
 procedure Execute;
 const
