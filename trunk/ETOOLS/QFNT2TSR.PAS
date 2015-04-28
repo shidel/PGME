@@ -8,7 +8,7 @@
 *)
 
 {$I ETOOLS.DEF}
-program Eternity_Font_Convert_from_RAW_data; { X Series }
+program Eternity_Font_To_Terminate_And_Stay_Resident; { X Series }
 
 {$I ..\ETERNITY\LICENSE.INC}
 

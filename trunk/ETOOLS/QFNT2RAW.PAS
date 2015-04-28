@@ -8,7 +8,7 @@
 *)
 
 {$I ETOOLS.DEF}
-program Eternity_Font_Loader; { X Series }
+program Eternity_Font_Convert_To_Raw_Binary; { X Series }
 
 {$I ..\ETERNITY\LICENSE.INC}
 
