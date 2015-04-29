@@ -77,8 +77,11 @@ begin
 		Close(F);
 
 		S := ParamStr(2);
-		if S = '' then
+		if S = '' then begin
 			S := Copy(ParamStr(1), 1, Length(ParamStr(1)) - 3) + 'BIN';
+			while Pos('\', S) > 0 do 
+				Delete(S, 1, Pos('\', S));
+		end;
 		
 		WriteLn;
 		WriteLn('Creating raw binary font file "', S, '".');

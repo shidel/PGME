@@ -74,8 +74,12 @@ begin
 		WriteLn;
 
 		S := ParamStr(2);
-		if S = '' then
+		if S = '' then begin
 			S := Copy(ParamStr(1), 1, Length(ParamStr(1)) - 3) + 'FNT';
+			while Pos('\', S) > 0 do 
+				Delete(S, 1, Pos('\', S));
+		end;
+
 		WriteLn('Creating QuickCrt font file "', S, '".');
 		Assign(F, S);
 		Rewrite(F, 1);
