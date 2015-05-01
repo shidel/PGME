@@ -383,6 +383,10 @@ begin
 		
 	FClrScr := True;
 	
+	FStartTone := '400:3,200:3,400:3,500:3,400:3,500:3,400:3,200:3,200:3' +
+	'0:300,200:3,400:3,500:3';
+	FEndTone := '500:1,100:1,200:1';
+	
 end;
 
 destructor TETool.Destroy;
