@@ -40,6 +40,20 @@ type
 var
 	ETool : TETool;
 	
+procedure FormatMaxHeight (AVisual : PControl; var AValue : String); far;
+var
+	D : TFormatData;
+begin
+	if Not Assigned( PETool(Application)^.PNew ) then exit;
+	with PETool(Application)^.PNew^ do begin
+		if AVisual = PControl(PSLabel) then begin
+			D.ID := fmtInteger;
+			D.IntegerValue := PETool(Application)^.PEditor^.GetMaxHeight;
+			AValue := FormatStr(AValue, D, 1);
+		end;
+	end;
+end;
+
 procedure FormatFontStatus (AVisual : PControl; var AValue : String); far;
 var
 	D : TFormatData;
@@ -409,19 +423,28 @@ begin
 	if AEvent.What = evCommand then
 		case AEvent.Command of
 			cmNewFile : begin 
+				ClearEvent(AEvent);
 				GetNewDialog;
 				T := PNew^.ShowModal;
+				if T = mrOK then begin
+					PEditor^.NewFont(StrInt(PNew^.PSize^.GetCaption), PNew^.PClone^.GetState > 0,
+					PNew^.PStretch^.GetState > 0);
+				end;
+				PSaveBtn^.SetEnabled(Assigned(PEditor^.FFont^.FFontPtr));
+				Update;
 			end;
 			cmOpenFile : begin 
+				ClearEvent(AEvent);
 				GetLoadDialog;
 				T := PLoad^.ShowModal;
 				if T = mrOK then begin
 					PEditor^.Load(PLoad^.GetFileName);
-					PSaveBtn^.SetEnabled(PEditor^.FFont^.GetFileName <> '');
+					PSaveBtn^.SetEnabled(Assigned(PEditor^.FFont^.FFontPtr));
 				end;
 				Update;
 			end;
 			cmSaveFile, cmSaveFileAs : begin 
+				ClearEvent(AEvent);
 				GetSaveDialog;
 				T := PSave^.ShowModal;
 				if T = mrOK then begin
@@ -429,12 +452,14 @@ begin
 				end;
 			end;
 			cmFileInfo : begin
+				ClearEvent(AEvent);
 				GetInfoDialog; 
 				T := PInfo^.ShowModal;
 				if T = mrOK then 
 					Update;
 			end;
 			cmCharMap : begin
+				ClearEvent(AEvent);
 				GetCharDialog;
 				T := PCharMap^.ShowModal;
 				if T > mrNoResult then begin
@@ -445,6 +470,18 @@ begin
 					PutEvent(AEvent);
 				end;
 				ClearEvent(AEvent);
+			end;
+			cmPageUp : if PEditor^.FCurrent > 0 then begin
+				Dec(PEditor^.FCurrent);
+				PEditor^.Update;
+				PALabel^.Update;
+				PCLabel^.Update;
+			end;
+			cmPageDown : if (PEditor^.FCurrent > -1) and (PEditor^.FCurrent < 255) then begin
+				Inc(PEditor^.FCurrent);
+				PEditor^.Update;
+				PALabel^.Update;
+				PCLabel^.Update;
 			end;
 			cmDemo, cmCopy : begin
 				ClearEvent(AEvent);
