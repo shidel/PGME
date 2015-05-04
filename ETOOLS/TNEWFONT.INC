@@ -47,6 +47,10 @@ begin
 	Bounds(1,1,40,12, B);
 	SetBounds(B);
 	SetTitle('Create New Font');	
+	SetHelpText('Create New Font Dialog.');
+	AddHelpText('');
+	AddHelpText('With this dialog you can start a new font. (Any changes to an unsaved');
+	AddHelpText('font will be lost)');
 
 	TextAttr := $70;
 	PSLabel := New(PLabel, Create(@Self, 'SIZE.LABEL'));
@@ -61,6 +65,7 @@ begin
 	TextAttr := $1E;
 	PSize := New(PEdit, Create(@Self, 'SIZE.EDIT'));
 	with PEdit(PSize)^ do begin
+		SetHelpText('"Edit" field. Enter the desired height of the new font.');
 		Bounds(Self.Width - 12,2, 6, 1, B);
 		SetBounds(B);
 		SetAnchors(abLeft or abTop or abRight) ;
@@ -69,6 +74,9 @@ begin
 	TextAttr := $70;
 	PClone := New(PCheckBox, Create(@Self, 'CLONE'));
 	with PClone^ do begin
+		SetHelpText('"Clone" Checkbox. When checked, the new font will be based on');
+		AddHelpText('a ROM BIOS font of the specified or smaller size. If it is not,');
+		AddHelpText('it will be a blank font.');
 		Bounds(4,4, Self.Width - 8, 1, B);
 		SetBounds(B);
 		SetAnchors(abLeft or abTop or abRight);
@@ -77,6 +85,10 @@ begin
 	end;
 	PStretch := New(PCheckBox, Create(@Self, 'STRETCH'));
 	with PStretch^ do begin
+		SetHelpText('"Stretch" Checkbox. Is only available when Cloning the ROM font.');
+		AddHelpText('When checked, the new font will be stretched or shrunk to match');
+		AddHelpText('the requested size. This is slow and make take minute or so to');
+		AddHelpText('complete.');
 		Inc(B.Top);
 		SetBounds(B);
 		SetAnchors(abLeft or abTop or abRight);
@@ -87,6 +99,7 @@ begin
 	TextAttr := $2E;
 	POk := New(PButton, Create(@Self, 'OK'));
 	with POK^ do begin
+		SetHelpText('5;"%0" Button. To accept the settings and create the new font.');	
 		Bounds((Self.Width - 2) div 2 - 5, Self.Height - 4 , 10, 1, B);
 		SetBounds(B);
 		SetAnchors(abLeft or abBottom);
