@@ -29,7 +29,6 @@ const
 	cmShiftDown  = cmShiftUp + 1;
 	
 	cmResize 	 =  cmShiftDown + 1;
-	
 
 {$DEFINE INTERFACE}
 

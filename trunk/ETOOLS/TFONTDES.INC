@@ -34,7 +34,8 @@ type
 		function GetInfoDialog : PDialog; virtual;
 		function GetTooBigDialog : PDialog; virtual;
 		function GetResizeDialog : PDialog; virtual;
-		procedure CreateAllForTemplate; virtual; { Creates all when building templates }
+		procedure UpdateFontHeader; virtual;
+		procedure CreateAllDialogs(ConserveMemory : boolean); virtual; 
 	public
 		constructor Create;
 		destructor Destroy; virtual;
@@ -194,6 +195,8 @@ begin
 		end;
 		P := P^.Next;
 	end;
+	PInfo^.FKeys^.SetCaption('');
+	PInfo^.FValue^.SetCaption('');
 	GetInfoDialog := PInfo;
 end;
 
@@ -224,15 +227,22 @@ begin
 	GetTooBigDialog := PInfo;
 end;
 
-procedure TETool.CreateAllForTemplate;
+procedure TETool.CreateAllDialogs;
 begin
 	GetCharDialog;
+	if ConserveMemory then FreeDialog(PDialog(PCharMap));
 	GetNewDialog;
+	if ConserveMemory then FreeDialog(PDialog(PNew));
 	GetLoadDialog;
+	if ConserveMemory then FreeDialog(PDialog(PLoad));
 	GetSaveDialog;
+	if ConserveMemory then FreeDialog(PDialog(PSave));
 	GetInfoDialog;
+	if ConserveMemory then FreeDialog(PDialog(PInfo));
 	GetResizeDialog;
+	if ConserveMemory then FreeDialog(PDialog(PResize));
 	GetTooBigDialog;
+	if ConserveMemory then FreeDialog(PDialog(PTooBig));
 end;
 
 constructor TETool.Create;
@@ -484,6 +494,27 @@ begin
 	ClrEOL;
 end;	
 	
+procedure TETool.UpdateFontHeader;
+var
+	P : PListItem;
+begin
+	if not Assigned(PEditor^.FFont^.FFontPtr) then exit;
+	if Not Assigned(PInfo) then exit;
+	PEditor^.FFont^.FHeader.Clear;
+	P := PInfo^.FList^.First;
+	while Assigned(P) do begin
+		if P^.GetNameID <> '' then begin
+			if Assigned(P^.First) and (P^.First^.GetNameID <> '') then begin
+				PEditor^.FFont^.FHeader.Add(
+					New(PListItem, Create(P^.GetNameID + '=' + P^.First^.GetNameID)));
+			end;
+		end;
+		P := P^.Next;
+	end;
+	PInfo^.FList^.Clear;
+	PInfo^.FKeys^.ClearItems;
+end;
+
 procedure TETool.CheckLocal(var AEvent : TEvent); 
 var
 	T : integer;
@@ -494,17 +525,20 @@ begin
 				ClearEvent(AEvent);
 				GetNewDialog;
 				T := PNew^.ShowModal;
+				StartDrawing;
 				if T = mrOK then begin
 					PEditor^.NewFont(StrInt(PNew^.PSize^.GetCaption), PNew^.PClone^.GetState > 0,
 					PNew^.PStretch^.GetState > 0);
 				end;
 				PSaveBtn^.SetEnabled(Assigned(PEditor^.FFont^.FFontPtr));
 				Update;
+				FinishDrawing;
 			end;
 			cmPaste, cmResize : begin 
 				ClearEvent(AEvent);
 				GetResizeDialog;
 				T := PResize^.ShowModal;
+				StartDrawing;
 				if T = mrOK then begin
 					if PResize^.PStretch^.GetState > 0 then
 						PEditor^.Stretch(StrInt(PResize^.PSize^.GetCaption))
@@ -512,6 +546,7 @@ begin
 						PEditor^.Resize(StrInt(PResize^.PSize^.GetCaption))
 				end;
 				Update;
+				FinishDrawing;
 			end;
 			cmTooBig : begin
 				ClearEvent(AEvent);
@@ -522,11 +557,13 @@ begin
 				ClearEvent(AEvent);
 				GetLoadDialog;
 				T := PLoad^.ShowModal;
+				StartDrawing;
 				if T = mrOK then begin
 					PEditor^.Load(PLoad^.GetFileName);
 					PSaveBtn^.SetEnabled(Assigned(PEditor^.FFont^.FFontPtr));
 				end;
 				Update;
+				FinishDrawing;
 			end;
 			cmSaveFile, cmSaveFileAs : begin 
 				ClearEvent(AEvent);
@@ -540,8 +577,8 @@ begin
 				ClearEvent(AEvent);
 				GetInfoDialog; 
 				T := PInfo^.ShowModal;
-				if T = mrOK then 
-					Update;
+				if (T = mrOK) and  Assigned(PEditor^.FFont^.FFontPtr) then
+					UpdateFontHeader;
 			end;
 			cmCharMap : begin
 				ClearEvent(AEvent);
@@ -558,15 +595,19 @@ begin
 			end;
 			cmPageUp : if PEditor^.FCurrent > 0 then begin
 				Dec(PEditor^.FCurrent);
+				StartDrawing;
 				PEditor^.Update;
 				PALabel^.Update;
 				PCLabel^.Update;
+				FinishDrawing;
 			end;
 			cmPageDown : if (PEditor^.FCurrent > -1) and (PEditor^.FCurrent < 255) then begin
 				Inc(PEditor^.FCurrent);
+				StartDrawing;
 				PEditor^.Update;
 				PALabel^.Update;
 				PCLabel^.Update;
+				FinishDrawing;
 			end;
 			cmDemo, cmCopy : begin
 				ClearEvent(AEvent);
