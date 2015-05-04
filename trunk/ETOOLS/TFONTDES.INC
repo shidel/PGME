@@ -293,6 +293,8 @@ begin
 	TextAttr := $0F;
 	PEditor := New(PFontEdit, Create(P, 'EDITOR'));
 	with PEditor^ do begin
+		SetHelpText('Character Editor Panel: Clicking the mouse button inside the character editor');
+		AddHelpText('panel will toggle bits for that character on and off.');
 		Bounds( 6, 3, 10, 10,B);
 		SetBounds(B);
 	end;
@@ -300,6 +302,9 @@ begin
 	TextAttr := $2E;
 	T := New(PButton, Create(P, 'QUIT'));
 	with PButton(T) ^ do begin
+		SetHelpText('5;"%0" Button: Close the Eternity Font Designer.');
+		AddHelpText('(Unsaved changes will be lost)');
+		AddHelpText('The default keyboard shortcut is "Alt+Q".');
 		SetAnchors(alBottom or alRight);  
 		Bounds(1, 1, BWide, 1, B);
 		SetBounds(B);
@@ -331,6 +336,9 @@ begin
 	TextAttr := $2F;
 	T := New(PButton, Create(P, 'NEW'));
 	with PButton(T) ^ do begin
+		SetHelpText('5;"%0" Button: Create a new blank or system BIOS based font.');
+		AddHelpText('(Unsaved changes will be lost)');
+		AddHelpText('The default keyboard shortcut is "C".');
 		SetAnchors(alRight);  
 		Bounds(1, 1, BWide, 1, B);
 		SetBounds(B);
@@ -343,6 +351,9 @@ begin
 	TextAttr := $2F;
 	T := New(PButton, Create(P, 'LOAD'));
 	with PButton(T) ^ do begin
+		SetHelpText('5;"%0" Button: Load an existing QuickCRT font from a file.');
+		AddHelpText('(Unsaved changes will be lost)');
+		AddHelpText('The default keyboard shortcut is "L".');
 		SetAnchors(alRight);  
 		Bounds(1, L^.Top + 1, BWide, 1, B);
 		SetBounds(B);
@@ -355,6 +366,8 @@ begin
 	TextAttr := $2F;
 	T := New(PButton, Create(P, 'SAVE'));
 	with PButton(T) ^ do begin
+		SetHelpText('5;"%0" Button: Saves the current font to a new or existing file.');
+		AddHelpText('The default keyboard shortcut is "A".');
 		SetAnchors(alRight);  
 		Bounds(1, L^.Top + 1, BWide, 1, B);
 		SetBounds(B);
@@ -466,6 +479,8 @@ begin
 	TextAttr := $6F;
 	PBtnInfo := New(PButton, Create(P, 'BUTTON.INFO'));
 	with PButton(PBtnInfo)^ do begin
+		SetHelpText('5;"%0" Button: Opens the Info Dialog box. Where changes to the');
+		AddHelpText('fonts meta data can be made. The default keyboard shortcut is "I".');
 		SetAnchors(abRight or abBottom);  
 		Dec(B.Left, BWide);
 		SetBounds(B);
@@ -477,6 +492,8 @@ begin
 	end;	
 	PBtnDemo := New(PButton, Create(P, 'BUTTON.DEMO'));
 	with PButton(PBtnDemo)^ do begin
+		SetHelpText('5;"%0" Button: Previews the font.');
+		AddHelpText('The default keyboard shortcut is "D".');
 		SetAnchors(abRight or abBottom);  
 		Dec(B.Left, BWide);
 		SetBounds(B);
@@ -488,6 +505,8 @@ begin
 	end;
 	PBtnChar := New(PButton, Create(P, 'BUTTON.CHAR'));
 	with PButton(PBtnChar) ^ do begin
+		SetHelpText('5;"%0" Button: Opens the Character Map Dialog box. Where you can quickly');
+		AddHelpText('select a different character to edit. The default keyboard shortcut is "M".');
 		SetAnchors(abRight or abBottom);  
 		Dec(B.Left, BWide);
 		SetBounds(B);
@@ -499,6 +518,8 @@ begin
 	end;
 	PBtnSize := New(PButton, Create(P, 'BUTTON.SIZE'));
 	with PButton(PBtnSize) ^ do begin
+		SetHelpText('5;"%0" Button: Opens the Resize Dialog box. Where you can');
+		AddHelpText('change the fonts bit height. The default keyboard shortcut is "S".');
 		SetAnchors(abRight or abBottom);  
 		Dec(B.Left, BWide);
 		SetBounds(B);
@@ -515,6 +536,8 @@ begin
 	TextAttr := $5F;
 	PBtnPrev := New(PButton, Create(P, 'BUTTON.PREV'));
 	with PButton(PBtnPrev)^ do begin
+		SetHelpText('5;"%0" Button: Selects the charcater before the current one for editing.');
+		AddHelpText('The default keyboard shortcut is "PageUp".');
 		SetAnchors(abRight or abBottom);  
 		Inc(B.Left, BWide);
 		SetBounds(B);
@@ -526,6 +549,8 @@ begin
 	end;	
 	PBtnNext := New(PButton, Create(P, 'BUTTON.NEXT'));
 	with PButton(PBtnNext)^ do begin
+		SetHelpText('5;"%0" Button: Selects the charcater after the current one for editing.');
+		AddHelpText('The default keyboard shortcut is "PageDown".');
 		SetAnchors(abRight or abBottom);  
 		Inc(B.Left, BWide);
 		SetBounds(B);
@@ -542,6 +567,8 @@ begin
 	TextAttr := $3F;
 	PBtnUp := New(PButton, Create(P, 'BUTTON.UP'));
 	with PButton(PBtnUp)^ do begin
+		SetHelpText('5;"%0" Button: Shifts the current charcater up one line.');
+		AddHelpText('The default keyboard shortcut is "Up Arrow".');
 		SetAnchors(abRight);  
 		SetBounds(B);
 		SetCaption('Up');
@@ -553,6 +580,8 @@ begin
 	Bounds(44 - BWide div 2, 8, BWide, 1, B);
 	PBtnDown := New(PButton, Create(P, 'BUTTON.DOWN'));
 	with PButton(PBtnDown)^ do begin
+		SetHelpText('5;"%0" Button: Shifts the current charcater down one line.');
+		AddHelpText('The default keyboard shortcut is "Down Arrow".');
 		SetAnchors(abRight);  
 		SetBounds(B);
 		SetCaption('Down');
@@ -564,6 +593,8 @@ begin
 	Bounds(44 - BWide div 2 - BWide, 6, BWide, 1, B);
 	PBtnLeft := New(PButton, Create(P, 'BUTTON.LEFT'));
 	with PButton(PBtnLeft)^ do begin
+		SetHelpText('5;"%0" Button: Shifts the current charcater left one pixel.');
+		AddHelpText('The default keyboard shortcut is "Left Arrow".');
 		SetAnchors(abRight);  
 		SetBounds(B);
 		SetCaption('Left');
@@ -575,6 +606,8 @@ begin
 	Bounds(44 - BWide div 2 + BWide, 6, BWide, 1, B);
 	PBtnRight := New(PButton, Create(P, 'BUTTON.RIGHT'));
 	with PButton(PBtnRight)^ do begin
+		SetHelpText('5;"%0" Button: Shifts the current charcater right one pixel.');
+		AddHelpText('The default keyboard shortcut is "Right Arrow".');
 		SetAnchors(abRight);  
 		SetBounds(B);
 		SetCaption('Right');
@@ -586,6 +619,8 @@ begin
 	
 	TextAttr := $2F;
 	with PButton(New(PButton, Create(P, 'BUTTON.HELP')))^ do begin
+		SetHelpText('5;"%0" Button: Opens the Help Window.');
+		AddHelpText('The default keyboard shortcut is "Alt+H".');
 		SetAnchors(abRight or abBottom);  
 		Bounds(80 - 18 - 10, P^.Height - 2, 10, 1, B);
 		SetBounds(B);
