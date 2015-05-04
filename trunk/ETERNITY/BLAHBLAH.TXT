@@ -1,10 +1,21 @@
 ### The Program Manager Eternity Edition Manual. (Extremely Rough Draft)
 
-By default (These maybe changed in a custom KMP file:
+System Requirements:
+	FreeDOS v1.1 Compatible Operating System
+	1024K Free Disk Space.
+	640K Memory (400K Free, 500K free is really, really, really recommended).
+	VGA Compatible Video Card. 
+	286 or Better CPU.
+	Keyboard.
+	(Mouse is highly recommended, and when using default settings is required).
+	(Color monitor is recommended).
+	
+By default all QuickCRT based programs (These maybe changed in a custom KMP file):
 
 	Alt-W closes a window and if it the main window it will close the program.
 	Alt-Q quits the program.
-	Alt-H Shows a help screen. (Help not yet implemented)
+	Alt-H Shows a help screen.
+	Alt-H, then Alt-H to Show Program's main Help Screen.
 
 ** REQUIRED FILES **
 

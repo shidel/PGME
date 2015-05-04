@@ -144,7 +144,7 @@ begin
 	ExtraSize := (PControl(Parent)^.Height div FMUL.Y) -
 	  (PControl(Parent)^.FMargin.Top) -
 	  (PControl(Parent)^.FMargin.Bottom) -
-	  ExtraSize - 2;
+	  ExtraSize { - 2};
 	if ExtraSize > 32 then ExtraSize := 32;
 	GetMaxHeight := ExtraSize;	
 end;

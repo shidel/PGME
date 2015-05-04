@@ -25,6 +25,9 @@ type
 			PTooBig : PMessageBox;
 			PResize : PResizeDialog;
 			PWLabel, PHLabel, PSLabel, PCLabel, PALabel : PLabel;
+			PBtnChar, PBtnDemo, PBtnInfo, PBtnSize : PButton;
+			PBtnPrev, PBtnNext : PButton;
+			PBtnUp, PBtnDown, PBtnLeft, PBtnRight : PButton;
 		procedure BeforeShow; virtual;
 		procedure CheckLocal(var AEvent : TEvent); virtual;
 		function GetCharDialog : PCharacterMap; virtual;
@@ -36,6 +39,7 @@ type
 		function GetResizeDialog : PDialog; virtual;
 		procedure UpdateFontHeader; virtual;
 		procedure CreateAllDialogs(ConserveMemory : boolean); virtual; 
+		procedure SetButtonState; virtual;
 	public
 		constructor Create;
 		destructor Destroy; virtual;
@@ -246,15 +250,15 @@ begin
 end;
 
 constructor TETool.Create;
-const
-	BWide = 16;
 var
+	BWide : integer;
 	P, T, L : PControl;
 	B : TBounds;
 begin
 	inherited Create(nil, AppID);
 	FInfo.Settitle(AppTitle);
 	
+	BWide := 16;
 	PCharMap := nil;
 	PNew := nil;
 	PLoad := nil;
@@ -262,7 +266,7 @@ begin
 	PInfo := nil;
 
 	TextAttr := $1F;
-	P := New(PWindow, Create(@Self, 'Main'));
+	P := New(PWindow, Create(@Self, 'MAIN'));
 	with PWindow(P)^ do begin
 		SetTitle(AppTitle);
 		SetShadow(False);
@@ -277,7 +281,7 @@ begin
 	TextAttr := $0F;
 	PEditor := New(PFontEdit, Create(P, 'EDITOR'));
 	with PEditor^ do begin
-		Bounds( 8, 3, 10, 10,B);
+		Bounds( 6, 3, 10, 10,B);
 		SetBounds(B);
 	end;
 	
@@ -320,6 +324,7 @@ begin
 		SetBounds(B);
 		SetCaption('Create Font');
 		SetCommand(cmNewFile); 
+		SetKeyCode(kbC, kbNone, kfMatches); 
 		L := T;
 	end;
 
@@ -331,6 +336,7 @@ begin
 		SetBounds(B);
 		SetCaption('Load Font');
 		SetCommand(cmOpenFile); 
+		SetKeyCode(kbL, kbNone, kfMatches); 
 		L := T;
 	end;
 
@@ -343,43 +349,11 @@ begin
 		SetCaption('Save Font');
 		SetCommand(cmSaveFileAs);
 		SetEnabled(False);
+		SetKeyCode(kbA, kbNone, kfMatches); 
 		L := T;
 		PSaveBtn := PButton(T);
 	end;
-(*
-	TextAttr := $2F;
-	T := New(PButton, Create(P, 'CHAR'));
-	with PButton(T) ^ do begin
-		SetAnchors(alRight);  
-		Bounds(1, L^.Top + 1, BWide, 1, B);
-		SetBounds(B);
-		SetCaption('Character Map');
-		SetCommand(cmCharMap); 
-		L := T;
-	end;
-	
-	TextAttr := $2F;
-	T := New(PButton, Create(P, 'INFO'));
-	with PButton(T) ^ do begin
-		SetAnchors(alRight);  
-		Bounds(1, L^.Top + 1, BWide, 1, B);
-		SetBounds(B);
-		SetCaption('Information');
-		SetCommand(cmFileInfo); 
-		L := T;
-	end;
 
-	TextAttr := $2F;
-	T := New(PButton, Create(P, 'DEMO'));
-	with PButton(T) ^ do begin
-		SetAnchors(alRight);  
-		Bounds(1, L^.Top + 1, BWide, 1, B);
-		SetBounds(B);
-		SetCaption('Preview');
-		SetCommand(cmDemo); 
-		L := T;
-	end;
-*)
 	{ Side Line Top }
 	TextAttr := $1F;
 	Bounds(P^.Width - BWide - 2, L^.Top + 1, BWide + 2, 1, B);
@@ -472,7 +446,142 @@ begin
 		SetBounds(B);
 		L := T;
 	end;
-		
+	
+	{ Some Dialog Buttons }
+
+	Bounds(P^.Width - BWide - 2, P^.Height - 6, 8, 1, B);
+	BWide := 9;
+	TextAttr := $6F;
+	PBtnInfo := New(PButton, Create(P, 'BUTTON.INFO'));
+	with PButton(PBtnInfo)^ do begin
+		SetAnchors(abRight or abBottom);  
+		Dec(B.Left, BWide);
+		SetBounds(B);
+		SetCaption('Info');
+		SetCommand(cmFileInfo); 
+		SetKeyCode(kbI, kbNone, kfMatches); 
+		SetEnabled(False);
+		L := T;
+	end;	
+	PBtnDemo := New(PButton, Create(P, 'BUTTON.DEMO'));
+	with PButton(PBtnDemo)^ do begin
+		SetAnchors(abRight or abBottom);  
+		Dec(B.Left, BWide);
+		SetBounds(B);
+		SetCaption('Demo');
+		SetCommand(cmDemo); 
+		SetKeyCode(kbD, kbNone, kfMatches); 
+		SetEnabled(False);
+		L := T;
+	end;
+	PBtnChar := New(PButton, Create(P, 'BUTTON.CHAR'));
+	with PButton(PBtnChar) ^ do begin
+		SetAnchors(abRight or abBottom);  
+		Dec(B.Left, BWide);
+		SetBounds(B);
+		SetCaption('Map');
+		SetCommand(cmCharMap);
+		SetKeyCode(kbM, kbNone, kfMatches); 
+		SetEnabled(False);
+		L := T;
+	end;
+	PBtnSize := New(PButton, Create(P, 'BUTTON.SIZE'));
+	with PButton(PBtnSize) ^ do begin
+		SetAnchors(abRight or abBottom);  
+		Dec(B.Left, BWide);
+		SetBounds(B);
+		SetCaption('Size');
+		SetCommand(cmResize); 
+		SetEnabled(False);
+		SetKeyCode(kbS, kbNone, kfMatches); 
+		L := T;
+	end;
+	
+	{ Prev/Next Char Buttons }
+	BWide := 16;
+	Bounds(30 - BWide - 1, P^.Height - 8, 14, 1, B);
+	TextAttr := $5F;
+	PBtnPrev := New(PButton, Create(P, 'BUTTON.PREV'));
+	with PButton(PBtnPrev)^ do begin
+		SetAnchors(abRight or abBottom);  
+		Inc(B.Left, BWide);
+		SetBounds(B);
+		SetCaption('Previous');
+		SetCommand(cmPrevChar); 
+		SetRespond(cmPageUp); 
+		SetEnabled(False);
+		L := T;
+	end;	
+	PBtnNext := New(PButton, Create(P, 'BUTTON.NEXT'));
+	with PButton(PBtnNext)^ do begin
+		SetAnchors(abRight or abBottom);  
+		Inc(B.Left, BWide);
+		SetBounds(B);
+		SetCaption('Next');
+		SetCommand(cmNextChar); 
+		SetRespond(cmPageDown); 
+		SetEnabled(False);
+		L := T;
+	end;	
+
+	{ Shifting Buttons }
+	BWide := 9;
+	Bounds(44 - BWide div 2, 4, BWide, 1, B);
+	TextAttr := $3F;
+	PBtnUp := New(PButton, Create(P, 'BUTTON.UP'));
+	with PButton(PBtnUp)^ do begin
+		SetAnchors(abRight);  
+		SetBounds(B);
+		SetCaption('Up');
+		SetCommand(cmShiftUp); 
+		SetRespond(cmUp); 
+		SetEnabled(False);
+		L := T;
+	end;	
+	Bounds(44 - BWide div 2, 8, BWide, 1, B);
+	PBtnDown := New(PButton, Create(P, 'BUTTON.DOWN'));
+	with PButton(PBtnDown)^ do begin
+		SetAnchors(abRight);  
+		SetBounds(B);
+		SetCaption('Down');
+		SetCommand(cmShiftDown); 
+		SetRespond(cmDown); 
+		SetEnabled(False);
+		L := T;
+	end;	
+	Bounds(44 - BWide div 2 - BWide, 6, BWide, 1, B);
+	PBtnLeft := New(PButton, Create(P, 'BUTTON.LEFT'));
+	with PButton(PBtnLeft)^ do begin
+		SetAnchors(abRight);  
+		SetBounds(B);
+		SetCaption('Left');
+		SetCommand(cmShiftLeft); 
+		SetRespond(cmLeft); 
+		SetEnabled(False);
+		L := T;
+	end;	
+	Bounds(44 - BWide div 2 + BWide, 6, BWide, 1, B);
+	PBtnRight := New(PButton, Create(P, 'BUTTON.RIGHT'));
+	with PButton(PBtnRight)^ do begin
+		SetAnchors(abRight);  
+		SetBounds(B);
+		SetCaption('Right');
+		SetCommand(cmShiftRight); 
+		SetRespond(cmRight); 
+		SetEnabled(False);
+		L := T;
+	end;	
+	
+	TextAttr := $2F;
+	PBtnUp := New(PButton, Create(P, 'BUTTON.HELP'));
+	with PButton(PBtnUp)^ do begin
+		SetAnchors(abRight or abBottom);  
+		Bounds(80 - 18 - 10, P^.Height - 2, 10, 1, B);
+		SetBounds(B);
+		SetCaption('Help');
+		SetCommand(cmHelp); 
+	end;	
+	
 	FClrScr := True;
 	
 	FStartTone := '400:3,200:3,400:3,500:3,400:3,500:3,400:3,200:3,200:3' +
@@ -515,6 +624,26 @@ begin
 	PInfo^.FKeys^.ClearItems;
 end;
 
+procedure TETool.SetButtonState;
+var
+	AEnabled : boolean;
+begin
+	AEnabled := Assigned(PEditor^.FFont^.FFontPtr);
+	StartDrawing;
+	PSaveBtn^.SetEnabled(AEnabled);
+	PBtnChar^.SetEnabled(AEnabled);
+	PBtnDemo^.SetEnabled(AEnabled);
+	PBtnInfo^.SetEnabled(AEnabled);
+	PBtnSize^.SetEnabled(AEnabled);
+	PBtnPrev^.SetEnabled(AEnabled);
+	PBtnNext^.SetEnabled(AEnabled);
+	PBtnUp^.SetEnabled(AEnabled);
+	PBtnDown^.SetEnabled(AEnabled);
+	PBtnLeft^.SetEnabled(AEnabled);
+	PBtnRight^.SetEnabled(AEnabled);
+	FinishDrawing;
+end;
+
 procedure TETool.CheckLocal(var AEvent : TEvent); 
 var
 	T : integer;
@@ -530,11 +659,11 @@ begin
 					PEditor^.NewFont(StrInt(PNew^.PSize^.GetCaption), PNew^.PClone^.GetState > 0,
 					PNew^.PStretch^.GetState > 0);
 				end;
-				PSaveBtn^.SetEnabled(Assigned(PEditor^.FFont^.FFontPtr));
+				SetButtonState;
 				Update;
 				FinishDrawing;
 			end;
-			cmPaste, cmResize : begin 
+			cmResize : begin 
 				ClearEvent(AEvent);
 				GetResizeDialog;
 				T := PResize^.ShowModal;
@@ -560,7 +689,7 @@ begin
 				StartDrawing;
 				if T = mrOK then begin
 					PEditor^.Load(PLoad^.GetFileName);
-					PSaveBtn^.SetEnabled(Assigned(PEditor^.FFont^.FFontPtr));
+					SetButtonState;
 				end;
 				Update;
 				FinishDrawing;
@@ -573,7 +702,7 @@ begin
 					PEditor^.Save(PSave^.GetFileName);
 				end;
 			end;
-			cmCut, cmFileInfo : begin
+			cmFileInfo : begin
 				ClearEvent(AEvent);
 				GetInfoDialog; 
 				T := PInfo^.ShowModal;
@@ -584,16 +713,15 @@ begin
 				ClearEvent(AEvent);
 				GetCharDialog;
 				T := PCharMap^.ShowModal;
-				if T > mrNoResult then begin
-					AEvent.what := evKeyboard;
-					AEvent.ShiftCode := $FFFF;
-					AEvent.Original := T;
-					AEvent.KeyCode := T;
-					PutEvent(AEvent);
-				end;
-				ClearEvent(AEvent);
+				StartDrawing;			
+				if (T >= 0) and (T <=  255) then 
+					PEditor^.FCurrent := T;							
+				PEditor^.Update;
+				PALabel^.Update;
+				PCLabel^.Update;
+				FinishDrawing;
 			end;
-			cmPageUp : if PEditor^.FCurrent > 0 then begin
+			cmPrevChar : if PEditor^.FCurrent > 0 then begin
 				Dec(PEditor^.FCurrent);
 				StartDrawing;
 				PEditor^.Update;
@@ -601,7 +729,7 @@ begin
 				PCLabel^.Update;
 				FinishDrawing;
 			end;
-			cmPageDown : if (PEditor^.FCurrent > -1) and (PEditor^.FCurrent < 255) then begin
+			cmNextChar : if (PEditor^.FCurrent > -1) and (PEditor^.FCurrent < 255) then begin
 				Inc(PEditor^.FCurrent);
 				StartDrawing;
 				PEditor^.Update;
@@ -609,23 +737,23 @@ begin
 				PCLabel^.Update;
 				FinishDrawing;
 			end;
-			cmDemo, cmCopy : begin
+			cmDemo : begin
 				ClearEvent(AEvent);
 				PEditor^.Demo;
 			end;
-			cmUp, cmShiftUp : begin
+			cmShiftUp : begin
 				ClearEvent(AEvent);
 				PEditor^.ShiftUp;
 			end;
-			cmDown, cmShiftDown : begin
+			cmShiftDown : begin
 				ClearEvent(AEvent);
 				PEditor^.ShiftDown;
 			end;
-			cmLeft, cmShiftLeft : begin
+			cmShiftLeft : begin
 				ClearEvent(AEvent);
 				PEditor^.ShiftLeft;
 			end;
-			cmright, cmShiftRight : begin
+			cmShiftRight : begin
 				ClearEvent(AEvent);
 				PEditor^.ShiftRight;
 			end;
