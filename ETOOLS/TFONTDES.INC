@@ -258,6 +258,12 @@ begin
 	inherited Create(nil, AppID);
 	FInfo.Settitle(AppTitle);
 	
+	SetHelpText('Welcome to the Eternity Font Designer for the Program Manager Eternity Edition.');
+	AddHelpText('');
+	AddHelpText('With this program you can create custom fonts to use with PGME and');
+	AddHelpText('other text based DOS programs. You can even create a custom font');
+	AddHelpText('that can be converted using QFNT2TSR to replace the built-in');
+	AddHelpText('VGA BIOS text font.');
 	BWide := 16;
 	PCharMap := nil;
 	PNew := nil;
@@ -268,6 +274,12 @@ begin
 	TextAttr := $1F;
 	P := New(PWindow, Create(@Self, 'MAIN'));
 	with PWindow(P)^ do begin
+		SetHelpText('Welcome to the Eternity Font Designer for the Program Manager Eternity Edition.');
+		AddHelpText('');
+		AddHelpText('With this program you can create custom fonts to use with PGME and');
+		AddHelpText('other text based DOS programs. You can even create a custom font');
+		AddHelpText('that can be converted using QFNT2TSR to replace the built-in');
+		AddHelpText('VGA BIOS text font.');
 		SetTitle(AppTitle);
 		SetShadow(False);
 		SetCanClose(True);
@@ -573,8 +585,7 @@ begin
 	end;	
 	
 	TextAttr := $2F;
-	PBtnUp := New(PButton, Create(P, 'BUTTON.HELP'));
-	with PButton(PBtnUp)^ do begin
+	with PButton(New(PButton, Create(P, 'BUTTON.HELP')))^ do begin
 		SetAnchors(abRight or abBottom);  
 		Bounds(80 - 18 - 10, P^.Height - 2, 10, 1, B);
 		SetBounds(B);
@@ -740,6 +751,7 @@ begin
 			cmDemo : begin
 				ClearEvent(AEvent);
 				PEditor^.Demo;
+				MouseVerify;
 			end;
 			cmShiftUp : begin
 				ClearEvent(AEvent);
