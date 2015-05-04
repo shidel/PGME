@@ -16,6 +16,26 @@ By default (These maybe changed in a custom KMP file:
 	EFNTDSGN.EXE	QuickCRT Font Designer. 
 	EFNTDSGN.CFG	QuickCRT Font Designer configuration file.
 	BLANKER.SCR		Screen Blanking Screen Saver for PGME.
+	ATOM.SCR		The "Atom" screen saver for PGME.
+	
+** EXTRA UTILITIES ***
+	QFNTLOAD.EXE	QuickCrt Temporary Font Loader. Load use any size custom font until
+					the next video mode reset. 
+	QFNT2RAW.EXE	Convert a QuickCRT font to a flat stripped-down raw binary image 
+					contains only the character data from the font. Losing all of the
+					metadata and safty checks built into a QuickCRT Font file.
+	RAW2QFNT.EXE	Convert a raw flat binary into a QuickCRT font file.
+	QFNT2TSR.EXE	Convert a QuickCRT font file into a Terminate-and-Stay-Resident 
+					executable COM program that will persist until the computer is
+					rebooted. Use this to permanently load you own fonts for use
+					at the DOS prompt and in most Text-Mode programs. Please note,
+					it will allow you to turn any FNT into a TSR. However, I have never 
+					seen a VGA system that will use any font that is not 8x16 using
+					this technique. But, you never know so it will complain and still 
+					make it. 
+	QDETUNE.EXE		(Not yet started) Program to aid in creating program tone sequences.
+	QKEYS.EXE		(Not yet started) Program to aid in modifing keyboard and command
+					mappings in KMP files.
 
 ** FONT FILES **
 	*.FNT			All Files ending in the *.FNT extension.
@@ -192,4 +212,3 @@ By default (These maybe changed in a custom KMP file:
 		
 	MARGINS The amount a child will need to be indented.
 	
-

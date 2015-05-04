@@ -22,6 +22,8 @@ type
 			PLoad, PSave : PFileDialog;
 			PInfo : PInfoDialog;
 			PSaveBtn : PButton;
+			PTooBig : PMessageBox;
+			PResize : PResizeDialog;
 			PWLabel, PHLabel, PSLabel, PCLabel, PALabel : PLabel;
 		procedure BeforeShow; virtual;
 		procedure CheckLocal(var AEvent : TEvent); virtual;
@@ -30,6 +32,8 @@ type
 		function GetLoadDialog : PFileDialog; virtual;
 		function GetSaveDialog : PFileDialog; virtual;
 		function GetInfoDialog : PDialog; virtual;
+		function GetTooBigDialog : PDialog; virtual;
+		function GetResizeDialog : PDialog; virtual;
 		procedure CreateAllForTemplate; virtual; { Creates all when building templates }
 	public
 		constructor Create;
@@ -44,14 +48,22 @@ procedure FormatMaxHeight (AVisual : PControl; var AValue : String); far;
 var
 	D : TFormatData;
 begin
-	if Not Assigned( PETool(Application)^.PNew ) then exit;
-	with PETool(Application)^.PNew^ do begin
-		if AVisual = PControl(PSLabel) then begin
-			D.ID := fmtInteger;
-			D.IntegerValue := PETool(Application)^.PEditor^.GetMaxHeight;
-			AValue := FormatStr(AValue, D, 1);
+	if Assigned( PETool(Application)^.PNew ) then
+		with PETool(Application)^.PNew^ do begin
+			if (AVisual = PControl(PSLabel)) then begin
+				D.ID := fmtInteger;
+				D.IntegerValue := PETool(Application)^.PEditor^.GetMaxHeight;
+				AValue := FormatStr(AValue, D, 1);
+			end;
 		end;
-	end;
+	if Assigned( PETool(Application)^.PResize ) then
+		with PETool(Application)^.PResize^ do begin
+			if (AVisual = PControl(PSLabel)) then begin
+				D.ID := fmtInteger;
+				D.IntegerValue := PETool(Application)^.PEditor^.GetMaxHeight;
+				AValue := FormatStr(AValue, D, 1);
+			end;
+		end;
 end;
 
 procedure FormatFontStatus (AVisual : PControl; var AValue : String); far;
@@ -121,6 +133,15 @@ begin
 	GetNewDialog := PNew;
 end;
 
+function TETool.GetResizeDialog;
+begin
+	if Not Assigned(PResize) then begin
+		PResize := New(PResizeDialog, Create(@Self, 'DIALOG.RESIZE'));
+		ApplySettings(PResize);
+	end;
+	GetResizeDialog := PResize;
+end;
+
 function TETool.GetLoadDialog;
 begin
 	if Not Assigned(PLoad) then begin
@@ -150,12 +171,57 @@ begin
 end;
 
 function TETool.GetInfoDialog;
+var
+	P, T : PListItem;
+	S, K : String;
 begin
 	if Not Assigned(PInfo) then begin
 		PInfo := New(PInfoDialog, Create(@Self, 'DIALOG.INFO'));
 		ApplySettings(PInfo);
 	end;
+	PInfo^.FList^.Clear;
+	PInfo^.FKeys^.ClearItems;
+	P := PEditor^.FFont^.FHeader.First;
+	while Assigned(P) do begin
+		S := Trim(P^.GetNameID);
+		K := UCase(Copy(S, 1, Pos('=', S) - 1));
+		S := Copy(S, Length(K) + 2, Length(S));
+		if (K <> '') then begin
+			PInfo^.FKeys^.AddItem(K);
+			T := New(PListItem, Create(K));
+			PInfo^.FList^.Add(T);
+			T^.Add(New(PListItem, Create(S)));
+		end;
+		P := P^.Next;
+	end;
 	GetInfoDialog := PInfo;
+end;
+
+function TETool.GetTooBigDialog;
+var
+	B : TBounds;
+begin
+	if Not Assigned(PTooBig) then begin
+		TextAttr := $4F;
+		PTooBig := New(PMessageBox, Create(@Self, 'DIALOG.TOOBIG'));
+		with PTooBig^ do begin
+			SetBackground(4);
+			SetTextAttr($4F);
+			Bounds(1,1,60,11, B);
+			SetBounds(B);
+			SetTitle('Oh, Me So Sorry!');
+			SetMessage(' ');
+			AppendMessage('');
+			AppendMessage('But, that font is to tall to edit with the current');
+			AppendMessage('screen height. I advise modifying the EFNTDSGN.CFG');
+			AppendMessage('file so this program can have more screen text');
+			AppendMessage('lines for editing.');
+			AppendMessage(' ');
+			AppendMessage('Maybe change it to FONT=PGM808.FNT'); 
+		end;
+		ApplySettings(PTooBig);
+	end;
+	GetTooBigDialog := PInfo;
 end;
 
 procedure TETool.CreateAllForTemplate;
@@ -165,6 +231,8 @@ begin
 	GetLoadDialog;
 	GetSaveDialog;
 	GetInfoDialog;
+	GetResizeDialog;
+	GetTooBigDialog;
 end;
 
 constructor TETool.Create;
@@ -433,6 +501,23 @@ begin
 				PSaveBtn^.SetEnabled(Assigned(PEditor^.FFont^.FFontPtr));
 				Update;
 			end;
+			cmPaste, cmResize : begin 
+				ClearEvent(AEvent);
+				GetResizeDialog;
+				T := PResize^.ShowModal;
+				if T = mrOK then begin
+					if PResize^.PStretch^.GetState > 0 then
+						PEditor^.Stretch(StrInt(PResize^.PSize^.GetCaption))
+					else
+						PEditor^.Resize(StrInt(PResize^.PSize^.GetCaption))
+				end;
+				Update;
+			end;
+			cmTooBig : begin
+				ClearEvent(AEvent);
+				GetTooBigDialog;
+				PTooBig^.ShowModal;
+			end;
 			cmOpenFile : begin 
 				ClearEvent(AEvent);
 				GetLoadDialog;
@@ -451,7 +536,7 @@ begin
 					PEditor^.Save(PSave^.GetFileName);
 				end;
 			end;
-			cmFileInfo : begin
+			cmCut, cmFileInfo : begin
 				ClearEvent(AEvent);
 				GetInfoDialog; 
 				T := PInfo^.ShowModal;
@@ -486,6 +571,22 @@ begin
 			cmDemo, cmCopy : begin
 				ClearEvent(AEvent);
 				PEditor^.Demo;
+			end;
+			cmUp, cmShiftUp : begin
+				ClearEvent(AEvent);
+				PEditor^.ShiftUp;
+			end;
+			cmDown, cmShiftDown : begin
+				ClearEvent(AEvent);
+				PEditor^.ShiftDown;
+			end;
+			cmLeft, cmShiftLeft : begin
+				ClearEvent(AEvent);
+				PEditor^.ShiftLeft;
+			end;
+			cmright, cmShiftRight : begin
+				ClearEvent(AEvent);
+				PEditor^.ShiftRight;
 			end;
 		end;
 	inherited CheckLocal(AEvent);

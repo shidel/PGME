@@ -44,6 +44,10 @@ type
 		procedure Stretch(AHeight : integer); virtual;
 		procedure Resize(AHeight : integer); virtual;
 		procedure Demo; virtual;
+		procedure ShiftLeft; virtual;
+		procedure ShiftRight; virtual;
+		procedure ShiftUp; virtual;
+		procedure ShiftDown; virtual;
 		procedure DemoFont(NullDac : boolean); virtual;
 		procedure ApplyTheme( AConfig : PConfigFile ); virtual;
 		procedure ApplyLanguage( AConfig : PConfigFile ); virtual;
@@ -207,7 +211,6 @@ begin
 	else
 		FWrite(ChrStr(#32, FMUL.X));
 end;
-
 
 procedure TFontEdit.CheckMouse(var AEvent : TEvent); 
 var
@@ -465,6 +468,50 @@ begin
 	FFont^.FHeight := AHeight;
 	FFont^.FFontSize := AHeight * 256;
 	SetCurrentBounds(FRBounds);
+end;
+
+procedure TFontEdit.ShiftLeft;
+var
+	I : integer;
+begin;
+	if not Assigned(FFont^.FFontPtr) then exit;
+	for I := 0 to FFont^.GetHeight - 1 do 
+		SetCharByte(I, (GetCharByte(I) shl 1) or (GetCharByte(I) shr 7) );
+	Update;
+end;
+
+procedure TFontEdit.ShiftRight; 
+var
+	I : integer;
+begin;
+	if not Assigned(FFont^.FFontPtr) then exit;
+	for I := 0 to FFont^.GetHeight - 1 do 
+		SetCharByte(I, (GetCharByte(I) shr 1) or (GetCharByte(I) shl 7) );
+	Update;
+end;
+
+procedure TFontEdit.ShiftUp; 
+var
+	T, I : integer;
+begin;
+	if not Assigned(FFont^.FFontPtr) then exit;
+	T := GetCharByte(0);
+	for I := 0 to FFont^.GetHeight - 2 do 
+		SetCharByte(I, GetCharByte(I + 1));
+	SetCharByte(FFont^.GetHeight - 1, T);
+	Update;
+end;
+
+procedure TFontEdit.ShiftDown;
+var
+	T, I : integer;
+begin;
+	if not Assigned(FFont^.FFontPtr) then exit;
+	T := GetCharByte(FFont^.GetHeight - 1);
+	for I := 1 to FFont^.GetHeight - 1 do 
+		SetCharByte(FFont^.GetHeight - I, GetCharByte(FFont^.GetHeight - I - 1));
+	SetCharByte(0, T);
+	Update;
 end;
 
 

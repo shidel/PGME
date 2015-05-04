@@ -19,13 +19,23 @@ const
 	AppTitle = 'Eternity Font Designer';
 	AppID = 'EFNTDSGN';
 	
-	cmDemo  = cmUser + 1;
-	cmTooBig = cmDemo + 1;
+	cmDemo       = cmUser + 1;
+	
+	cmTooBig     = cmDemo + 1;
+	
+	cmShiftLeft  = cmTooBig + 1;
+	cmShiftRight = cmShiftLeft + 1;
+	cmShiftUp 	 = cmShiftRight + 1;
+	cmShiftDown  = cmShiftUp + 1;
+	
+	cmResize 	 =  cmShiftDown + 1;
+	
 
 {$DEFINE INTERFACE}
 
 {$I TFontEdit.inc}
 {$I TNewFont.inc}
+{$I TResize.inc}
 {$I TInfoDialog.inc}
 
 {$UNDEF INTERFACE}
@@ -36,6 +46,7 @@ const
 
 {$I TFontEdit.inc}
 {$I TNewFont.inc}
+{$I TResize.inc}
 {$I TInfoDialog.inc}
 
 {$UNDEF IMPLEMENTATION}
