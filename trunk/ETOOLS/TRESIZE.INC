@@ -47,6 +47,9 @@ begin
 	Bounds(1,1,40,11, B);
 	SetBounds(B);
 	SetTitle('Resize Font');	
+	SetHelpText('Resize Font Dialog.');
+	AddHelpText('');
+	AddHelpText('With this dialog you can resize the current font.');
 
 	TextAttr := $70;
 	PSLabel := New(PLabel, Create(@Self, 'SIZE.LABEL'));
@@ -61,6 +64,7 @@ begin
 	TextAttr := $1E;
 	PSize := New(PEdit, Create(@Self, 'SIZE.EDIT'));
 	with PEdit(PSize)^ do begin
+		SetHelpText('"Edit" field. Enter the desired height of the font.');
 		Bounds(Self.Width - 12,2, 6, 1, B);
 		SetBounds(B);
 		SetAnchors(abLeft or abTop or abRight) ;
@@ -69,6 +73,10 @@ begin
 	TextAttr := $70;
 	PStretch := New(PCheckBox, Create(@Self, 'STRETCH'));
 	with PStretch^ do begin
+		SetHelpText('"Stretch" Checkbox.');
+		AddHelpText('When checked, the current font will be stretched or shrunk to match');
+		AddHelpText('the requested size. This is slow and make take minute or so to');
+		AddHelpText('complete.');
 		Bounds(4,4, Self.Width - 8, 1, B);
 		SetBounds(B);
 		SetAnchors(abLeft or abTop or abRight);
@@ -79,6 +87,7 @@ begin
 	TextAttr := $2E;
 	POk := New(PButton, Create(@Self, 'OK'));
 	with POK^ do begin
+		SetHelpText('5;"%0" Button. To accept the settings and resize the current font.');	
 		Bounds((Self.Width - 2) div 2 - 5, Self.Height - 4 , 10, 1, B);
 		SetBounds(B);
 		SetAnchors(abLeft or abBottom);

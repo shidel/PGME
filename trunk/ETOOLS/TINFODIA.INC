@@ -44,6 +44,10 @@ begin
 	Bounds(1,1,50,14, B);
 	SetBounds(B);
 	SetTitle('Font Information');	
+	SetHelpText('Font Information Dialog.');
+	AddHelpText('');
+	AddHelpText('With this dialog you can view and modify font metadata for the current');
+	AddHelpText('font. Please note that blank fields are automatically removed.');
 
 	TextAttr := $70;
 	with PLabel(New(PLabel, Create(@Self, 'KEYS.LABEL')))^ do begin
@@ -56,6 +60,9 @@ begin
 	TextAttr := $1E;
 	FKeys := New(PDropList, Create(@Self, 'KEYS.DROPLIST'));
 	with FKeys^ do begin
+		SetHelpText('"Fields" Dropdown list. Use to select any of the fonts metadata');
+		AddHelpText('fields to be modified. Also, manually entering text will automatically');
+		AddHelpText('that field to the fonts metadata.');
 		Bounds(3, 4, Self.Width - 8, 10, B);
 		SetBounds(B);
 	end;
@@ -71,12 +78,16 @@ begin
 	TextAttr := $1E;
 	FValue := New(PEdit, Create(@Self, 'VALUES.EDIT'));
 	with FValue^ do begin
+		SetHelpText('"Value" Edit. Use to select modify the selected fields metadata.');
+		AddHelpText('If left blank, it will cause the field to be automatically');
+		AddHelpText('removed.');
 		Bounds(3, 7, Self.Width - 8, 1, B);
 		SetBounds(B);
 	end;
 	
 	TextAttr := $2E;
 	with PButton(New(PButton, Create(@Self, 'OK')))^ do begin
+		SetHelpText('5;"%0" Button. To accept the changes and modify fonts metadata.');	
 		Bounds((Self.Width - 2) div 2 - 5, Self.Height - 4 , 10, 1, B);
 		SetBounds(B);
 		SetAnchors(abLeft or abBottom);
