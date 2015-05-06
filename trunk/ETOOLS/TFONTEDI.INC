@@ -303,7 +303,7 @@ begin
 
 		ClearEvent(Event);
 		While Event.What = evNothing do GetEvent(Event);
-		if (Event.What and evMessage <> evCommand) then
+		if (Event.What and (evBroadcast or evSystem) <> evNothing) then
 			PutEvent(Event);
 
 		if Fader then
