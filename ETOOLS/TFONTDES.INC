@@ -647,6 +647,10 @@ begin
 	GotoXY(1, WhereY);
 	TextAttr := $07;
 	ClrEOL;
+	if ParamStr(1) <> '' then begin 
+		PEditor^.Load(ParamStr(1));
+		SetButtonState;
+	end;
 end;	
 	
 procedure TETool.UpdateFontHeader;
