@@ -17,6 +17,10 @@ uses QCrt, QErrors, QStrings, QDos, QFiles, QObjects, QCOntrols, PGM_Call;
 type 
 	TPGME = object (TApplication)
 	public { protected }
+			FEditTitle : PEdit;
+			FBtnQuit : PButton;
+			FPrograms,
+			FMenus : PListView;
 		procedure BeforeShow; virtual;
 	public
 		constructor Create;
@@ -31,7 +35,7 @@ var
 { --- TPGME --- }
 constructor TPGME.Create;
 var
-	P, T : PControl;
+	P : PControl;
 	B : TBounds;
 begin
 	inherited Create(nil, 'PGM');
@@ -51,9 +55,8 @@ begin
 	
 		{ Top Line }
 		Bounds(0, 2, P^.Width, 1, B);
-		T := New(PLine, Create(P, 'LINE.TOP'));
-		PLine(T)^.SetStyle(lnDouble or lnHorizontal);
-		with PLine(T)^ do begin
+		with PLine(New(PLine, Create(P, 'LINE.TOP')))^ do begin
+			SetStyle(lnDouble or lnHorizontal);
 			SetAllowedOutside(True);
 			SetAnchors(abTop or abLeft or abRight); 
 			SetBounds(B);
@@ -61,9 +64,8 @@ begin
 
 		{ Bottom Line }
 		Bounds(0,P^.Height - 3, P^.Width, 1, B);
-		T := New(PLine, Create(P, 'LINE.BOTTOM'));
-		PLine(T)^.SetStyle(lnDouble or lnHorizontal);
-		with PLine(T)^ do begin
+		with PLine(New(PLine, Create(P, 'LINE.BOTTOM')))^ do begin
+			SetStyle(lnDouble or lnHorizontal);
 			SetAllowedOutside(True);
 			SetAnchors(abLeft or abBottom or abRight);
 			SetBounds(B);
@@ -71,15 +73,41 @@ begin
 			
 		{  Quit Button }
 		TextAttr := $1E;
-		Bounds(1, 1, 6, 1, B);
-		T := New(PButton, Create(P, 'BUTTON.QUIT'));
-		with pButton(T)^ do begin
+		Bounds(1, 1, 8, 1, B);
+		FBtnQuit := New(PButton, Create(P, 'BUTTON.QUIT'));
+		with FBtnQuit^ do begin
 			SetCaption('Quit');
 			SetCommand(cmQuit);
 			SetAnchors(alBottom or alRight);
 			SetBounds(B);	
 		end;
+		
+		TextAttr := $02;
+		Bounds(1, 1, 13, 1, B);
+		with PLabel(New(PLabel, Create(P, 'TITLE.LABEL')))^ do begin
+			SetBounds(B);
+			SetCaption('Menu Title:');
+		end;
 
+		TextAttr := $0B;
+		Bounds(15, 1, Application^.Width - 39, 1, B);
+		FEditTitle := New(PEdit, Create(P, 'TITLE.EDIT'));
+		with FEditTitle^  do begin
+			FHAlign := AlignLeft;
+			SetBounds(B);
+			SetCaption('no name');
+			SetEnabled(False);
+		end;
+
+		TextAttr := $0B;		
+		Bounds(2, 4, P^.Width - 4, P^.Height - 8, B);
+		FPrograms := New(PListView, Create(P, 'PROGRAMS'));
+		with FPrograms^ do begin
+			SetBounds(B);
+			SetAnchors(abAll);
+			SetScrollEdge(True);
+		end;
+		
 	{ Title Pane }
 	TextAttr := $06;
 	Bounds(1,1,26,3,B);
@@ -90,13 +118,12 @@ begin
 		SetShadow(False);
 	end;
 
-	{ Title Display }
-	TextAttr := $71;
-	T := New(PLabel, Create(P, 'SAM_I_AM'));
-	with PLabel(T)^ do begin
-		SetCaption('PGM Eternity');
-		SetAnchors(alClient);
-	end;
+		{ Title Display }
+		TextAttr := $71;
+		with PLabel(New(PLabel, Create(P, 'SAM_I_AM')))^ do begin
+			SetCaption('PGM Eternity');
+			SetAnchors(alClient);
+		end;
 	
 	{ Right Pane }
 	TextAttr := $06;
@@ -110,9 +137,8 @@ begin
 		
 		{ Top Line }
 		Bounds(0, 3, P^.Width, 1, B);
-		T := New(PLine, Create(P, 'LINE.TOP'));
-		PLine(T)^.SetStyle(lnDouble or lnHorizontal);
-		with PLine(T)^ do begin
+		with PLine(New(PLine, Create(P, 'LINE.TOP')))^ do begin
+			SetStyle(lnDouble or lnHorizontal);
 			SetAllowedOutside(True);
 			SetAnchors(abLeft or abRight or abTop);
 			SetBounds(B);
@@ -120,12 +146,27 @@ begin
 
 		{ Bottom Line }
 		Bounds(0,P^.Height - 3,P^.Width, 1, B);
-		T := New(PLine, Create(P, 'LINE.BOTTOM'));
-		PLine(T)^.SetStyle(lnDouble or lnHorizontal);
-		with PLine(T)^ do begin
+		with PLine(New(PLine, Create(P, 'LINE.BOTTOM')))^ do begin
+			SetStyle(lnDouble or lnHorizontal);
 			SetAllowedOutside(True);
 			SetAnchors(abLeft or abRight or abBottom);
 			SetBounds(B);
+		end;
+
+		TextAttr := $70;
+		Bounds(1, 4, P^.Width - 2, 1, B);
+		with PLabel(New(PLabel, Create(P, 'LABEL')))^ do begin
+			SetBounds(B);
+			SetCaption('Available Menus:');
+		end;
+
+		TextAttr := $04;		
+		Bounds(2, 6, P^.Width - 4, P^.Height - 10, B);
+		FMenus := New(PListView, Create(P, 'MENUS'));
+		with FMenus^ do begin
+			SetBounds(B);
+			SetAnchors(abAll);
+			SetScrollEdge(True);
 		end;
 		
 	FClrScr := True;
