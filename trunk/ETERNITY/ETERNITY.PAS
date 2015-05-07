@@ -36,6 +36,7 @@ type
 				FEdit : PEdit;
 			end;
 		procedure BeforeShow; virtual;
+		procedure CheckLocal(var AEvent : TEvent); virtual;
 	public
 		constructor Create;
 		destructor Destroy; virtual;
@@ -134,6 +135,7 @@ begin
 			SetCommand(cmSearch);
 			SetAnchors(alBottom);
 			SetBounds(B);	
+{			SetVisible(False);}
 		end;
 		
 		TextAttr := $1C;
@@ -234,22 +236,22 @@ begin
 			SetScrollEdge(True);
 		end;
 		
-		TextAttr := $74;		
+		TextAttr := $08;		
 		Bounds(1, 1, 6, 1, B);
 		FFind.FLabel := New(PLabel, Create(P, 'SEARCH.LABEL'));
 		with FFind.FLabel^ do begin
 			SetBounds(B);
 			SetAnchors(abLeft or alBottom);
 			SetCaption(' Find>');
-			SetVisible(False)
+{			SetVisible(False) }
 		end;
-		TextAttr := $71;		
-		Bounds(1, 1, P^.Width - B.Width - B.Left - 1, 1, B);
+		TextAttr := $0F;		
+		Bounds(7, 1, P^.Width - B.Width - B.Left - 1, 1, B);
 		FFind.FEdit := New(PEdit, Create(P, 'SEARCH.EDIT'));
 		with FFind.FEdit^ do begin
 			SetBounds(B);
-			SetAnchors(abLeft or alRight or alBottom);
-			SetVisible(False)
+			SetAnchors(alRight or alBottom);
+{			SetVisible(False)}
 		end;
 		
 	FClrScr := True;
@@ -279,6 +281,17 @@ begin
 	FBtnEdit^.SetVisible(Not FReadOnly);
 	FBtnQuit^.SetVisible(FCanQuit);
 	FProgramWindow^.SetCanClose(FCanQuit);
+end;
+
+procedure TPGME.CheckLocal(var AEvent : TEvent); 
+var
+	T : integer;
+	B : TBounds;
+begin
+{	if AEvent.What = evCommand then
+		case AEvent.Command of
+		end; }
+	inherited CheckLocal(AEvent);
 end;
 
 begin
