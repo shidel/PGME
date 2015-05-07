@@ -31,6 +31,10 @@ type
 			FBtnEdit : PButton;
 			FPrograms,
 			FMenus : PListView;
+			FFind : record
+				FLabel : PLabel;
+				FEdit : PEdit;
+			end;
 		procedure BeforeShow; virtual;
 	public
 		constructor Create;
@@ -111,7 +115,7 @@ begin
 		end;
 		
 		{  Help Button }
-		TextAttr := $1D;
+		TextAttr := $1C;
 		Bounds(B.Left + B.Width + 2, 1, 8, 1, B);
 		FBtnHelp := New(PButton, Create(P, 'BUTTON.HELP'));
 		with FBtnHelp^ do begin
@@ -226,6 +230,22 @@ begin
 			SetBounds(B);
 			SetAnchors(abAll);
 			SetScrollEdge(True);
+		end;
+		
+		TextAttr := $74;		
+		Bounds(1, 1, 6, 1, B);
+		FFind.FLabel := New(PLabel, Create(P, 'SEARCH.LABEL'));
+		with FFind.FLabel^ do begin
+			SetBounds(B);
+			SetAnchors(abLeft or alBottom);
+			SetCaption(' Find>');
+		end;
+		TextAttr := $71;		
+		Bounds(1, 1, P^.Width - B.Width - B.Left - 1, 1, B);
+		FFind.FEdit := New(PEdit, Create(P, 'SEARCH.EDIT'));
+		with FFind.FEdit^ do begin
+			SetBounds(B);
+			SetAnchors(abLeft or alRight or alBottom);
 		end;
 		
 	FClrScr := True;
