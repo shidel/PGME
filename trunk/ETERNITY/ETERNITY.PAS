@@ -279,7 +279,6 @@ begin
 	FBtnEdit^.SetVisible(Not FReadOnly);
 	FBtnQuit^.SetVisible(FCanQuit);
 	FProgramWindow^.SetCanClose(FCanQuit);
-	FCanQuit := True;
 end;
 
 begin
