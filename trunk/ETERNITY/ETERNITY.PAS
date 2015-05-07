@@ -10,7 +10,7 @@
 {$I ETERNITY.DEF}
 program Program_Manager_Eternity_Main_Application; { X Series }
 
-uses QCrt, QErrors, QStrings, QDos, QFiles, QObjects, QCOntrols, PGM_Call;
+uses QCrt, QErrors, QStrings, QDos, QFiles, QObjects, QCOntrols, QFmtStr, PGM_Call;
 
 {$I LICENSE.INC}
 
@@ -35,19 +35,65 @@ type
 				FLabel : PLabel;
 				FEdit : PEdit;
 			end;
+			FDate, FTime : PLabel;
 		procedure BeforeShow; virtual;
 		procedure CheckLocal(var AEvent : TEvent); virtual;
 	public
 		constructor Create;
 		destructor Destroy; virtual;
 		procedure ApplyConfig( AConfig : PConfigFile ); virtual;
+		procedure Idle; virtual;
 	end;   
 	
 { --- Global Variables --- }
 var
 	PGME : TPGME;
+	OldIdleProc : procedure;
+
+procedure FormatClock (AVisual : PControl; var AValue : String); far;
+var
+	FD : array[0..4] of TFormatData;
+	Year, Month, Day, DayOfWeek,
+	Hour, Min, Sec, Sec100 : word;
+begin
+	if not Assigned(AVisual) then exit;
+	if AVisual = PControl(PGME.FDate) then begin
+		GetDate(Year, Month, Day, DayOfWeek);
+		FD[0].ID := FmtInteger;
+		FD[0].IntegerValue := Year;
+		FD[1].ID := FmtInteger;
+		FD[1].IntegerValue := Month;
+		FD[2].ID := FmtInteger;
+		FD[2].IntegerValue := Day;
+		FD[3].ID := fmtInteger;
+		FD[3].IntegerValue := DayOfWeek;
+		AValue := FormatStr(PGME.FDate^.GetCaption, FD, 4);
+	end else if AVisual = PControl(PGME.FTime) then begin
+		GetTime(Hour, Min, Sec, Sec100);
+		FD[0].ID := FmtInteger;
+		FD[0].IntegerValue := Hour;
+		FD[2].ID := FmtInteger;
+		FD[2].IntegerValue := Min;
+		FD[3].ID := FmtInteger;
+		FD[3].IntegerValue := Sec;
+		FD[4].ID := FmtBoolean;
+		FD[4].BooleanValue := Hour >= 12;
+		if Hour >= 12 then Hour := Hour - 12;
+		if Hour = 0 then Hour := 12;
+		FD[1].ID := FmtInteger;
+		FD[1].IntegerValue := Hour;
+		AValue := FormatStr(PGME.FTime^.GetCaption, FD, 5); 
+	end;
+end;
+
+procedure PGMIdleProc; far;
+begin
+	OldIdleProc;
+	if Assigned(Application) then Application^.Idle;
+end;
 
 { --- TPGME --- }
+
 constructor TPGME.Create;
 const 
 	Split = 27;
@@ -59,6 +105,8 @@ begin
 	FReadOnly := False;
 	FCanQuit := True;
 	FEditing := False;
+	OldIdleProc := QCrt.IdleProc;
+	QCrt.IdleProc := PGMIdleProc;
 	
 	inherited Create(nil, 'PGM');
 	FInfo.SetFileName('PGM.EXE');
@@ -166,7 +214,7 @@ begin
 			SetEnabled(False);
 		end;
 
-		TextAttr := $0B;		
+		TextAttr := $7B;		
 		Bounds(2, 4, FProgramWindow^.Width - 4, FProgramWindow^.Height - 8, B);
 		FPrograms := New(PListView, Create(FProgramWindow, 'PROGRAMS'));
 		with FPrograms^ do begin
@@ -201,7 +249,33 @@ begin
 		SetBounds(B);
 		SetShadow(False);
 	end;
-		
+	
+		{ Clock }
+		TextAttr := $1F;
+		Bounds(1,1,P^.Width - 2, 1, B);
+		FTime := New(PLabel, Create(P, 'CLOCK.TIME'));
+		with FTime^ do begin
+			OnFormat := FormatClock;
+			SetBounds(B);
+			SetAnchors(alLeft or alRight);
+			SetCaption('0[Z2],1[L2],2[Z2],3[Z2],4{am,pm};%1:%2:%3 %4');
+		end;
+		TextAttr := $1F;
+		Inc(B.Top);
+		FDate := New(PLabel, Create(P, 'CLOCK.DATE'));
+		with FDate^ do begin
+			OnFormat := FormatClock;
+			SetBounds(B);
+			SetAnchors(alLeft or alRight);
+			{ Short Day }
+			 SetCaption('0[X3.2],1[L2],2[Z2];%1/%2/%0'); 
+			{ Medium Day }
+			SetCaption('0[Z4],1{Null,Jan,Feb,Mar,Apr,May,Jun,Jul,Aug,Sep,Oct,Nov,Dec},2,' +
+			'3{Sun,Mon,Tues,Wed,Thurs,Fri,Sat};%3 %1 %2, %0'); 
+			
+		end;
+
+		TextAttr := $06;
 		{ Top Line }
 		Bounds(0, 3,P^.Width, 1, B);
 		with PLine(New(PLine, Create(P, 'LINE.TOP')))^ do begin
@@ -259,6 +333,7 @@ end;
 
 destructor TPGME.Destroy;
 begin
+	QCrt.IdleProc := OldIdleProc;
 	inherited Destroy;
 end;
 
@@ -281,6 +356,22 @@ begin
 	FBtnEdit^.SetVisible(Not FReadOnly);
 	FBtnQuit^.SetVisible(FCanQuit);
 	FProgramWindow^.SetCanClose(FCanQuit);
+end;
+
+procedure TPGME.Idle;
+const
+	S : word = 0;
+var
+	Hour, Min, Sec, Sec100 : word;
+begin
+	inherited Idle;
+	if Assigned(FHelp) and FHelp^.GetVisible then Exit;
+	GetTime(Hour, Min, Sec, Sec100);
+	if Sec <> S then begin
+		S := Sec;
+		FTime^.Update;
+		FDate^.Update;
+	end;
 end;
 
 procedure TPGME.CheckLocal(var AEvent : TEvent); 
