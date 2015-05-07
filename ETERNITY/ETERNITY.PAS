@@ -17,6 +17,8 @@ uses QCrt, QErrors, QStrings, QDos, QFiles, QObjects, QCOntrols, PGM_Call;
 type 
 	TPGME = object (TApplication)
 	public { protected }
+			FReadOnly : boolean;
+			FCanQuit : boolean;
 			FEditTitle : PEdit;
 			FBtnQuit : PButton;
 			FPrograms,
@@ -25,7 +27,7 @@ type
 	public
 		constructor Create;
 		destructor Destroy; virtual;
-	
+		procedure ApplyConfig( AConfig : PConfigFile ); virtual;
 	end;   
 	
 { --- Global Variables --- }
@@ -38,6 +40,9 @@ var
 	P : PControl;
 	B : TBounds;
 begin
+	FReadOnly := False;
+	FCanQuit := True;
+	
 	inherited Create(nil, 'PGM');
 	FInfo.SetFileName('PGM.EXE');
 	FInfo.SetTitle('Program Manager Eternity');
@@ -185,6 +190,12 @@ begin
 		TextAttr := $07;
 		ClrEOL;
 	end;
+end;
+
+procedure TPGME.ApplyConfig( AConfig : PConfigFile );
+begin
+	FReadOnly := StrBool(AConfig^.GetValue('READONLY', BoolStr(FReadOnly)));
+	FCanQuit := StrBool(AConfig^.GetValue('CANQUIT', BoolStr(FCanQuit)));
 end;
 
 begin
