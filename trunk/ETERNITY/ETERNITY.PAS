@@ -21,7 +21,6 @@ type
 	TPGME = object (TApplication)
 	public { protected }
 			FReadOnly : boolean;
-			FCanQuit : boolean;
 			FEditing : boolean;
 			FEditTitle : PEdit;
 			FBtnQuit,
@@ -29,6 +28,7 @@ type
 			FBtnSearch,
 			FBtnHelp,
 			FBtnEdit : PButton;
+			FProgramWindow : PWindow;
 			FPrograms,
 			FMenus : PListView;
 			FFind : record
@@ -66,8 +66,8 @@ begin
 	{ Left Pane }
 	TextAttr := $06;
 	Bounds(1,1,Application^.Width - Split,5, B);
-	P := New(PWindow, Create(@Self, 'PROGRAMS'));
-	with PWindow(P)^ do begin
+	FProgramWindow := New(PWindow, Create(@Self, 'PROGRAMS'));
+	with PWindow(FProgramWindow)^ do begin
 		SetAnchors(alTop or alLeft or alBottom or abRight);
 		SetBounds(B);
 		SetMainWindow(True);
@@ -76,8 +76,8 @@ begin
 	end;
 	
 		{ Top Line }
-		Bounds(0, 2, P^.Width, 1, B);
-		with PLine(New(PLine, Create(P, 'LINE.TOP')))^ do begin
+		Bounds(0, 2, FProgramWindow^.Width, 1, B);
+		with PLine(New(PLine, Create(FProgramWindow, 'LINE.TOP')))^ do begin
 			SetStyle(lnDouble or lnHorizontal);
 			SetAllowedOutside(True);
 			SetAnchors(abTop or abLeft or abRight); 
@@ -85,8 +85,8 @@ begin
 		end;
 
 		{ Bottom Line }
-		Bounds(0,P^.Height - 3, P^.Width, 1, B);
-		with PLine(New(PLine, Create(P, 'LINE.BOTTOM')))^ do begin
+		Bounds(0,FProgramWindow^.Height - 3, FProgramWindow^.Width, 1, B);
+		with PLine(New(PLine, Create(FProgramWindow, 'LINE.BOTTOM')))^ do begin
 			SetStyle(lnDouble or lnHorizontal);
 			SetAllowedOutside(True);
 			SetAnchors(abLeft or abBottom or abRight);
@@ -96,7 +96,7 @@ begin
 		{  Quit Button }
 		TextAttr := $1E;
 		Bounds(1, 1, 8, 1, B);
-		FBtnQuit := New(PButton, Create(P, 'BUTTON.QUIT'));
+		FBtnQuit := New(PButton, Create(FProgramWindow, 'BUTTON.QUIT'));
 		with FBtnQuit^ do begin
 			SetCaption('Quit');
 			SetCommand(cmQuit);
@@ -106,7 +106,7 @@ begin
 		
 		{  Execute Button }
 		Bounds(1, 1, 11, 1, B);
-		FBtnRun := New(PButton, Create(P, 'BUTTON.RUN'));
+		FBtnRun := New(PButton, Create(FProgramWindow, 'BUTTON.RUN'));
 		with FBtnRun^ do begin
 			SetCaption('Execute');
 			SetCommand(cmExecute);
@@ -115,9 +115,9 @@ begin
 		end;
 		
 		{  Help Button }
-		TextAttr := $1C;
+		TextAttr := $1A;
 		Bounds(B.Left + B.Width + 2, 1, 8, 1, B);
-		FBtnHelp := New(PButton, Create(P, 'BUTTON.HELP'));
+		FBtnHelp := New(PButton, Create(FProgramWindow, 'BUTTON.HELP'));
 		with FBtnHelp^ do begin
 			SetCaption('Help');
 			SetCommand(cmHelp);
@@ -125,9 +125,10 @@ begin
 			SetBounds(B);	
 		end;
 		
+		TextAttr := $1B;
 		{  Search Button }
 		Bounds(B.Left + B.Width + 1, 1, 10, 1, B);
-		FBtnSearch := New(PButton, Create(P, 'BUTTON.SEARCH'));
+		FBtnSearch := New(PButton, Create(FProgramWindow, 'BUTTON.SEARCH'));
 		with FBtnSearch^ do begin
 			SetCaption('Search');
 			SetCommand(cmSearch);
@@ -135,9 +136,10 @@ begin
 			SetBounds(B);	
 		end;
 		
+		TextAttr := $1C;
 		{  Edit Button }
 		Bounds(B.Left + B.Width + 1, 1, 8, 1, B);
-		FBtnEdit := New(PButton, Create(P, 'BUTTON.EDIT'));
+		FBtnEdit := New(PButton, Create(FProgramWindow, 'BUTTON.EDIT'));
 		with FBtnEdit^ do begin
 			SetCaption('Edit');
 			SetCommand(cmEditFile);
@@ -147,14 +149,14 @@ begin
 		
 		TextAttr := $02;
 		Bounds(1, 1, 13, 1, B);
-		with PLabel(New(PLabel, Create(P, 'TITLE.LABEL')))^ do begin
+		with PLabel(New(PLabel, Create(FProgramWindow, 'TITLE.LABEL')))^ do begin
 			SetBounds(B);
 			SetCaption('Menu Title:');
 		end;
 
 		TextAttr := $0B;
 		Bounds(15, 1, Application^.Width - Split - 16, 1, B);
-		FEditTitle := New(PEdit, Create(P, 'TITLE.EDIT'));
+		FEditTitle := New(PEdit, Create(FProgramWindow, 'TITLE.EDIT'));
 		with FEditTitle^  do begin
 			FHAlign := AlignLeft;
 			SetBounds(B);
@@ -163,8 +165,8 @@ begin
 		end;
 
 		TextAttr := $0B;		
-		Bounds(2, 4, P^.Width - 4, P^.Height - 8, B);
-		FPrograms := New(PListView, Create(P, 'PROGRAMS'));
+		Bounds(2, 4, FProgramWindow^.Width - 4, FProgramWindow^.Height - 8, B);
+		FPrograms := New(PListView, Create(FProgramWindow, 'PROGRAMS'));
 		with FPrograms^ do begin
 			SetBounds(B);
 			SetAnchors(abAll);
@@ -199,7 +201,7 @@ begin
 	end;
 		
 		{ Top Line }
-		Bounds(0, 3, P^.Width, 1, B);
+		Bounds(0, 3,P^.Width, 1, B);
 		with PLine(New(PLine, Create(P, 'LINE.TOP')))^ do begin
 			SetStyle(lnDouble or lnHorizontal);
 			SetAllowedOutside(True);
@@ -239,6 +241,7 @@ begin
 			SetBounds(B);
 			SetAnchors(abLeft or alBottom);
 			SetCaption(' Find>');
+			SetVisible(False)
 		end;
 		TextAttr := $71;		
 		Bounds(1, 1, P^.Width - B.Width - B.Left - 1, 1, B);
@@ -246,6 +249,7 @@ begin
 		with FFind.FEdit^ do begin
 			SetBounds(B);
 			SetAnchors(abLeft or alRight or alBottom);
+			SetVisible(False)
 		end;
 		
 	FClrScr := True;
@@ -268,8 +272,14 @@ end;
 
 procedure TPGME.ApplyConfig( AConfig : PConfigFile );
 begin
+	inherited ApplyConfig(AConfig);
 	FReadOnly := StrBool(AConfig^.GetValue('READONLY', BoolStr(FReadOnly)));
 	FCanQuit := StrBool(AConfig^.GetValue('CANQUIT', BoolStr(FCanQuit)));
+	
+	FBtnEdit^.SetVisible(Not FReadOnly);
+	FBtnQuit^.SetVisible(FCanQuit);
+	FProgramWindow^.SetCanClose(FCanQuit);
+	FCanQuit := True;
 end;
 
 begin
