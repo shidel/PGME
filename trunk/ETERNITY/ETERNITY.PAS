@@ -14,13 +14,21 @@ uses QCrt, QErrors, QStrings, QDos, QFiles, QObjects, QCOntrols, PGM_Call;
 
 {$I LICENSE.INC}
 
+const
+	cmExecute 	= cmExecuteFile;
+
 type 
 	TPGME = object (TApplication)
 	public { protected }
 			FReadOnly : boolean;
 			FCanQuit : boolean;
+			FEditing : boolean;
 			FEditTitle : PEdit;
-			FBtnQuit : PButton;
+			FBtnQuit,
+			FBtnRun,
+			FBtnSearch,
+			FBtnHelp,
+			FBtnEdit : PButton;
 			FPrograms,
 			FMenus : PListView;
 		procedure BeforeShow; virtual;
@@ -36,12 +44,16 @@ var
 
 { --- TPGME --- }
 constructor TPGME.Create;
+const 
+	Split = 27;
+	
 var
 	P : PControl;
 	B : TBounds;
 begin
 	FReadOnly := False;
 	FCanQuit := True;
+	FEditing := False;
 	
 	inherited Create(nil, 'PGM');
 	FInfo.SetFileName('PGM.EXE');
@@ -49,13 +61,14 @@ begin
 	
 	{ Left Pane }
 	TextAttr := $06;
-	Bounds(1,1,Application^.Width - 26,5, B);
+	Bounds(1,1,Application^.Width - Split,5, B);
 	P := New(PWindow, Create(@Self, 'PROGRAMS'));
 	with PWindow(P)^ do begin
 		SetAnchors(alTop or alLeft or alBottom or abRight);
 		SetBounds(B);
 		SetMainWindow(True);
 		SetShadow(False);
+		SetTitle(FInfo.Title);
 	end;
 	
 		{ Top Line }
@@ -87,6 +100,47 @@ begin
 			SetBounds(B);	
 		end;
 		
+		{  Execute Button }
+		Bounds(1, 1, 11, 1, B);
+		FBtnRun := New(PButton, Create(P, 'BUTTON.RUN'));
+		with FBtnRun^ do begin
+			SetCaption('Execute');
+			SetCommand(cmExecute);
+			SetAnchors(alBottom or alLeft);
+			SetBounds(B);	
+		end;
+		
+		{  Help Button }
+		TextAttr := $1D;
+		Bounds(B.Left + B.Width + 2, 1, 8, 1, B);
+		FBtnHelp := New(PButton, Create(P, 'BUTTON.HELP'));
+		with FBtnHelp^ do begin
+			SetCaption('Help');
+			SetCommand(cmHelp);
+			SetAnchors(alBottom);
+			SetBounds(B);	
+		end;
+		
+		{  Search Button }
+		Bounds(B.Left + B.Width + 1, 1, 10, 1, B);
+		FBtnSearch := New(PButton, Create(P, 'BUTTON.SEARCH'));
+		with FBtnSearch^ do begin
+			SetCaption('Search');
+			SetCommand(cmSearch);
+			SetAnchors(alBottom);
+			SetBounds(B);	
+		end;
+		
+		{  Edit Button }
+		Bounds(B.Left + B.Width + 1, 1, 8, 1, B);
+		FBtnEdit := New(PButton, Create(P, 'BUTTON.EDIT'));
+		with FBtnEdit^ do begin
+			SetCaption('Edit');
+			SetCommand(cmEditFile);
+			SetAnchors(alBottom);
+			SetBounds(B);	
+		end;
+		
 		TextAttr := $02;
 		Bounds(1, 1, 13, 1, B);
 		with PLabel(New(PLabel, Create(P, 'TITLE.LABEL')))^ do begin
@@ -95,7 +149,7 @@ begin
 		end;
 
 		TextAttr := $0B;
-		Bounds(15, 1, Application^.Width - 39, 1, B);
+		Bounds(15, 1, Application^.Width - Split - 16, 1, B);
 		FEditTitle := New(PEdit, Create(P, 'TITLE.EDIT'));
 		with FEditTitle^  do begin
 			FHAlign := AlignLeft;
@@ -115,7 +169,7 @@ begin
 		
 	{ Title Pane }
 	TextAttr := $06;
-	Bounds(1,1,26,3,B);
+	Bounds(1,1, Split,3,B);
 	P := New(PBox, Create(@Self, 'TITLE'));
 	with PWindow(P)^ do begin
 		SetAnchors(alTop or alRight);
