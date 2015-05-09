@@ -258,12 +258,12 @@ begin
 	inherited Create(nil, AppID);
 	FInfo.Settitle(AppTitle);
 	
-	SetHelpText('Welcome to the Eternity Font Designer for the Program Manager Eternity Edition.');
-	AddHelpText('');
+	SetHelpText('This is the Eternity Font Designer help system.');
+{	AddHelpText('');
 	AddHelpText('With this program you can create custom fonts to use with PGME and');
 	AddHelpText('other text based DOS programs. You can even create a custom font');
 	AddHelpText('that can be converted using QFNT2TSR to replace the built-in');
-	AddHelpText('VGA BIOS text font.');
+	AddHelpText('VGA BIOS text fonts.'); }
 	BWide := 16;
 	PCharMap := nil;
 	PNew := nil;
