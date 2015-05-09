@@ -42,6 +42,7 @@ type
 		procedure Configure; virtual;
 		procedure CheckLocal(var AEvent : TEvent); virtual;		
 		procedure ScanMenus(ALocation : String); virtual;
+		procedure UpdateMenusCache; virtual;
 	public
 		constructor Create;
 		destructor Destroy; virtual;
@@ -367,6 +368,7 @@ begin
 	Write('Updating Menu Cache...');
 	ClrEol;
 	ScanMenus(GetExePath);
+	UpdateMenusCache;
 	GotoXY(1, WhereY);
 	TextAttr := $07;
 	ClrEol;		
@@ -411,9 +413,10 @@ end;
 
 procedure TPGME.ScanMenus(ALocation : String);
 var
-	Temp : TConfigFile;
 	SRec : TSearchRec;
 	ID, S : String;
+	I : integer;
+	Fixed : boolean;
 begin
 	if not assigned(FMenusCache) then 
 		FMenusCache := New(PConfigFile, Create('MENUSCACHE'));
@@ -423,31 +426,70 @@ begin
 	if FMenusCache^.GetValue('TYPE', '') = '' then 
 		FMenusCache^.SetValue('TYPE', 'CACHE');
 	
-	Temp.Create('TEMPMENU');
-	FindFirst(Dir(ALocation) + '*.MNU', faAnyFile, SRec);
+	ALocation := Dir(ALocation);
+	I := Ord(ALocation[1]) - 64;
+	Fixed := IsValidDrive(I) and (not (IsRemovable(I) or IsRemote(I) or IsCDROM(I)));
+	FindFirst(ALocation + '*.MNU', faAnyFile, SRec);
 	while DosError = 0 do begin
 		if SRec.Attr and faDirectory <> faDirectory then begin
 			FMenusCache^.OpenSection(Dir(ALocation) + SRec.Name);
-			if SRec.Time <> StrInt(FMenusCache^.GetValue('MODIFIED', '0')) then begin
-				FMenusCache^.SetValue('MODIFIED', IntStr(SRec.Time));
-				Temp.SetFileName(Dir(ALocation) + SRec.Name);
+			FMenusCache^.SetValue('MODIFIED', '-1');
+			FMenusCache^.SetValue('FIXED', BoolStr(Fixed));
+		end;
+		FindNext(SRec);
+	end;
+	
+end;
+
+procedure TPGME.UpdateMenusCache;
+var
+	Temp : TConfigFile;
+	S, Menu : String;
+	I : integer;
+	Modified : longInt;
+	Avail, Fixed : boolean;
+	P : PListItem;
+	SRec : TSearchRec;
+begin
+	if Not Assigned(FMenusCache) then exit;
+	
+	Temp.Create('TEMPMENU');
+	P := FMenusCache^.FList.First;
+	while Assigned(P) do begin
+		Menu := UCase(P^.GetNameID);
+		if (Copy(Menu, Length(Menu) - 3, 4) = '.MNU') then begin
+			FMenusCache^.OpenSection(Menu);
+			I := Ord(Menu[1]) - 64;
+			Fixed := IsValidDrive(I) and (not (IsRemovable(I) or IsRemote(I) or IsCDROM(I)));
+			Avail := IsValidDrive(I) and FileExists(Menu);
+			if Fixed or Avail then
+				FindFirst(Menu, faAnyFile, SRec);
+			if Avail and (FMenusCache^.GetValue('MODIFIED', '0') <> IntStr(SRec.Time)) then begin
+				Temp.SetFileName(Menu);
 				Temp.Read;
 				Temp.OpenSection('*');
 				if Temp.GetValue('TYPE', '') = ftMenu then begin
-					FMenusCache^.SetValue('ID', Temp.GetValue('ID', SRec.Name));
 					S := Trim(Temp.GetValue('TITLE.' + FLanguageID, ''));
 					if S = '' then 
 						S := Trim(Temp.GetValue('TITLE.EN_US', ''));
 					if S = '' then 
+						S := Trim(Temp.GetValue('TITLE', ''));
+					if S = '' then 
 						S := Copy(SRec.Name, 1, Length(SRec.Name) - 4);
+					FMenusCache^.SetValue('MODIFIED', IntStr(SRec.Time));
+					FMenusCache^.SetValue('ID', Temp.GetValue('ID', SRec.Name));
 					FMenusCache^.SetValue('TITLE', S);
 				end;
 				Temp.Clear;
 			end;
+			FMenusCache^.SetValue('FIXED', BoolStr(Fixed));
+			FMenusCache^.SetValue('AVAILABLE', BoolStr(Avail));
 		end;
-		FindNext(SRec);
+		P := P^.Next;
 	end;
+	
 	Temp.Destroy;
+	Delay(500);
 	if Not FReadOnly then 
 		FMenusCache^.Write;
 end;
