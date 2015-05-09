@@ -16,6 +16,7 @@ uses QCrt, QErrors, QStrings, QDos, QFiles, QObjects, QCOntrols, QFmtStr, PGM_Ca
 
 const
 	cmExecute 	= cmExecuteFile;
+	ftMenu	= 'MENU';
 
 type 
 	TPGME = object (TApplication)
@@ -36,8 +37,11 @@ type
 				FEdit : PEdit;
 			end;
 			FDate, FTime : PLabel;
+			FMenu, FMenusCache : PConfigFile;
 		procedure BeforeShow; virtual;
-		procedure CheckLocal(var AEvent : TEvent); virtual;
+		procedure Configure; virtual;
+		procedure CheckLocal(var AEvent : TEvent); virtual;		
+		procedure ScanMenus(ALocation : String); virtual;
 	public
 		constructor Create;
 		destructor Destroy; virtual;
@@ -97,18 +101,19 @@ end;
 constructor TPGME.Create;
 const 
 	Split = 27;
-	
 var
 	P : PControl;
 	B : TBounds;
-begin
+begin	
+	inherited Create(nil, 'PGM');
 	FReadOnly := False;
 	FCanQuit := True;
 	FEditing := False;
 	OldIdleProc := QCrt.IdleProc;
 	QCrt.IdleProc := PGMIdleProc;
+	FMenu := nil;
+	FMenusCache := nil;
 	
-	inherited Create(nil, 'PGM');
 	FInfo.SetFileName('PGM.EXE');
 	FInfo.SetTitle('Program Manager Eternity');
 	
@@ -334,17 +339,41 @@ end;
 destructor TPGME.Destroy;
 begin
 	QCrt.IdleProc := OldIdleProc;
+	if Assigned(FMenu) then 
+		Dispose(FMenu, Destroy);
+	if Assigned(FMenusCache) then 
+		Dispose(FMenusCache, Destroy);
 	inherited Destroy;
 end;
 
 procedure TPGME.BeforeShow;
 begin
 	inherited BeforeShow;
-	if ParamStr(2) = '/INIT' then begin
-		GotoXY(1, WhereY);
-		TextAttr := $07;
-		ClrEOL;
-	end;
+	{ if ParamStr(2) = '/INIT' then begin }
+	GotoXY(1, WhereY);
+	TextAttr := $07;
+	ClrEOL;
+end;
+
+procedure TPGME.Configure;
+begin
+	GotoXY(1, WhereY);
+	TextAttr := $0B;
+	Write('Initializing...');
+	ClrEol;
+	inherited Configure;
+	GotoXY(1, WhereY);
+	TextAttr := $0E;
+	Write('Updating Menu Cache...');
+	ClrEol;
+	ScanMenus(GetExePath);
+	GotoXY(1, WhereY);
+	TextAttr := $07;
+	ClrEol;		
+	GotoXY(1, WhereY);
+	TextAttr := $0B;
+	Write('Beginning Eternity...');
+	ClrEol;
 end;
 
 procedure TPGME.ApplyConfig( AConfig : PConfigFile );
@@ -367,6 +396,7 @@ var
 	Hour, Min, Sec, Sec100 : word;
 begin
 	inherited Idle;
+	if (Not Assigned(Application)) or (Not Application^.GetVisible) then exit;
 	if Ticks = L then Exit;
 	if Assigned(FHelp) and FHelp^.GetVisible then Exit;
 	
@@ -377,6 +407,49 @@ begin
 		FTime^.Update;
 		FDate^.Update;
 	end;
+end;
+
+procedure TPGME.ScanMenus(ALocation : String);
+var
+	Temp : TConfigFile;
+	SRec : TSearchRec;
+	ID, S : String;
+begin
+	if not assigned(FMenusCache) then 
+		FMenusCache := New(PConfigFile, Create('MENUSCACHE'));
+	FMenusCache^.SetFileName(GetExePath + 'ETERNITY.DAT');
+	FMenusCache^.Read;
+	FMenusCache^.OpenSection('*');
+	if FMenusCache^.GetValue('TYPE', '') = '' then 
+		FMenusCache^.SetValue('TYPE', 'CACHE');
+	
+	Temp.Create('TEMPMENU');
+	FindFirst(Dir(ALocation) + '*.MNU', faAnyFile, SRec);
+	while DosError = 0 do begin
+		if SRec.Attr and faDirectory <> faDirectory then begin
+			FMenusCache^.OpenSection(Dir(ALocation) + SRec.Name);
+			if SRec.Time <> StrInt(FMenusCache^.GetValue('MODIFIED', '0')) then begin
+				FMenusCache^.SetValue('MODIFIED', IntStr(SRec.Time));
+				Temp.SetFileName(Dir(ALocation) + SRec.Name);
+				Temp.Read;
+				Temp.OpenSection('*');
+				if Temp.GetValue('TYPE', '') = ftMenu then begin
+					FMenusCache^.SetValue('ID', Temp.GetValue('ID', SRec.Name));
+					S := Trim(Temp.GetValue('TITLE.' + FLanguageID, ''));
+					if S = '' then 
+						S := Trim(Temp.GetValue('TITLE.EN_US', ''));
+					if S = '' then 
+						S := Copy(SRec.Name, 1, Length(SRec.Name) - 4);
+					FMenusCache^.SetValue('TITLE', S);
+				end;
+				Temp.Clear;
+			end;
+		end;
+		FindNext(SRec);
+	end;
+	Temp.Destroy;
+	if Not FReadOnly then 
+		FMenusCache^.Write;
 end;
 
 procedure TPGME.CheckLocal(var AEvent : TEvent); 
