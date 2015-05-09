@@ -214,7 +214,7 @@ begin
 			SetEnabled(False);
 		end;
 
-		TextAttr := $7B;		
+		TextAttr := $03;		
 		Bounds(2, 4, FProgramWindow^.Width - 4, FProgramWindow^.Height - 8, B);
 		FPrograms := New(PListView, Create(FProgramWindow, 'PROGRAMS'));
 		with FPrograms^ do begin
@@ -268,7 +268,7 @@ begin
 			SetBounds(B);
 			SetAnchors(alLeft or alRight);
 			{ Short Day }
-			 SetCaption('0[X3.2],1[L2],2[Z2];%1/%2/%0'); 
+			(*  SetCaption('0[X3.2],1[L2],2[Z2];%1/%2/%0'); *)
 			{ Medium Day }
 			SetCaption('0[Z4],1{Null,Jan,Feb,Mar,Apr,May,Jun,Jul,Aug,Sep,Oct,Nov,Dec},2,' +
 			'3{Sun,Mon,Tues,Wed,Thurs,Fri,Sat};%3 %1 %2, %0'); 
@@ -361,11 +361,16 @@ end;
 procedure TPGME.Idle;
 const
 	S : word = 0;
+	L : longInt = 0;
 var
+	Ticks : LongInt absolute $0040:$006c;
 	Hour, Min, Sec, Sec100 : word;
 begin
 	inherited Idle;
+	if Ticks = L then Exit;
 	if Assigned(FHelp) and FHelp^.GetVisible then Exit;
+	
+	L := Ticks;
 	GetTime(Hour, Min, Sec, Sec100);
 	if Sec <> S then begin
 		S := Sec;
