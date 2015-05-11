@@ -41,7 +41,7 @@ type
 		procedure BeforeShow; virtual;
 		procedure Configure; virtual;
 		procedure CheckLocal(var AEvent : TEvent); virtual;		
-		procedure ScanMenus(ALocation : String); virtual;
+		procedure AddMenusCache(ALocation : String); virtual;
 		procedure UpdateMenusCache; virtual;
 	public
 		constructor Create;
@@ -367,7 +367,7 @@ begin
 	TextAttr := $0E;
 	Write('Updating Menu Cache...');
 	ClrEol;
-	ScanMenus(GetExePath);
+	AddMenusCache(GetExePath);
 	UpdateMenusCache;
 	GotoXY(1, WhereY);
 	TextAttr := $07;
@@ -411,7 +411,7 @@ begin
 	end;
 end;
 
-procedure TPGME.ScanMenus(ALocation : String);
+procedure TPGME.AddMenusCache(ALocation : String);
 var
 	SRec : TSearchRec;
 	ID, S : String;
@@ -448,7 +448,7 @@ var
 	I : integer;
 	Modified : longInt;
 	Avail, Fixed : boolean;
-	P : PListItem;
+	P, N : PListItem;
 	SRec : TSearchRec;
 begin
 	if Not Assigned(FMenusCache) then exit;
@@ -456,6 +456,7 @@ begin
 	Temp.Create('TEMPMENU');
 	P := FMenusCache^.FList.First;
 	while Assigned(P) do begin
+		N := P^.Next;
 		Menu := UCase(P^.GetNameID);
 		if (Copy(Menu, Length(Menu) - 3, 4) = '.MNU') then begin
 			FMenusCache^.OpenSection(Menu);
@@ -482,10 +483,17 @@ begin
 				end;
 				Temp.Clear;
 			end;
-			FMenusCache^.SetValue('FIXED', BoolStr(Fixed));
-			FMenusCache^.SetValue('AVAILABLE', BoolStr(Avail));
+			if (Not Avail) and (Fixed) then begin
+				P^.Clear;
+				FMenusCache^.FList.Remove(P);
+				Dispose(P, Destroy);
+				P := nil;
+			end else begin
+				FMenusCache^.SetValue('FIXED', BoolStr(Fixed));
+				FMenusCache^.SetValue('AVAILABLE', BoolStr(Avail));
+			end;
 		end;
-		P := P^.Next;
+		P := N;
 	end;
 	
 	Temp.Destroy;
