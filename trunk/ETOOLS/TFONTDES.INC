@@ -28,6 +28,7 @@ type
 			PBtnChar, PBtnDemo, PBtnInfo, PBtnSize : PButton;
 			PBtnPrev, PBtnNext : PButton;
 			PBtnUp, PBtnDown, PBtnLeft, PBtnRight : PButton;
+			FLastFont : String;
 		procedure BeforeShow; virtual;
 		procedure CheckLocal(var AEvent : TEvent); virtual;
 		function GetCharDialog : PCharacterMap; virtual;
@@ -257,6 +258,7 @@ var
 begin
 	inherited Create(nil, AppID);
 	FInfo.Settitle(AppTitle);
+	FLastFont := GetExePath;
 	
 	SetHelpText('This is the Eternity Font Designer help system.');
 {	AddHelpText('');
@@ -735,10 +737,13 @@ begin
 			cmOpenFile : begin 
 				ClearEvent(AEvent);
 				GetLoadDialog;
+				PLoad^.SetDir(Copy(FLastFont, 1, LastPos('\', FLastFont)));
+				PLoad^.SetFileName(Copy(FLastFont, LastPos('\', FLastFont) + 1, Length(FLastFont)));
 				T := PLoad^.ShowModal;
 				StartDrawing;
 				if T = mrOK then begin
-					PEditor^.Load(PLoad^.GetFileName);
+					FLastFont := PLoad^.GetFileName;
+					PEditor^.Load(FLastFont);
 					SetButtonState;
 				end;
 				Update;
@@ -747,9 +752,12 @@ begin
 			cmSaveFile, cmSaveFileAs : begin 
 				ClearEvent(AEvent);
 				GetSaveDialog;
+				PSave^.SetDir(Copy(FLastFont, 1, LastPos('\', FLastFont)));
+				PSave^.SetFileName(Copy(FLastFont, LastPos('\', FLastFont) + 1, Length(FLastFont)));
 				T := PSave^.ShowModal;
 				if T = mrOK then begin
-					PEditor^.Save(PSave^.GetFileName);
+					FLastFont := PSave^.GetFileName;
+					PEditor^.Save(FLastFont);
 				end;
 			end;
 			cmFileInfo : begin
