@@ -16,12 +16,15 @@ uses QCrt, QErrors, QStrings, QDos, QFiles, QObjects, QCOntrols, QFmtStr, PGM_Ca
 
 const
 	cmExecute 	= cmExecuteFile;
+	cmNextMenu  = cmAfter;
+	cmPrevMenu  = cmBefore;
+	
 	ftMenu	= 'MENU';
 
 type 
 	TPGME = object (TApplication)
 	public { protected }
-			FReadOnly : boolean;
+			FReadOnly, FWritable : boolean;
 			FEditing : boolean;
 			FEditTitle : PEdit;
 			FBtnQuit,
@@ -42,7 +45,10 @@ type
 		procedure Configure; virtual;
 		procedure CheckLocal(var AEvent : TEvent); virtual;		
 		procedure AddMenusCache(ALocation : String); virtual;
+		procedure UpdateButtons; virtual;
 		procedure UpdateMenusCache; virtual;
+		procedure UpdateMenuList; virtual;
+		procedure OpenCurrentMenu; virtual;
 	public
 		constructor Create;
 		destructor Destroy; virtual;
@@ -108,6 +114,7 @@ var
 begin	
 	inherited Create(nil, 'PGM');
 	FReadOnly := False;
+	FWritable := True;
 	FCanQuit := True;
 	FEditing := False;
 	OldIdleProc := QCrt.IdleProc;
@@ -216,7 +223,7 @@ begin
 		with FEditTitle^  do begin
 			FHAlign := AlignLeft;
 			SetBounds(B);
-			SetCaption('no name');
+			SetCaption('no menu');
 			SetEnabled(False);
 		end;
 
@@ -227,6 +234,7 @@ begin
 			SetBounds(B);
 			SetAnchors(abAll);
 			SetScrollEdge(True);
+			SetSorted(True);
 		end;
 		
 	{ Title Pane }
@@ -314,6 +322,8 @@ begin
 			SetBounds(B);
 			SetAnchors(abAll);
 			SetScrollEdge(True);
+			SetAllowEmpty(False);
+			SetSorted(True);
 		end;
 		
 		TextAttr := $08;		
@@ -369,6 +379,7 @@ begin
 	ClrEol;
 	AddMenusCache(GetExePath);
 	UpdateMenusCache;
+	UpdateMenuList;
 	GotoXY(1, WhereY);
 	TextAttr := $07;
 	ClrEol;		
@@ -384,9 +395,9 @@ begin
 	FReadOnly := StrBool(AConfig^.GetValue('READONLY', BoolStr(FReadOnly)));
 	FCanQuit := StrBool(AConfig^.GetValue('CANQUIT', BoolStr(FCanQuit)));
 	
-	FBtnEdit^.SetVisible(Not FReadOnly);
 	FBtnQuit^.SetVisible(FCanQuit);
 	FProgramWindow^.SetCanClose(FCanQuit);
+	UpdateButtons;
 end;
 
 procedure TPGME.Idle;
@@ -472,13 +483,14 @@ begin
 				if Temp.GetValue('TYPE', '') = ftMenu then begin
 					S := Trim(Temp.GetValue('TITLE.' + FLanguageID, ''));
 					if S = '' then 
-						S := Trim(Temp.GetValue('TITLE.EN_US', ''));
-					if S = '' then 
 						S := Trim(Temp.GetValue('TITLE', ''));
+					if S = '' then 
+						S := Trim(Temp.GetValue('TITLE.EN_US', ''));
 					if S = '' then 
 						S := Copy(SRec.Name, 1, Length(SRec.Name) - 4);
 					FMenusCache^.SetValue('MODIFIED', IntStr(SRec.Time));
 					FMenusCache^.SetValue('ID', Temp.GetValue('ID', SRec.Name));
+					FMenusCache^.SetValue('WRITABLE', BoolStr(StrBool(Temp.GetValue('WRITABLE', 'YES'))));
 					FMenusCache^.SetValue('TITLE', S);
 				end;
 				Temp.Clear;
@@ -497,19 +509,125 @@ begin
 	end;
 	
 	Temp.Destroy;
-	Delay(500);
 	if Not FReadOnly then 
 		FMenusCache^.Write;
 end;
 
-procedure TPGME.CheckLocal(var AEvent : TEvent); 
-var
-	T : integer;
-	B : TBounds;
+procedure TPGME.UpdateMenuList;
+var	
+	Menu, Name : String;
+	P, T : PListItem;
 begin
-{	if AEvent.What = evCommand then
+	if Not Assigned(FMenusCache) then exit;
+	StartDrawing;	
+	P := FMenusCache^.FList.First;
+	while Assigned(P) do begin
+		Menu := UCase(P^.GetNameID);
+		if (Copy(Menu, Length(Menu) - 3, 4) = '.MNU') then begin
+			FMenusCache^.OpenSection(Menu);
+			Name := Trim(FMenusCache^.GetValue('TITLE', ''));
+			if FMenus^.FItems.FindID(Name) = nil then begin
+				T := FMenus^.AddItem(' ' + Name + ' ');
+				T^.Data := P;
+			end;
+		end;
+		P := P^.Next;
+	end;
+	FinishDrawing;
+end;
+
+procedure TPGME.OpenCurrentMenu;
+var
+	T, P :PListItem;
+	S : String;
+begin
+	StartDrawing;
+	if Not Assigned(FMenu) then 
+		FMenu := New(PConfigFile, Create('MENU'));
+	FWritable := False;
+	FPrograms^.ClearItems;
+	FMenu^.Clear;
+	P := FMenus^.GetCurrent;
+	if (not Assigned(P)) or (Not Assigned(P^.Data)) then exit;
+	S := Trim(PListItem(P^.Data)^.GetNameID);
+	FMenu^.SetFileName(S);
+	FMenu^.Read;
+	FMenu^.OpenSection('*');
+	if FMenu^.GetValue('TYPE', '') <> ftMenu then begin
+		FMenu^.Clear;
+		FEditTitle^.SetCaption('No Menu');
+		UpdateButtons;
+		FinishDrawing;
+		Exit;
+	end;
+
+	S := Trim(FMenu^.GetValue('DESCRIPTION.' + FLanguageID, ''));
+	if S = '' then 
+		S := Trim(FMenu^.GetValue('DESCRIPTION', ''));
+	if S = '' then 
+		S := Trim(FMenu^.GetValue('DESCRIPTION.EN_US', ''));
+	if S = '' then 
+		S := Trim(FMenu^.GetValue('TITLE.' + FLanguageID, ''));
+	if S = '' then 
+		S := Trim(FMenu^.GetValue('TITLE', ''));
+	if S = '' then 
+		S := Trim(FMenu^.GetValue('TITLE.EN_US', ''));
+	if S = '' then begin
+		S := FMenu^.GetFileName;
+		S := Copy(S, LastPos('\', S) + 1, Length(S));
+		S := Copy(S, 1, Length(S) - 4);
+	end;
+		
+	FEditTitle^.SetCaption(S);
+	FWritable := StrBool(FMenu^.GetValue('WRITABLE', 'YES'));
+	P := FMenu^.FList.First;
+	while Assigned(P) do begin
+		FMenu^.OpenSection(P^.GetNameID);
+		S := '';
+		if UCase(Trim(FMenu^.GetValue('TYPE', ''))) = 'ITEM' then begin
+			S := Trim(FMenu^.GetValue('DESCRIPTION.' + FLanguageID, ''));
+			if S = '' then 
+				S := Trim(FMenu^.GetValue('DESCRIPTION', ''));
+			if S = '' then 
+				S := Trim(FMenu^.GetValue('DESCRIPTION.EN_US', ''));
+			if S = '' then 
+				S := Trim(FMenu^.GetValue('TITLE.' + FLanguageID, ''));
+			if S = '' then 
+				S := Trim(FMenu^.GetValue('TITLE', ''));
+			if S = '' then 
+				S := Trim(FMenu^.GetValue('TITLE.EN_US', ''));			
+		end;
+		if S <> '' then begin
+			T := FPrograms^.AddItem(' ' + S + ' ');
+			T^.Data := P;
+		end;
+		P := P^.Next;
+	end;
+	
+	UpdateButtons;
+	FinishDrawing;
+end;
+
+procedure TPGME.UpdateButtons;
+begin
+	FBtnEdit^.SetVisible((Not FReadOnly) and FWritable);
+end;
+
+procedure TPGME.CheckLocal(var AEvent : TEvent); 
+begin
+	if AEvent.What = evCommand then
 		case AEvent.Command of
-		end; }
+			cmNextMenu : begin
+				ClearEvent(AEvent);
+				FMenus^.Down(True);
+				OpenCurrentMenu;
+			end;
+			cmPrevMenu : begin
+				ClearEvent(AEvent);
+				FMenus^.Up(True);
+				OpenCurrentMenu;
+			end;
+		end; 
 	inherited CheckLocal(AEvent);
 end;
 
