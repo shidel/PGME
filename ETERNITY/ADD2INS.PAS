@@ -114,6 +114,7 @@ begin
 	AppendAll('INSTALL.*', igInstall );
 	AppendAll('PGM.*', igEternity );
 	AppendAll('ETERNITY.BIN', igEternity );
+	AppendAll('ETERNITY.DAT', igEternity ); { Force rescanning of menus }
 	AppendAll('TEMPLATE.*', igSupplement );
 	AppendAll('*' + ConfigExt, igConfig );
 	AppendAll('*' + FontExt, igFonts);
