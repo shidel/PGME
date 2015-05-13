@@ -222,4 +222,30 @@ By default all QuickCRT based programs (These maybe changed in a custom KMP file
 		it cannot. Bounds are still relative to its parent.
 		
 	MARGINS The amount a child will need to be indented.
+
+** A CFG Config Files **
+
+	The Programs Section:
+		CLEAR, 	Clear the screen prior to program drawing.
 	
+		USE_DAC, Use the VGA color DAC pallet. (May have compatiblility issues)
+		
+		USE_FADER, When USE_DAC is also true, fades the color pallete in and out at
+			startup and shutdown of the program.
+	
+		USE_SOUND, Allows PC Speaker tones to be generated.
+	
+** ETERNITY.CFG File, Special Options **
+	
+	CANQUIT, Unless this is installed in a KIOSK, leave it True. If it is false,
+		you can only launch other programs and return to PGME. You will not be
+		able to exit PGME to a command prompt.
+		
+	READONLY, This option is probably only usefull for a KIOSK as well. If PGME is
+		running in readonly mode, menus cannot be modified.
+		
+	PATH.MENU, Like the DOS PATH environment variable, this is the locations that
+		PGME will search for and include menus from. If left blank, only the
+		the path of the PGME program will be searched. If it is set, only the specified
+		fixed disk locations will be included. Probably not usefull unless PGME is 
+		installed to and run from a readonly filesystem.
