@@ -25,7 +25,7 @@ type
 	public
 		constructor Create;
 		destructor Destroy; virtual;
-		procedure ApplyLanguage(AConfig : PConfigFile); virtual;
+		procedure ApplyLanguage(AConfig : PConfigFile; APrefix : String); virtual;
 		procedure AddDir(ADir : String); virtual;
 		procedure AddPaths(APaths : String); virtual;
 		procedure Update; virtual;
@@ -63,10 +63,12 @@ end;
 
 procedure TMenuCache.ApplyLanguage;
 begin
-	FNoMenuStr := AConfig^.GetValue('MENU.EMPTY', '');
-	FNoNameStr := AConfig^.GetValue('MENU.UNNAMED', 'no name');
-	FNoTitleStr := AConfig^.GetValue('MENU.UNTITLED', 'Untitled Menu');
-	FNoDescStr := AConfig^.GetValue('MENU.UNDESCRIBED', 'Untitled Menu');
+	AConfig^.OpenSection('STRINGS');
+	APrefix := APrefix + '.';
+	FNoMenuStr := AConfig^.GetValue(APrefix + 'MENU.TEXT.EMPTY', '');
+	FNoNameStr := AConfig^.GetValue(APrefix + 'MENU.TEXT.UNNAMED', 'no name');
+	FNoTitleStr := AConfig^.GetValue(APrefix + 'MENU.TEXT.UNTITLED', 'Untitled Menu');
+	FNoDescStr := AConfig^.GetValue(APrefix + 'MENU.TEXT.UNDESCRIBED', 'Untitled Menu');
 end;
 
 procedure TMenuCache.AddDir;
@@ -74,7 +76,15 @@ begin
 end;
 
 procedure TMenuCache.AddPaths;
+var
+	ADir : String;
 begin
+	{$IFNDEF TEMPLATES}
+		if APaths = '' then 
+			APaths := GetExePath;
+	{$ENDIF}
+	while APaths <> '' do 
+		AddDir(PullStr(';', APaths));
 end;
 
 procedure TMenuCache.Update;

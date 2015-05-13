@@ -7,6 +7,7 @@
 	
 *)
 
+{$I ..\QUICKCRT\TEMPLATE.DEF}
 {$I ETERNITY.DEF}
 program Program_Manager_Eternity_Main_Application; { X Series }
 

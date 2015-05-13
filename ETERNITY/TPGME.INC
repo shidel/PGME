@@ -359,12 +359,11 @@ begin
 	Write('Initializing...');
 	ClrEol; }
 	inherited Configure;
-	FLanguage.OpenSection(GetPathID);
-	PMenuCache(FMenuCache)^.ApplyLanguage(@FLanguage); { uses current section for data }
+	PMenuCache(FMenuCache)^.ApplyLanguage(@FLanguage, GetPathID);
 	FEditTitle^.SetCaption(PMenuCache(FMenuCache)^.Description); {Set Initially to No Title}
 	GotoXY(1, WhereY);
 	TextAttr := $0E;
-	Write(FLanguage.GetValue('CACHE.UPDATE', 'Updating Menu Cache...'));
+	Write(FLanguage.GetValue(GetPathID + '.BOOT.CACHE.UPDATE', 'Updating Menu Cache...'));
 	ClrEol;
 	UpdateMenuCache;
 	GotoXY(1, WhereY);
@@ -372,16 +371,17 @@ begin
 	ClrEol;		
 	GotoXY(1, WhereY);
 	TextAttr := $0B;
-	Write(FLanguage.GetValue('STARTING', 'Beginning Eternity...'));
+	Write(FLanguage.GetValue(GetPathID + '.BOOT.STARTING', 'Beginning Eternity...'));
 	ClrEol;
 end;
 
 procedure TPGME.ApplyConfig( AConfig : PConfigFile );
 begin
 	inherited ApplyConfig(AConfig);
+	AConfig^.OpenSection(GetPathID);
 	FReadOnly := StrBool(AConfig^.GetValue('READONLY', BoolStr(FReadOnly)));
 	FCanQuit := StrBool(AConfig^.GetValue('CANQUIT', BoolStr(FCanQuit)));
-	PMenuCache(FMenuCache)^.AddPaths(AConfig^.GetValue('CANQUIT', GetExePath));
+	PMenuCache(FMenuCache)^.AddPaths(AConfig^.GetValue('PATH.MENU', ''));
 	FBtnQuit^.SetVisible(FCanQuit);
 	FProgramWindow^.SetCanClose(FCanQuit);
 	UpdateButtons;
