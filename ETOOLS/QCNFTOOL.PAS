@@ -14,7 +14,14 @@ uses QObjects;
 
 {$I ..\ETERNITY\LICENSE.INC}
 
+const
+	AppTitle = 'Eternity Configuration File Toolkit';
+	AppID = 'QCNFTOOL';
+
 	
 begin
-	WriteLn('Placeholder application for QSCROLL.');
+	WriteLn('Placeholder application for ' + AppTitle);
+	WriteLn('Later, it will be able to edit, merge and export text based configuration');
+	WriteLn('files like ETERNITY.CFG and ETERNITY.MNU. As well as Theme, Language and');
+	WriteLn('Keymap files.');
 end.
