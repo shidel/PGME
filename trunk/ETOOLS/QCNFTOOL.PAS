@@ -14,12 +14,7 @@ uses QObjects;
 
 {$I ..\ETERNITY\LICENSE.INC}
 
-const
-	AppTitle = 'Eternity Configuration File Toolkit';
-	AppID = 'QCNFTOOL';
-	
-{ --- Global Variables --- }
 	
 begin
-	WriteLn('Placeholder application for ' + AppTitle);
+	WriteLn('Placeholder application for QSCROLL.');
 end.

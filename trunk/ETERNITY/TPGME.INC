@@ -365,6 +365,9 @@ begin
 	TextAttr := $0E;
 	Write(FLanguage.GetValue(GetPathID + '.BOOT.CACHE.UPDATE', 'Updating Menu Cache...'));
 	ClrEol;
+	FConfig.OpenSection(GetPathID);
+	PMenuCache(FMenuCache)^.Load;
+	PMenuCache(FMenuCache)^.SetPaths(FConfig.GetValue('PATH.MENU', ''));
 	UpdateMenuCache;
 	GotoXY(1, WhereY);
 	TextAttr := $07;
@@ -381,7 +384,6 @@ begin
 	AConfig^.OpenSection(GetPathID);
 	FReadOnly := StrBool(AConfig^.GetValue('READONLY', BoolStr(FReadOnly)));
 	FCanQuit := StrBool(AConfig^.GetValue('CANQUIT', BoolStr(FCanQuit)));
-	PMenuCache(FMenuCache)^.AddPaths(AConfig^.GetValue('PATH.MENU', ''));
 	FBtnQuit^.SetVisible(FCanQuit);
 	FProgramWindow^.SetCanClose(FCanQuit);
 	UpdateButtons;
@@ -526,7 +528,8 @@ end;
 procedure TPGME.UpdateMenuCache;
 begin
 	PMenuCache(FMenuCache)^.Update;
-	
+	if PMenuCache(FMenuCache)^.Modified and (not FReadOnly) then
+		PMenuCache(FMenuCache)^.Save;
 end;
 
 procedure TPGME.OpenCurrentMenu;
