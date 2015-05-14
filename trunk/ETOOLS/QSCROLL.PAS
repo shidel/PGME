@@ -10,19 +10,10 @@
 {$I ETOOLS.DEF}
 program Eternity_Config_File_Toolkit; { X Series }
 
-uses QObjects;
-
 {$I ..\ETERNITY\LICENSE.INC}
 
-const
-	AppTitle = 'Eternity Configuration File Toolkit';
-	AppID = 'QCNFTOOL';
-	
 { --- Global Variables --- }
 	
 begin
-	WriteLn('Placeholder application for ' + AppTitle);
-	WriteLn('Later, it will be able to edit, merge and export text based configuration');
-	WriteLn('files like ETERNITY.CFG and ETERNITY.MNU. As well as Theme, Language and');
-	WriteLn('Keymap files.');
+	WriteLn('Placeholder application for QSCROLL.');
 end.
