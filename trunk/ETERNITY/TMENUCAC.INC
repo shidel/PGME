@@ -37,17 +37,10 @@ type
 		procedure Update; virtual;
 
 		function Modified : boolean; virtual;
-		{ Results based on current active menu }
-		function FileName : String; virtual; { Menu Filename }
-		function Title : String; virtual;	 { Menu Short Title }
-		function Description : String; virtual;	{ Menu Long Title }
-		function Writable : boolean; virtual; { Is Menu writable } 
 	end;
 {$ENDIF}
 
 {$IFDEF IMPLEMENTATION}
-
-{$I TCacheItems.inc}
 
 function TMenuCache.ObjectClass(AName : String) : String; 
 begin
@@ -225,7 +218,7 @@ begin
 					P^.Remove(M);
 					Dispose(M, Destroy);
 				end;
-			end else if PCacheMenu(T)^.LastMod = -1 then
+			end else if PCacheMenu(M)^.LastMod = -1 then
 				UpdateMenu(M);				
 			M := N;
 		end;
@@ -293,6 +286,7 @@ begin
 					SetGroupName(Trim(Temp.GetValue('GROUP', '')));
 					MaxMemory := StrBool(Temp.GetValue('MAXAVAIL', 'NO'));
 					SimpleExec := StrBool(Temp.GetValue('SIMPLE', 'YES'));
+					ReturnAfter := StrBool(Temp.GetValue('RETURN', 'YES'));
 				end;
 				{ Read App's Process }
 				V := M^.FindID('COMMANDS');
@@ -306,7 +300,6 @@ begin
 						if not MemCheck(Sizeof(TCacheProc)) then Halt(8);
 						P := new(PCacheProc, Create(S));
 						A^.Add(P);
-						WriteLn(P^.GetNameID);
 					end;
 					V := V^.Next;
 				end;
@@ -323,7 +316,7 @@ begin
 
 	if Assigned(AMenu) then begin
 		FindFirst(AMenu^.Parent^.GetNameID + AMenu^.GetNameID, faAnyFile, SRec);
-		{if DosError = 0 then PCacheMenu(AMenu)^.LastMod := SRec.Time;}
+		if DosError = 0 then PCacheMenu(AMenu)^.LastMod := SRec.Time;
 	end;
 	Temp.Destroy;
 end;
@@ -333,23 +326,4 @@ begin
 	Modified := FModified;
 end;
 
-function TMenuCache.FileName;
-begin
-	FileName := '';
-end;
-
-function TMenuCache.Title;
-begin
-	Title := FNoTitleStr;
-end;
-
-function TMenuCache.Description;
-begin
-	Description := FNoDescStr;	
-end;
-
-function TMenuCache.Writable;
-begin
-	Writable := True;
-end;
 {$ENDIF}
