@@ -92,13 +92,16 @@ begin
 		if APaths = '' then 
 			APaths := GetExePath;
 	{$ENDIF}
+	{ Add new paths }
 	Hold := ';';
 	while APaths <> '' do begin
 		ADir := Dir(PullStr(';', APaths));
 		Hold := Hold + ADir + ';';
-		if FCache^.FindID(ADir) = nil then
+		if FCache^.FindID(ADir) = nil then 
 			FCache^.Add(New(PCacheDir, Create(ADir)));
 	end;
+	(*
+	{ remove dead paths }
 	P := FCache^.First;
 	while Assigned(P) do begin
 		N := P^.Next;
@@ -108,15 +111,18 @@ begin
 			FModified := True;
 		end;
 		P := N;
-	end;
+	end; *)
 end;
 
 procedure TMenuCache.Load;
+const
+	FileID = 'ETERNITY.CACHE'#0;
 var
 	F : TFile;
 	S : String;
 	OK : boolean;
 begin
+	Writeln('Load');
 	FCache^.Clear;
 	FModified := False;
 	F.Create;
@@ -125,9 +131,9 @@ begin
 	OK := IOResult = 0;
 	if OK then begin
 		FillChar(S, Sizeof(S), 0);
-		S[0] := Chr(Length(GetNameID) + 1);
-		F.ReadRecord(S[1], Length(GetNameID));
-		OK := (IOResult = 0) and (S = GetNameID + #0);
+		S[0] := Chr(Length(FileID));
+		F.ReadRecord(S[1], Length(FileID));
+		OK := (IOResult = 0) and (S = FileID);
 	end;
 	if OK then OK := PCacheItem(FCache)^.Read(F);
 	F.Destroy;
@@ -135,45 +141,52 @@ begin
 end;
 
 procedure TMenuCache.Save;
+const
+	FileID = 'ETERNITY.CACHE'#0;
 var
 	F : TFile;
 	OK : boolean;
 	S : String;
 begin
+	Writeln('Save');
 	F.Create;
 	F.Assign(GetExePath + 'ETERNITY.DAT');
 	F.Rewrite;
 	OK := IOResult = 0;
 	if OK then begin
-		S := GetNameID + #0;
+		S := FileID;
 		F.WriteRecord(S[1], Length(S));
 		OK := (IOResult = 0);
 	end;
-	PCacheItem(FCache)^.Write(F);
-	FModified := False;
+	if OK then OK := PCacheItem(FCache)^.Write(F);
+	FModified := not OK;
 	if Not OK then Purge;
+	Halt(0);
 end;
 
 procedure TMenuCache.Purge;
 begin
+	writeln('Purge');
 	FModified := True;
 	FCache^.Clear;
 end;
 
 procedure TMenuCache.Update;
 var
-	P, T, N : PListItem;
+	P, N, T, M : PListItem;
 	S : String;
 	Drive : byte;
 	Fixed : boolean;
 	SRec : TSearchRec;
 begin
+	Writeln('Update');
 	{ Search for Menu Files }
 	P := FCache^.First;
 	while Assigned(P) do begin
+	
+		{ Scan each directory for files, add if needed }
 		FindFirst(P^.GetNameID + '*.MNU', faAnyFile, SRec);
 		S := P^.GetNameID;
-		N := P^.Next;
 		Drive := Ord(S[1]) - 64;
 		Fixed := not (IsRemote(Drive) or isRemovable(Drive) or isCDROM(Drive));
 		while DosError = 0 do begin
@@ -186,6 +199,7 @@ begin
 					PCacheMenu(T)^.LastMod := -1;
 					PCacheMenu(T)^.Fixed := Fixed;
 					P^.Add(T);
+					WriteLn('Add: ', T^.GetNameID, ' ', Fixed);
 				end else begin
 					if (PCacheMenu(T)^.LastMod <> SRec.Time) or 
 					(PCacheMenu(T)^.Fixed <> Fixed) then begin
@@ -198,7 +212,20 @@ begin
 			end;			
 			FindNext(SRec);
 		end;
-		P := N;
+		
+		{ remove missing files, if are on a fixed disk }
+		M := P^.First;
+		while Assigned(M) do begin
+			N := M^.Next;
+			if PCacheMenu(M)^.Fixed and (Not FileExists(P^.GetNameID + M^.GetNameID)) then begin
+				writeln('Removed: ', M^.GetNameID);
+				P^.Remove(M);
+				Dispose(M, Destroy);
+			end;
+			M := N;
+		end;
+		
+		P := P^.Next;
 	end;
 end;
 
