@@ -49,7 +49,8 @@ type
 		FGroupName,
 		FTitle	: PString;
 		MaxMemory, 
-		SimpleExec : boolean;
+		SimpleExec,
+		ReturnAfter : boolean;
 		constructor Create(AName : String);
 		destructor Destroy; virtual;
 		function	NewChild(AID : String) : PListItem; virtual;
@@ -270,12 +271,15 @@ end;
 constructor TCacheApp.Create(AName : String);
 begin
 	inherited Create(AName);
+	Sorted := False;
+
 	FClassName := nil;
 	FFilename := nil;
 	FGroupName := nil;
 	FTitle:= nil;
 	MaxMemory := false;
 	SimpleExec := true;
+	ReturnAfter := True;
 end;
 
 destructor TCacheApp.Destroy;
@@ -350,6 +354,10 @@ begin
 		OK := F.IOResult = 0;
 	end;
 	if OK then begin
+		F.ReadBoolean(ReturnAfter);
+		OK := F.IOResult = 0;
+	end;
+	if OK then begin
 		SetClassName (F.GetString);
 		OK := F.IOResult = 0;
 	end;
@@ -380,6 +388,10 @@ begin
 	end;
 	if OK then begin
 		F.WriteBoolean(SimpleExec);
+		OK := F.IOResult = 0;
+	end;
+	if OK then begin
+		F.WriteBoolean(ReturnAfter);
 		OK := F.IOResult = 0;
 	end;
 	if OK then begin

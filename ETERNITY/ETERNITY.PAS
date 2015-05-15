@@ -23,6 +23,8 @@ const
 	ftMenu	= 'MENU';
 
 {$DEFINE INTERFACE}
+
+{$I TCacheItems.inc}
 	
 {$I TPGME.inc}
 {$I TMenuCache.inc}

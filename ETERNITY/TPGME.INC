@@ -14,7 +14,8 @@ type
 	TPGME = object (TApplication)
 	public { protected }
 			FReadOnly : boolean;
-			FEditing : boolean;
+			FEditing, 
+			FWritable : boolean;
 			FEditTitle : PEdit;
 			FBtnQuit,
 			FBtnRun,
@@ -24,6 +25,7 @@ type
 			FProgramWindow : PWindow;
 			FPrograms,
 			FMenus : PListView;
+			FLastMenu, FLastProgram : Pointer;
 			FFind : record
 				FLabel : PLabel;
 				FEdit : PEdit;
@@ -106,6 +108,9 @@ begin
 	FReadOnly := False;
 	FCanQuit := True;
 	FEditing := False;
+	FWritable := True;
+	FLastMenu := nil;
+	FLastProgram := nil;
 	OldIdleProc := QCrt.IdleProc;
 	QCrt.IdleProc := PGMIdleProc;
 	FMenuCache := New(PMenuCache, Create);
@@ -360,7 +365,7 @@ begin
 	ClrEol; }
 	inherited Configure;
 	PMenuCache(FMenuCache)^.ApplyLanguage(@FLanguage, GetPathID);
-	FEditTitle^.SetCaption(PMenuCache(FMenuCache)^.Description); {Set Initially to No Title}
+	FEditTitle^.SetCaption(PMenuCache(FMenuCache)^.FNoMenuStr); {Set Initially to No Title}
 	GotoXY(1, WhereY);
 	TextAttr := $0E;
 	Write(FLanguage.GetValue(GetPathID + '.BOOT.CACHE.UPDATE', 'Updating Menu Cache...'));
@@ -369,6 +374,8 @@ begin
 	PMenuCache(FMenuCache)^.Load;
 	PMenuCache(FMenuCache)^.SetPaths(FConfig.GetValue('PATH.MENU', ''));
 	UpdateMenuCache;
+	OpenCurrentMenu; 
+	{ Later add ability to return to a menu and program }
 	GotoXY(1, WhereY);
 	TextAttr := $07;
 	ClrEol;		
@@ -384,7 +391,7 @@ begin
 	AConfig^.OpenSection(GetPathID);
 	FReadOnly := StrBool(AConfig^.GetValue('READONLY', BoolStr(FReadOnly)));
 	FCanQuit := StrBool(AConfig^.GetValue('CANQUIT', BoolStr(FCanQuit)));
-	FBtnQuit^.SetVisible(FCanQuit);
+	FBtnQuit^.SetEnabled(FCanQuit);
 	FProgramWindow^.SetCanClose(FCanQuit);
 	UpdateButtons;
 end;
@@ -412,11 +419,27 @@ begin
 end;
 
 procedure TPGME.UpdateMenuCache;
+var
+	D, M, I : PListItem;
 begin
+	FMenus^.BeginUpdate;
+	FMenus^.ClearItems;
 	PMenuCache(FMenuCache)^.Update;
 	if PMenuCache(FMenuCache)^.Modified and (not FReadOnly) then
 		PMenuCache(FMenuCache)^.Save;
-{	Halt(0);  }
+	D := PMenuCache(FMenuCache)^.FCache^.First;
+	while Assigned(D) do begin
+		M := D^.First;
+		while Assigned(M) do begin
+			if PCacheMenu(M)^.Available then begin
+				I := FMenus^.AddItem(PCacheMenu(M)^.ShortTitle);
+				I^.Data := M;
+			end;
+			M := M^.Next;
+		end;
+		D := D^.Next;
+	end;
+	FMenus^.EndUpdate;
 end;
 
 procedure TPGME.OpenCurrentMenu;
@@ -424,15 +447,32 @@ var
 	T, P :PListItem;
 	S : String;
 begin
-	StartDrawing;
+	StartDrawing; 
+	FLastProgram := nil;
+	FLastMenu := nil;
+	FPrograms^.BeginUpdate;
 	FPrograms^.ClearItems;
+	FWritable := False;
+	if Assigned(FMenus^.FCurrent) and Assigned(FMenus^.FCurrent^.Data) then
+		with PCacheMenu(FMenus^.FCurrent^.Data)^ do begin
+			FWritable := Writable;
+			FEditTitle^.SetCaption(LongTitle);
+			P := First;
+			while Assigned(P) do begin
+				T := FPrograms^.AddItem(PCacheApp(P)^.Title);
+				T^.Data := P;
+				P := P^.Next;
+			end;
+		end;
 	UpdateButtons;
-	FinishDrawing;
+	FPrograms^.EndUpdate;
+	FinishDrawing; 
 end;
 
 procedure TPGME.UpdateButtons;
 begin
-	FBtnEdit^.SetVisible((Not FReadOnly) and PMenuCache(FMenuCache)^.Writable);
+	FBtnEdit^.SetEnabled((Not FReadOnly) and FWritable);
+	FBtnRun^.SetEnabled(Assigned(FPrograms^.FCurrent));
 end;
 
 procedure TPGME.CheckLocal(var AEvent : TEvent); 
@@ -442,15 +482,19 @@ begin
 			cmNextMenu : begin
 				ClearEvent(AEvent);
 				FMenus^.Down(True);
-				OpenCurrentMenu;
 			end;
 			cmPrevMenu : begin
 				ClearEvent(AEvent);
 				FMenus^.Up(True);
-				OpenCurrentMenu;
 			end;
 		end; 
 	inherited CheckLocal(AEvent);
+	if FLastMenu <> FMenus^.FCurrent then begin
+		OpenCurrentMenu;
+	end else if (FLastProgram <> FPrograms^.FCurrent) then
+		UpdateButtons;
+	FLastMenu := FMenus^.FCurrent;
+	FLastProgram := FPrograms^.FCurrent;
 end;
 
 {$ENDIF}
