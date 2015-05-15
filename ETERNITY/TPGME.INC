@@ -43,7 +43,7 @@ type
 		destructor Destroy; virtual;
 		procedure ApplyConfig( AConfig : PConfigFile ); virtual;
 		procedure Idle; virtual;
-		function ExecuteItem(AItem : PListItem) : boolean; virtual;
+		procedure ExecuteItem(AItem : PListItem); virtual;
 	end;   
 
 { Some Global Variables }	
@@ -389,9 +389,13 @@ end;
 procedure TPGME.ApplyConfig( AConfig : PConfigFile );
 begin
 	inherited ApplyConfig(AConfig);
+	AConfig^.OpenSection(GetPathID + '.VIEWERS');
+	AConfig^.GetValue('TXT', 'QSCROLL.EXE');
 	AConfig^.OpenSection(GetPathID);
 	FReadOnly := StrBool(AConfig^.GetValue('READONLY', BoolStr(FReadOnly)));
 	FCanQuit := StrBool(AConfig^.GetValue('CANQUIT', BoolStr(FCanQuit)));
+	if Not FCanQuit then 
+		CallBack('', '', '', True);
 	FBtnQuit^.SetEnabled(FCanQuit);
 	FProgramWindow^.SetCanClose(FCanQuit);
 	UpdateButtons;
@@ -505,17 +509,39 @@ begin
 	if AEvent.What = evCommand then
 		case AEvent.Command of
 			cmExecute : begin
-				if ExecuteItem(FLastProgram) then 
-					Terminate;
+				ClearEvent(AEvent);
+				ExecuteItem(FLastProgram)
 			end;
 		end; 
 end;
 
-function TPGME.ExecuteItem(AItem : PListItem) : boolean; 
+procedure TPGME.ExecuteItem(AItem : PListItem); 
+var
+	FName,
+	FExt,
+	FOpts,
+	FRet,
+	FView : String;
 begin
-	ExecuteItem := False;
 	if Not Assigned(AItem) then exit;
-	ExecuteItem := True;
+	if Not Assigned(AItem^.Data) then exit;	
+	FConfig.OpenSection(GetPathID + '.VIEWERS');
+	with PCacheApp(AItem^.Data)^ do begin
+		FRet := '/MENU=' + PCacheMenu(Parent)^.GetNameID + 
+			'/PROG=' + GetNameID;
+		if SimpleExec and (not MaxMemory) and (Count = 0) then begin
+			FName := FileExpand(FileName);
+			FExt := Copy(FName, LastPos('.', FName) + 1, Length(FName) );
+			FOpts := '';
+			FView := FConfig.GetValue(FExt, '');
+			if FView <> '' then begin
+				FOpts := FName;
+				FName := FileExpand(FView);
+			end;
+			CallBack(FName, FOpts, FRet, ReturnAfter or (not FCanQuit));
+			Terminate;
+		end;
+	end;
 end;
 
 {$ENDIF}

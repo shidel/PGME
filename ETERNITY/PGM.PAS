@@ -36,6 +36,7 @@ program Program_Manager_Eternity; { X Series }
 
 type
 	TCallBackBuffer  = record
+		S : boolean;
 		C, P, R : String;
 	end;
 
@@ -61,6 +62,7 @@ asm
 	@@SIG:
 		DB 8,'ETERNITY'
 	@@DATA:
+		DB 0
 		DD 0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0		
 		DD 0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0		
 		DD 0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0		
@@ -155,7 +157,6 @@ end;
 
 { Testing Constant to prevent infinite loop }
 const
-	FAIL : integer = 5;
 	BAT : boolean = false;
 
 begin
@@ -177,7 +178,7 @@ begin
 	{ END Get Start Params }
 	Write('Starting Program Manager Eternity...');
 	repeat
-		Dec(Fail);
+		Buffer.S := False;
 		Buffer.C := '';
 		Buffer.R := '';
 		Exec(EXE, CALLS + PARMS);
@@ -192,5 +193,5 @@ begin
 		end else begin
 			Halt(DosError);
 		end;
-	until (Buffer.C = '') or (Fail < 1);
+	until (not Buffer.S);
 end.

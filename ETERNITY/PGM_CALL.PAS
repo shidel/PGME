@@ -11,7 +11,7 @@ unit PGM_Call;
 
 interface
 
-procedure CallBack(const Command, Params, RetStr : String);
+procedure CallBack(const Command, Params, RetStr : String; const ComeBack : boolean);
 
 implementation
 
@@ -20,6 +20,7 @@ uses QStrings;
 var 
 	CallBackPtr : Pointer;
 	CallBackBuffer  : record
+		S : boolean;
 		C, P, R : String;
 	end;
 	
@@ -33,9 +34,10 @@ asm
   POP ES
 end;
 	
-procedure CallBack(const Command, Params, RetStr : String);
+procedure CallBack(const Command, Params, RetStr : String; const ComeBack : boolean);
 begin
 	with CallBackBuffer do begin
+		S := ComeBack;
 		C := Command;
 		P := Params;
 		R := RetStr;
@@ -59,7 +61,7 @@ begin
 	end; 
 	
 	CallBackPtr := Ptr(StrInt(Copy(ParamStr(1), 7, 10)), 0);	
-	CallBack('', '', '');
+	CallBack('', '', '', False);
 end;
 
 begin
