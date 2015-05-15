@@ -9,6 +9,15 @@ System Requirements:
 	Keyboard.
 	(Mouse is highly recommended, and when using default settings is required).
 	(Color monitor is recommended).
+
+Building PGME from source requires:
+	
+	PGME source trunk from http://pgme.sourceforce.net
+	QuickCrt source trunk from http://quickcrt.sourceforge.net 
+	( QuickCrt should be placed inside the PGME source file directory root)
+	DOS compatible OS. FreeDOS or DosBox is fine.
+	Borland Turbo Pascal 7.0. 
+	Borland BCC Make (included with TP7)
 	
 By default all QuickCRT based programs (These maybe changed in a custom KMP file):
 
