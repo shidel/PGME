@@ -36,6 +36,7 @@ const
 {$UNDEF IMPLEMENTATION}
 
 begin
+	ErrorsOnExit := False;
 	PGME.Create;
 	PGME.Execute;
 	PGME.Destroy;  

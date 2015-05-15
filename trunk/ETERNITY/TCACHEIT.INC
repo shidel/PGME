@@ -39,6 +39,7 @@ end;
 function TCacheItem.ReadSelf(var F : TFile) : boolean;
 begin
 	SetNameID(F.GetString);
+	Writeln(GetNameID); 
 	ReadSelf := F.IOResult = 0;
 end;
 	
@@ -60,17 +61,19 @@ var
 begin
 	OK := True;
 	B := True;
+	OK := ReadSelf(F);
+
 	while OK and B do begin
 		F.ReadBoolean(B);
 		OK := (F.IOResult = 0);
-		if OK and B then 
-			OK := PCacheItem(P)^.ReadSelf(F);
 		if OK and B then begin
 			T := NewChild(S);	
+			T^.Sorted := True;
 			Add(T);
 			OK := PCacheItem(T)^.Read(F);
 		end;
 	end;
+
 	Read := OK;
 end;
 
@@ -81,21 +84,24 @@ var
 	B : Boolean;
 	S : String;
 begin
-	OK := True;
 	B := True;
-	P := First;
+	OK := WriteSelf(F);
+
+	P := First;	
 	while OK and Assigned(P) do begin
 		F.WriteBoolean(B);
-		OK := (F.IOResult = 0);
-		if OK and B then 
-			OK := PCacheItem(P)^.WriteSelf(F);
-		if OK and B then begin
+		OK := IOResult = 0;
+		if OK then 
 			OK := PCacheItem(P)^.Write(F);
-		end;
 		P := P^.Next;
 	end;
-	B := False;
-	F.WriteBoolean(B);
+	
+	if OK then begin
+		B := False;
+		F.WriteBoolean(B);
+		OK := IOResult = 0;
+	end;
+
 	Write := OK;
 end;
 

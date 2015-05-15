@@ -366,6 +366,7 @@ begin
 	Write(FLanguage.GetValue(GetPathID + '.BOOT.CACHE.UPDATE', 'Updating Menu Cache...'));
 	ClrEol;
 	FConfig.OpenSection(GetPathID);
+	Writeln;
 	PMenuCache(FMenuCache)^.Load;
 	PMenuCache(FMenuCache)^.SetPaths(FConfig.GetValue('PATH.MENU', ''));
 	UpdateMenuCache;
