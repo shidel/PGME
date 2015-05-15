@@ -25,7 +25,7 @@ type
 			FProgramWindow : PWindow;
 			FPrograms,
 			FMenus : PListView;
-			FLastMenu, FLastProgram : Pointer;
+			FLastMenu, FLastProgram : PListItem;
 			FFind : record
 				FLabel : PLabel;
 				FEdit : PEdit;
@@ -43,6 +43,7 @@ type
 		destructor Destroy; virtual;
 		procedure ApplyConfig( AConfig : PConfigFile ); virtual;
 		procedure Idle; virtual;
+		function ExecuteItem(AItem : PListItem) : boolean; virtual;
 	end;   
 
 { Some Global Variables }	
@@ -424,6 +425,7 @@ var
 begin
 	FMenus^.BeginUpdate;
 	FMenus^.ClearItems;
+	FLastMenu := nil;
 	PMenuCache(FMenuCache)^.Update;
 	if PMenuCache(FMenuCache)^.Modified and (not FReadOnly) then
 		PMenuCache(FMenuCache)^.Save;
@@ -449,7 +451,6 @@ var
 begin
 	StartDrawing; 
 	FLastProgram := nil;
-	FLastMenu := nil;
 	FPrograms^.BeginUpdate;
 	FPrograms^.ClearItems;
 	FWritable := False;
@@ -465,6 +466,7 @@ begin
 			end;
 		end;
 	UpdateButtons;
+	FLastMenu := FMenus^.FCurrent;
 	FPrograms^.EndUpdate;
 	FinishDrawing; 
 end;
@@ -479,6 +481,10 @@ procedure TPGME.CheckLocal(var AEvent : TEvent);
 begin
 	if AEvent.What = evCommand then
 		case AEvent.Command of
+			cmListViewDouble : if AEvent.InfoPtr = FPrograms then begin
+				ClearEvent(AEvent);
+				PutCommand(cmExecute, @Self);
+			end;
 			cmNextMenu : begin
 				ClearEvent(AEvent);
 				FMenus^.Down(True);
@@ -495,6 +501,21 @@ begin
 		UpdateButtons;
 	FLastMenu := FMenus^.FCurrent;
 	FLastProgram := FPrograms^.FCurrent;
+
+	if AEvent.What = evCommand then
+		case AEvent.Command of
+			cmExecute : begin
+				if ExecuteItem(FLastProgram) then 
+					Terminate;
+			end;
+		end; 
+end;
+
+function TPGME.ExecuteItem(AItem : PListItem) : boolean; 
+begin
+	ExecuteItem := False;
+	if Not Assigned(AItem) then exit;
+	ExecuteItem := True;
 end;
 
 {$ENDIF}
