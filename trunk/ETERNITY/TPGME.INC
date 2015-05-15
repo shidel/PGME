@@ -416,6 +416,7 @@ begin
 	PMenuCache(FMenuCache)^.Update;
 	if PMenuCache(FMenuCache)^.Modified and (not FReadOnly) then
 		PMenuCache(FMenuCache)^.Save;
+{	Halt(0);  }
 end;
 
 procedure TPGME.OpenCurrentMenu;
