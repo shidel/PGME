@@ -10,6 +10,7 @@
 type
 	PCacheItem = ^TCacheItem;
 	TCacheItem = object (TListItem)
+		constructor Create(AName : String);
 		function    Read(var F : TFile) : boolean; virtual;
 		function    Write(var F : TFile) : boolean; virtual;
 		function    ReadSelf(var F : TFile) : boolean; virtual;
@@ -52,6 +53,8 @@ type
 		constructor Create(AName : String);
 		destructor Destroy; virtual;
 		function	NewChild(AID : String) : PListItem; virtual;
+		function    ReadSelf(var F : TFile) : boolean; virtual;
+		function    WriteSelf(var F : TFile) : boolean; virtual;
 		function ClassName : String;
 		function Filename : String;
 		function GroupName : String;
@@ -64,18 +67,25 @@ type
 
 	PCacheProc = ^TCacheProc;
 	TCacheProc = object (TCacheItem)
+		constructor Create(AName : String);
 		function	NewChild(AID : String) : PListItem; virtual;
 	end;
 
+constructor TCacheItem.Create(AName : String);
+begin
+	inherited Create(AName);
+	Sorted := True;
+end;
+
 function TCacheItem.NewChild(AID : String) : PListItem;
 begin
+	if not MemCheck(Sizeof(TCacheDir)) then Halt(8);
 	NewChild := New(PCacheDir, Create(AID));
 end;
 
 function TCacheItem.ReadSelf(var F : TFile) : boolean;
 begin
 	SetNameID(F.GetString);
-	Writeln(GetNameID); 
 	ReadSelf := F.IOResult = 0;
 end;
 	
@@ -103,7 +113,6 @@ begin
 		OK := (F.IOResult = 0);
 		if OK and B then begin
 			T := NewChild(S);	
-			T^.Sorted := True;
 			OK := PCacheItem(T)^.Read(F);
 			Add(T);
 		end;
@@ -141,6 +150,7 @@ end;
 
 function TCacheDir.NewChild(AID : String) : PListItem;
 begin
+	if not MemCheck(Sizeof(TCacheMenu)) then Halt(8);
 	NewChild := New(PCacheMenu, Create(AID));
 end;
 
@@ -253,6 +263,7 @@ end;
 
 function TCacheMenu.NewChild(AID : String) : PListItem; 
 begin
+	if not MemCheck(Sizeof(TCacheApp)) then Halt(8);
 	NewChild := New(PCacheApp, Create(AID));
 end;
 
@@ -325,8 +336,84 @@ begin
 	FTitle := StrPtr(AValue);
 end;
 
+function TCacheApp.ReadSelf(var F : TFile) : boolean; 
+var
+	OK : boolean;
+begin
+	OK := inherited ReadSelf(F);
+	if OK then begin
+		F.ReadBoolean(MaxMemory);
+		OK := F.IOResult = 0;
+	end;
+	if OK then begin
+		F.ReadBoolean(SimpleExec);
+		OK := F.IOResult = 0;
+	end;
+	if OK then begin
+		SetClassName (F.GetString);
+		OK := F.IOResult = 0;
+	end;
+	if OK then begin
+		SetFileName (F.GetString);
+		OK := F.IOResult = 0;
+	end;
+	if OK then begin
+		SetGroupName (F.GetString);
+		OK := F.IOResult = 0;
+	end;
+	if OK then begin
+		SetTitle (F.GetString);
+		OK := F.IOResult = 0;
+	end;
+	ReadSelf := OK;
+end;
+
+function TCacheApp.WriteSelf(var F : TFile) : boolean; 
+var
+	OK : boolean;
+	S : String;
+begin
+	OK := inherited WriteSelf(F);
+	if OK then begin
+		F.WriteBoolean(MaxMemory);
+		OK := F.IOResult = 0;
+	end;
+	if OK then begin
+		F.WriteBoolean(SimpleExec);
+		OK := F.IOResult = 0;
+	end;
+	if OK then begin
+		S := ClassName;
+		F.PutString(S);
+		OK := F.IOResult = 0;
+	end;
+	if OK then begin
+		S := FileName;
+		F.PutString(S);
+		OK := F.IOResult = 0;
+	end;
+	if OK then begin
+		S := GroupName;
+		F.PutString(S);
+		OK := F.IOResult = 0;
+	end;
+	if OK then begin
+		S := Title;
+		F.PutString(S);
+		OK := F.IOResult = 0;
+	end;
+	WriteSelf := OK;
+end;
+
+constructor TCacheProc.Create(AName : String);
+begin
+	inherited Create(AName);
+	Sorted := False;
+end;
+
 function TCacheProc.NewChild(AID : String) : PListItem;
 begin
+	if not MemCheck(Sizeof(TCacheProc)) then Halt(8);
 	NewChild := New(PCacheProc, Create(AID));
 end;
 

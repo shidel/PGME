@@ -123,8 +123,6 @@ var
 	S : String;
 	OK : boolean;
 begin
-	WriteLn;
-	Writeln('Load');
 	FCache^.Clear;
 	FModified := False;
 	F.Create;
@@ -150,7 +148,6 @@ var
 	OK : boolean;
 	S : String;
 begin
-	Writeln('Save');
 	F.Create;
 	F.Assign(GetExePath + 'ETERNITY.DAT');
 	F.Rewrite;
@@ -194,6 +191,7 @@ begin
 				if T = nil then begin
 					{ New Menu File Found }
 					FModified := True;
+					if not MemCheck(Sizeof(TCacheMenu)) then Halt(8);
 					T := New(PCacheMenu, Create(SRec.Name));
 					PCacheMenu(T)^.Fixed := Fixed;
 					PCacheMenu(T)^.Available := True;
@@ -241,11 +239,11 @@ var
 	SRec : TSearchRec;
 	S : String;
 	M, A, P, V : PListItem;
+	I : LongInt;
 begin
 	AMenu^.Clear;
 	Temp.Create(AMenu^.GetNameID);
 	Temp.SetFileName(AMenu^.Parent^.GetNameID + AMenu^.GetNameID);
-	WriteLn('Modified: ', Temp.GetFileName);
 	Temp.Read;
 	Temp.OpenSection('*');
 	if Temp.GetValue('TYPE', '') = ftMenu then begin
@@ -271,8 +269,6 @@ begin
 		if S = '' then 
 			S := PCacheMenu(AMenu)^.ShortTitle;
 		PCacheMenu(AMenu)^.SetLongTitle(S);		
-		Writeln('	Title Short: ', PCacheMenu(AMenu)^.ShortTitle);
-		Writeln('	Title Long: ', PCacheMenu(AMenu)^.LongTitle);
 		
 		{ Read Program Entries }
 		M := Temp.FList.First;
@@ -281,18 +277,40 @@ begin
 			S := Temp.GetValue('FILE', '');
 			if S <> '' then begin
 				{ It is a program entry }
-				WriteLn('(', M^.GetNameID, ')');
+				if not MemCheck(Sizeof(TCacheApp)) then Halt(8);
 				A := New(PCacheApp, Create(M^.GetNameID));
 				with PCacheApp(A)^ do begin
-{					SetFileName(S);}
+					SetFileName(S);
+					S := Trim(Temp.GetValue('TITLE.' + Application^.FLanguageID, ''));
+					if S = '' then 
+						S := Trim(Temp.GetValue('TITLE', ''));
+					if S = '' then 
+						S := Trim(Temp.GetValue('TITLE.EN_US', ''));
+					if S = '' then 
+						S := GetNameID;
+					SetTitle(S);
+					SetClassName(Trim(Temp.GetValue('CLASS', '')));
+					SetGroupName(Trim(Temp.GetValue('GROUP', '')));
+					MaxMemory := StrBool(Temp.GetValue('MAXAVAIL', 'NO'));
+					SimpleExec := StrBool(Temp.GetValue('SIMPLE', 'YES'));
 				end;
 				{ Read App's Process }
-				V := M^.First;
+				V := M^.FindID('COMMANDS');
+				if Assigned(V) then
+					V := V^.First;
+				I := 0;
 				while Assigned(V) do begin
+					S := Trim(V^.GetNameID);
+					if S <> '' then begin
+						Inc(I);
+						if not MemCheck(Sizeof(TCacheProc)) then Halt(8);
+						P := new(PCacheProc, Create(S));
+						A^.Add(P);
+						WriteLn(P^.GetNameID);
+					end;
 					V := V^.Next;
 				end;
-
-				AMenu^.Add(A);				
+				AMenu^.Add(A);
 			end;
 			M := M^.next;
 		end;
