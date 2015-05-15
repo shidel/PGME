@@ -24,6 +24,7 @@ type
     		FModified : boolean;
     		FCache : PListItem;
 		function  ObjectClass ( AName : String ) : String; virtual;
+		procedure UpdateMenu(AMenu : PListItem); virtual;
 	public
 		constructor Create;
 		destructor Destroy; virtual;
@@ -100,7 +101,7 @@ begin
 		if FCache^.FindID(ADir) = nil then 
 			FCache^.Add(New(PCacheDir, Create(ADir)));
 	end;
-	(*
+	
 	{ remove dead paths }
 	P := FCache^.First;
 	while Assigned(P) do begin
@@ -111,7 +112,7 @@ begin
 			FModified := True;
 		end;
 		P := N;
-	end; *)
+	end; 
 end;
 
 procedure TMenuCache.Load;
@@ -122,6 +123,7 @@ var
 	S : String;
 	OK : boolean;
 begin
+	WriteLn;
 	Writeln('Load');
 	FCache^.Clear;
 	FModified := False;
@@ -185,6 +187,7 @@ begin
 	while Assigned(P) do begin
 	
 		{ Scan each directory for files, add if needed }
+		WriteLn('Check: ', P^.GetNameID);
 		FindFirst(P^.GetNameID + '*.MNU', faAnyFile, SRec);
 		S := P^.GetNameID;
 		Drive := Ord(S[1]) - 64;
@@ -193,20 +196,20 @@ begin
 			if SRec.Attr and faDirectory <> faDirectory then begin
 				T := P^.FindID(SRec.Name);
 				if T = nil then begin
+					{ New Menu File Found }
 					FModified := True;
 					T := New(PCacheMenu, Create(SRec.Name));
-					PCacheMenu(T)^.Sorted := True;		
-					PCacheMenu(T)^.LastMod := -1;
 					PCacheMenu(T)^.Fixed := Fixed;
+					PCacheMenu(T)^.Available := True;
 					P^.Add(T);
-					WriteLn('Add: ', T^.GetNameID, ' ', Fixed);
 				end else begin
 					if (PCacheMenu(T)^.LastMod <> SRec.Time) or 
 					(PCacheMenu(T)^.Fixed <> Fixed) then begin
+						{ Menu File has been modified }
 						FModified := True;
-						T^.Clear;
 						PCacheMenu(T)^.LastMod := -1;
 						PCacheMenu(T)^.Fixed := Fixed;
+						PCacheMenu(T)^.Available := True;
 					end;
 				end;		
 			end;			
@@ -217,16 +220,98 @@ begin
 		M := P^.First;
 		while Assigned(M) do begin
 			N := M^.Next;
-			if PCacheMenu(M)^.Fixed and (Not FileExists(P^.GetNameID + M^.GetNameID)) then begin
-				writeln('Removed: ', M^.GetNameID);
-				P^.Remove(M);
-				Dispose(M, Destroy);
+			if PCacheMenu(M)^.Available <> FileExists(P^.GetNameID + M^.GetNameID) then begin
+				FModified := True;
+				PCacheMenu(M)^.Available := FileExists(P^.GetNameID + M^.GetNameID);
 			end;
+			if (Not PCacheMenu(M)^.Available ) then begin
+				if PCacheMenu(M)^.Fixed then begin
+					{ Fixed disk menu file doesn't exits, remove from cache }
+					FModified := True;
+					P^.Remove(M);
+					Dispose(M, Destroy);
+				end;
+			end else if PCacheMenu(T)^.LastMod = -1 then
+				UpdateMenu(M);				
 			M := N;
 		end;
-		
 		P := P^.Next;
 	end;
+end;
+
+procedure TMenuCache.UpdateMenu(AMenu : PListItem);
+var
+	Temp : TConfigFile;
+	SRec : TSearchRec;
+	S : String;
+	M, A, P, V : PListItem;
+begin
+	AMenu^.Clear;
+	Temp.Create(AMenu^.GetNameID);
+	Temp.SetFileName(AMenu^.Parent^.GetNameID + AMenu^.GetNameID);
+	WriteLn('Modified: ', Temp.GetFileName);
+	Temp.Read;
+	Temp.OpenSection('*');
+	if Temp.GetValue('TYPE', '') = ftMenu then begin
+		{ Validated that is a menu file }
+		
+		{ Set Short Title }
+		S := Trim(Temp.GetValue('TITLE.' + Application^.FLanguageID, ''));
+		if S = '' then 
+			S := Trim(Temp.GetValue('TITLE', ''));
+		if S = '' then 
+			S := Trim(Temp.GetValue('TITLE.EN_US', ''));
+		if S = '' then 
+			S := Copy(SRec.Name, 1, Length(AMenu^.GetNameID) - 4);
+		{PCacheMenu(AMenu)^.ID := Temp.GetValue('ID', AMenu^.GetNameID)); }
+		PCacheMenu(AMenu)^.Writable := StrBool(Temp.GetValue('WRITABLE', 'YES'));
+		PCacheMenu(AMenu)^.SetShortTitle(S);
+		{ Set Long Title }
+		S := Trim(Temp.GetValue('DESCRIPTION.' + Application^.FLanguageID, ''));
+		if S = '' then 
+			S := Trim(Temp.GetValue('DESCRIPTION', ''));
+		if S = '' then 
+			S := Trim(Temp.GetValue('DESCRIPTION.EN_US', ''));
+		if S = '' then 
+			S := PCacheMenu(AMenu)^.ShortTitle;
+		PCacheMenu(AMenu)^.SetLongTitle(S);		
+		Writeln('	Title Short: ', PCacheMenu(AMenu)^.ShortTitle);
+		Writeln('	Title Long: ', PCacheMenu(AMenu)^.LongTitle);
+		
+		{ Read Program Entries }
+		M := Temp.FList.First;
+		while assigned(M) do begin
+			Temp.OpenSection(M^.GetNameID);
+			S := Temp.GetValue('FILE', '');
+			if S <> '' then begin
+				{ It is a program entry }
+				WriteLn('(', M^.GetNameID, ')');
+				A := New(PCacheApp, Create(M^.GetNameID));
+				with PCacheApp(A)^ do begin
+{					SetFileName(S);}
+				end;
+				{ Read App's Process }
+				V := M^.First;
+				while Assigned(V) do begin
+					V := V^.Next;
+				end;
+
+				AMenu^.Add(A);				
+			end;
+			M := M^.next;
+		end;
+
+	end else begin
+		PCacheDir(AMenu^.Parent)^.Remove(AMenu);
+		Dispose(AMenu, Destroy);
+		AMenu := nil;
+	end;
+
+	if Assigned(AMenu) then begin
+		FindFirst(AMenu^.Parent^.GetNameID + AMenu^.GetNameID, faAnyFile, SRec);
+		{if DosError = 0 then PCacheMenu(AMenu)^.LastMod := SRec.Time;}
+	end;
+	Temp.Destroy;
 end;
 
 function TMenuCache.Modified;
