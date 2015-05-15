@@ -77,8 +77,8 @@ begin
 					I := Pos(#$0A, S);
 					if (I = 0) or (I > Max) then begin
 						{ if Not found before max, look for space }
-						I := LastPos(#32, S);
-						if (I < 1) or (I > Max) then
+						I := LastPos(#32, Copy(S, 1, Max));
+						if (I < 1) or (I >= Max) then
 							I := Max;
 					end;
 					if I <> 0 then begin
