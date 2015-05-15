@@ -52,6 +52,14 @@ type
 		constructor Create(AName : String);
 		destructor Destroy; virtual;
 		function	NewChild(AID : String) : PListItem; virtual;
+		function ClassName : String;
+		function Filename : String;
+		function GroupName : String;
+		function Title: String;
+		procedure SetClassName(AValue : String);
+		procedure SetFilename(AValue : String);
+		procedure SetGroupName(AValue : String);
+		procedure SetTitle(AValue : String);
 	end;
 
 	PCacheProc = ^TCacheProc;
@@ -138,8 +146,7 @@ end;
 
 constructor TCacheMenu.Create(AName : String);
 begin
-	inherited Create(AName);
-	
+	inherited Create(AName);	
 	LastMod := -1;	
 	Fixed := False;
 	Available := True;
@@ -224,18 +231,12 @@ end;
 
 function TCacheMenu.ShortTitle : String;
 begin
-	if Assigned(FShortTitle) then
-		ShortTitle := PtrStr(FShortTitle)
-	else
-		ShortTitle := '';
+	ShortTitle := PtrStr(FShortTitle);
 end;
 
 function TCacheMenu.LongTitle : String;
 begin
-	if Assigned(FLongTitle) then
-		LongTitle := PtrStr(FLongTitle)
-	else
-		LongTitle := '';
+	LongTitle := PtrStr(FLongTitle);
 end;
 
 procedure TCacheMenu.SetShortTitle(AValue : String);
@@ -278,6 +279,50 @@ end;
 function TCacheApp.NewChild(AID : String) : PListItem;
 begin
 	NewChild := New(PCacheProc, Create(AID));
+end;
+
+function TCacheApp.ClassName : String;
+begin
+	ClassName := PtrStr(FClassName);
+end;
+
+function TCacheApp.Filename : String;
+begin
+	Filename := PtrStr(FFilename);
+end;
+
+function TCacheApp.GroupName : String;
+begin
+	GroupName := PtrStr(FGroupName);
+end;
+
+function TCacheApp.Title: String;
+begin
+	Title := PtrStr(FTitle);
+end;
+
+procedure TCacheApp.SetClassName(AValue : String);
+begin
+	FreeStr(FClassName);
+	FClassName := StrPtr(AValue);
+end;
+
+procedure TCacheApp.SetFilename(AValue : String);
+begin
+	FreeStr(FFilename);
+	FFilename := StrPtr(AValue);
+end;
+
+procedure TCacheApp.SetGroupName(AValue : String);
+begin
+	FreeStr(FGroupName);
+	FGroupName := StrPtr(AValue);
+end;
+
+procedure TCacheApp.SetTitle(AValue : String);
+begin
+	FreeStr(FTitle);
+	FTitle := StrPtr(AValue);
 end;
 
 function TCacheProc.NewChild(AID : String) : PListItem;

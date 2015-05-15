@@ -425,48 +425,6 @@ var
 begin
 	StartDrawing;
 	FPrograms^.ClearItems;
-{	FMenu^.Clear;
-	P := FMenus^.GetCurrent;
-	if (not Assigned(P)) or (Not Assigned(P^.Data)) then exit;
-	S := Trim(PListItem(P^.Data)^.GetNameID);
-	FMenu^.SetFileName(S);
-	FMenu^.Read;
-	FMenu^.OpenSection('*');
-	if FMenu^.GetValue('TYPE', '') <> ftMenu then begin
-		FMenu^.Clear;
-		FEditTitle^.SetCaption(FNoMenuStr);
-		UpdateButtons;
-		FinishDrawing;
-		Exit;
-	end;
-
-		
-	FEditTitle^.SetCaption(S);
-	FWritable := StrBool(FMenu^.GetValue('WRITABLE', 'YES'));
-	P := FMenu^.FList.First;
-	while Assigned(P) do begin
-		FMenu^.OpenSection(P^.GetNameID);
-		S := '';
-		if UCase(Trim(FMenu^.GetValue('TYPE', ''))) = 'ITEM' then begin
-			S := Trim(FMenu^.GetValue('DESCRIPTION.' + FLanguageID, ''));
-			if S = '' then 
-				S := Trim(FMenu^.GetValue('DESCRIPTION', ''));
-			if S = '' then 
-				S := Trim(FMenu^.GetValue('DESCRIPTION.EN_US', ''));
-			if S = '' then 
-				S := Trim(FMenu^.GetValue('TITLE.' + FLanguageID, ''));
-			if S = '' then 
-				S := Trim(FMenu^.GetValue('TITLE', ''));
-			if S = '' then 
-				S := Trim(FMenu^.GetValue('TITLE.EN_US', ''));			
-		end;
-		if S <> '' then begin
-			T := FPrograms^.AddItem(' ' + S + ' ');
-			T^.Data := P;
-		end;
-		P := P^.Next;
-	end;
-	}
 	UpdateButtons;
 	FinishDrawing;
 end;

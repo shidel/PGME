@@ -163,12 +163,10 @@ begin
 	if OK then OK := PCacheItem(FCache)^.Write(F);
 	FModified := not OK;
 	if Not OK then Purge;
-	Halt(0);
 end;
 
 procedure TMenuCache.Purge;
 begin
-	writeln('Purge');
 	FModified := True;
 	FCache^.Clear;
 end;
@@ -181,14 +179,12 @@ var
 	Fixed : boolean;
 	SRec : TSearchRec;
 begin
-	Writeln('Update');
 	{ Search for Menu Files }
 	P := FCache^.First;
 	while Assigned(P) do begin
 	
 		{ Scan each directory for files, add if needed }
-		WriteLn('Check: ', P^.GetNameID);
-		FindFirst(P^.GetNameID + '*.MNU', faAnyFile, SRec);
+		FindFirst(P^.GetNameID + '*' + EMenuExt, faAnyFile, SRec);
 		S := P^.GetNameID;
 		Drive := Ord(S[1]) - 64;
 		Fixed := not (IsRemote(Drive) or isRemovable(Drive) or isCDROM(Drive));
