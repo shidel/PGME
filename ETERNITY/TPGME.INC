@@ -366,7 +366,6 @@ begin
 	Write(FLanguage.GetValue(GetPathID + '.BOOT.CACHE.UPDATE', 'Updating Menu Cache...'));
 	ClrEol;
 	FConfig.OpenSection(GetPathID);
-	Writeln;
 	PMenuCache(FMenuCache)^.Load;
 	PMenuCache(FMenuCache)^.SetPaths(FConfig.GetValue('PATH.MENU', ''));
 	UpdateMenuCache;
@@ -411,121 +410,7 @@ begin
 		FDate^.Update;
 	end;
 end;
-{
-procedure TPGME.AddMenusCache(ALocation : String);
-var
-	SRec : TSearchRec;
-	ID, S : String;
-	I : integer;
-	Fixed : boolean;
-begin
-	if not assigned(FMenusCache) then 
-		FMenusCache := New(PConfigFile, Create('MENUSCACHE'));
-	FMenusCache^.SetFileName(GetExePath + 'ETERNITY.DAT');
-	FMenusCache^.Read;
-	FMenusCache^.OpenSection('*');
-	if FMenusCache^.GetValue('TYPE', '') = '' then 
-		FMenusCache^.SetValue('TYPE', 'CACHE');
-	
-	ALocation := Dir(ALocation);
-	I := Ord(ALocation[1]) - 64;
-	Fixed := IsValidDrive(I) and (not (IsRemovable(I) or IsRemote(I) or IsCDROM(I)));
-	FindFirst(ALocation + '*.MNU', faAnyFile, SRec);
-	while DosError = 0 do begin
-		if SRec.Attr and faDirectory <> faDirectory then begin
-			FMenusCache^.OpenSection(Dir(ALocation) + SRec.Name);
-			FMenusCache^.SetValue('MODIFIED', '-1');
-			FMenusCache^.SetValue('FIXED', BoolStr(Fixed));
-		end;
-		FindNext(SRec);
-	end;
-	
-end;
 
-procedure TPGME.UpdateMenusCache;
-var
-	Temp : TConfigFile;
-	S, Menu : String;
-	I : integer;
-	Modified : longInt;
-	Avail, Fixed : boolean;
-	P, N : PListItem;
-	SRec : TSearchRec;
-begin
-	if Not Assigned(FMenusCache) then exit;
-	
-	Temp.Create('TEMPMENU');
-	P := FMenusCache^.FList.First;
-	while Assigned(P) do begin
-		N := P^.Next;
-		Menu := UCase(P^.GetNameID);
-		if (Copy(Menu, Length(Menu) - 3, 4) = '.MNU') then begin
-			FMenusCache^.OpenSection(Menu);
-			I := Ord(Menu[1]) - 64;
-			Fixed := IsValidDrive(I) and (not (IsRemovable(I) or IsRemote(I) or IsCDROM(I)));
-			Avail := IsValidDrive(I) and FileExists(Menu);
-			if Fixed or Avail then
-				FindFirst(Menu, faAnyFile, SRec);
-			if Avail and (FMenusCache^.GetValue('MODIFIED', '0') <> IntStr(SRec.Time)) then begin
-				Temp.SetFileName(Menu);
-				Temp.Read;
-				Temp.OpenSection('*');
-				if Temp.GetValue('TYPE', '') = ftMenu then begin
-					S := Trim(Temp.GetValue('TITLE.' + FLanguageID, ''));
-					if S = '' then 
-						S := Trim(Temp.GetValue('TITLE', ''));
-					if S = '' then 
-						S := Trim(Temp.GetValue('TITLE.EN_US', ''));
-					if S = '' then 
-						S := Copy(SRec.Name, 1, Length(SRec.Name) - 4);
-					FMenusCache^.SetValue('MODIFIED', IntStr(SRec.Time));
-					FMenusCache^.SetValue('ID', Temp.GetValue('ID', SRec.Name));
-					FMenusCache^.SetValue('WRITABLE', BoolStr(StrBool(Temp.GetValue('WRITABLE', 'YES'))));
-					FMenusCache^.SetValue('TITLE', S);
-				end;
-				Temp.Clear;
-			end;
-			if (Not Avail) and (Fixed) then begin
-				P^.Clear;
-				FMenusCache^.FList.Remove(P);
-				Dispose(P, Destroy);
-				P := nil;
-			end else begin
-				FMenusCache^.SetValue('FIXED', BoolStr(Fixed));
-				FMenusCache^.SetValue('AVAILABLE', BoolStr(Avail));
-			end;
-		end;
-		P := N;
-	end;
-	
-	Temp.Destroy;
-	if Not FReadOnly then 
-		FMenusCache^.Write;
-end;
-
-procedure TPGME.UpdateMenuList;
-var	
-	Menu, Name : String;
-	P, T : PListItem;
-begin
-	if Not Assigned(FMenusCache) then exit;
-	StartDrawing;	
-	P := FMenusCache^.FList.First;
-	while Assigned(P) do begin
-		Menu := UCase(P^.GetNameID);
-		if (Copy(Menu, Length(Menu) - 3, 4) = '.MNU') then begin
-			FMenusCache^.OpenSection(Menu);
-			Name := Trim(FMenusCache^.GetValue('TITLE', ''));
-			if FMenus^.FItems.FindID(Name) = nil then begin
-				T := FMenus^.AddItem(' ' + Name + ' ');
-				T^.Data := P;
-			end;
-		end;
-		P := P^.Next;
-	end;
-	FinishDrawing;
-end;
-}
 procedure TPGME.UpdateMenuCache;
 begin
 	PMenuCache(FMenuCache)^.Update;
@@ -555,22 +440,6 @@ begin
 		Exit;
 	end;
 
-	S := Trim(FMenu^.GetValue('DESCRIPTION.' + FLanguageID, ''));
-	if S = '' then 
-		S := Trim(FMenu^.GetValue('DESCRIPTION', ''));
-	if S = '' then 
-		S := Trim(FMenu^.GetValue('DESCRIPTION.EN_US', ''));
-	if S = '' then 
-		S := Trim(FMenu^.GetValue('TITLE.' + FLanguageID, ''));
-	if S = '' then 
-		S := Trim(FMenu^.GetValue('TITLE', ''));
-	if S = '' then 
-		S := Trim(FMenu^.GetValue('TITLE.EN_US', ''));
-	if S = '' then begin
-		S := FMenu^.GetFileName;
-		S := Copy(S, LastPos('\', S) + 1, Length(S));
-		S := FNoMenuTitleStr + '(' + Copy(S, 1, Length(S) - 4) + ')';
-	end;
 		
 	FEditTitle^.SetCaption(S);
 	FWritable := StrBool(FMenu^.GetValue('WRITABLE', 'YES'));
