@@ -19,7 +19,7 @@ const
 	cmExecute 	= cmExecuteFile;
 	cmNextMenu  = cmAfter;
 	cmPrevMenu  = cmBefore;
-	
+		
 	ftMenu	= 'MENU';
 
 {$DEFINE INTERFACE}
