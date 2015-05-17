@@ -8,7 +8,7 @@
 *)
 
 {$I ETOOLS.DEF}
-program Eternity_Config_File_Toolkit; { X Series }
+program Eternity_Text_Scroller; { X Series }
 
 uses QCrt, QStrings;
 {$I ..\ETERNITY\LICENSE.INC}
@@ -51,7 +51,7 @@ procedure AddLines(var S :String; All : boolean);
 var
 	Max, I : integer;
 begin
-	Max := Lo(WindMax);
+	Max := Lo(ScreenMax) + 1;
 	while ((S <> '') and All) or (Length(S) > Max) do
 		repeat	
 			{ Expand Tabs before CR }				
@@ -79,13 +79,11 @@ end;
 procedure LoadFiles;
 const
 	Max = 80;
-
 var
 	J : integer;
 	F : File;
 	C : Word;
 	S, T : String;
-	
 begin
 	for J := 1 to ParamCount do begin
 		Assign(F, ParamStr(J));
@@ -110,7 +108,7 @@ begin
 	Bottom := Top;
 	P := Top;
 	I := 0; 
-	while Assigned(P) and (I <= Hi(WindMax)) do begin 
+	while Assigned(P) and (I <= Hi(ScreenMax)) do begin 
 		Bottom := P;
 		Inc(I);
 		GotoXY(1,I);
@@ -120,32 +118,101 @@ begin
 	end;	
 end;
 
+procedure WaitSync; 
+begin
+	while Port[$3da] and $8 <> $8 do;
+	while Port[$3da] and $8 = $8 do;
+end;
+
+procedure ScanStart(Line : Byte);
+begin
+	Port[$3d4] := $08;
+	Port[$3d5] := Line;
+end;
+
+procedure ScrollUp;
+var
+	I : byte;
+	P : Pointer;
+begin
+	P := GetVideoPtr;
+	ScreenMax := ScreenMax + $100;
+	WindMax := ScreenMax;
+	GotoXY(1,1);
+	WaitSync;
+	ScanStart(FontHeight);
+	GotoXY(1,1);
+	InsLine;
+	FWrite(PtrStr(Top^.Line));
+	ClrEol;
+	for I := 0 to FontHeight do begin
+		ScanStart(FontHeight - I);
+		WaitSync;
+	end;
+	GotoXY(1,1);
+	ScreenMax := ScreenMax - $100;
+end;
+
+procedure ScrollDown;
+var
+	I : byte;
+begin
+	ScreenMax := ScreenMax + $100;
+	WindMax := ScreenMax;
+	GotoXY(1,Hi(ScreenMax) + 1);
+	FWrite(PtrStr(Bottom^.Line));
+	ClrEol;
+	WaitSync;
+	for I := 0 to FontHeight do begin
+		ScanStart(I);
+		WaitSync;
+	end;
+	GotoXY(1,1);
+	ScanStart(0);
+	DelLine;
+	ScreenMax := ScreenMax - $100;
+end;
+
 procedure MoveUp(Count : integer);
+var
+	E : TEvent;
 begin
 	while Count > 0 do begin
 		if Top^.Prev = nil then exit;
 		Top := Top^.Prev;
 		Bottom := Bottom^.Prev;
 		Dec(Count);
-		GotoXY(1,1);
-		InsLine;
-		FWrite(PtrStr(Top^.Line)); 
-		ClrEol;
+		GetEvent(E);
+		if (E.What <> evNothing) or (Count > 0) then begin
+			if E.What <> evNothing then PutEvent(E);
+			GotoXY(1,1);
+			InsLine;
+			FWrite(PtrStr(Top^.Line)); 
+			ClrEol;
+		end else
+			ScrollUp;
 	end;
 end;
 
 procedure MoveDown(Count : integer);
+var
+	E : TEvent;
 begin
 	while Count > 0 do begin
 		if Bottom^.Next = nil then exit;
 		Top := Top^.Next;
 		Bottom := Bottom^.Next;
 		Dec(Count);
-		GotoXY(1,1);
-		DelLine;
-		GotoXY(1,Hi(WindMax) +1);
-		FWrite(PtrStr(Bottom^.Line)); 
-		ClrEol;
+		GetEvent(E);
+		if (E.What <> evNothing) or (Count > 0) then begin
+			if E.What <> evNothing then PutEvent(E);
+			GotoXY(1,1);
+			DelLine;
+			GotoXY(1,Hi(ScreenMax) +1);
+			FWrite(PtrStr(Bottom^.Line)); 
+			ClrEol;
+		end else
+			ScrollDown;
 	end;
 end;
 	
@@ -153,6 +220,7 @@ procedure Viewer;
 var
 	E : TEvent;
 begin
+	HideCursor;
 	CheckScroll := False;
 	CheckCursor := False;
 	InitQCrtMaps;
@@ -160,38 +228,52 @@ begin
 	ClrScr;
 	Top := First;
 	Redraw;
+	PurgeEvents;
 	repeat
-		GotoXY(1,Hi(WindMax)+1);
-		PurgeEvents;
+		GotoXY(1,Hi(ScreenMax)+1);
 		ClearEvent(E);
 		While E.What = evNothing do GetEvent(E);
 		if E.What = evCommand then
 			Case E.Command of
 				cmUp : begin
+					PurgeEvents;
 					ClearEvent(E);
 					MoveUp(1);
 				end;
 				cmDown : begin
+					PurgeEvents;
 					ClearEvent(E);
 					MoveDown(1);
 				end;
 				cmPageUp : begin
 					ClearEvent(E);
-					MoveUp(Hi(WindMax));
+					MoveUp(Hi(ScreenMax));
 				end;
 				cmPageDown : begin
 					ClearEvent(E);
-					MoveDown(Hi(WindMax));
+					MoveDown(Hi(ScreenMax));
 				end;
 			end;
 	until E.What <> evNothing;
-		
+	GotoXY(1,Hi(ScreenMax)+1);		
+	NormalCursor;
+end;
+
+procedure ShowHelp;
+var
+	S : String;
+begin
+	FWriteLn('Usage: QSCROLL filename');
+	FWriteLn('');
+	S := SoftwareLicense;
+	while S <> '' do 
+		FWriteLn(Space(4) + PullStr(#13, S));
 end;
 
 begin
 	TurnMouseOff;
 	if ParamCount = 0 then
-		WriteLn('Usage: QSCROLL filename')
-	else
+		ShowHelp
+	else 
 		Viewer;
 end.
