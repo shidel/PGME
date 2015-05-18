@@ -63,6 +63,9 @@ By default all QuickCRT based programs (These maybe changed in a custom KMP file
 					sequences.
 	QKEYS.EXE		(Not yet started) Program to aid in modifing keyboard and
 					command mappings in KMP files.
+	QSCROLL.EXE		Smooth scrolling text file viewer. Supporting, various
+					character heights and DOS/UNIX line endings. Any keypress
+					other than UP, Down, PageUp or PageDown quits the program.
 
 ** FONT FILES **
 
