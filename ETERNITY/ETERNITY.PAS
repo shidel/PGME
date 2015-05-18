@@ -14,6 +14,7 @@ program Program_Manager_Eternity_Main_Application; { X Series }
 uses QCrt, QErrors, QStrings, QDos, QFiles, QClass, QObjects, QControls, QFmtStr, PGM_Call;
 
 {$I LICENSE.INC}
+{$I ../VERSION.INC}
 
 const
 	cmExecute 	= cmExecuteFile;
