@@ -9,6 +9,6 @@ const
 		Year:2015; 
 		Month:05; 
 		Day:18; 
-		Revision:74; 
+		Revision:75; 
 		URL:'svn+ssh://shidel@svn.code.sf.net/p/pgme/svn/trunk' 
 	); 
