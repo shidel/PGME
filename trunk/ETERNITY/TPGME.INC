@@ -26,6 +26,7 @@ type
 			FPrograms,
 			FMenus : PListView;
 			FLastMenu, FLastProgram : PListItem;
+			FVersion : PLabel;
 			FFind : record
 				FLabel : PLabel;
 				FEdit : PEdit;
@@ -87,6 +88,26 @@ begin
 		FD[1].ID := FmtInteger;
 		FD[1].IntegerValue := Hour;
 		AValue := FormatStr(PGME.FTime^.GetCaption, FD, 5); 
+	end;
+end;
+
+procedure FormatVersion (AVisual : PControl; var AValue : String); far;
+var
+	FD : array[0..4] of TFormatData;
+begin
+	if not Assigned(AVisual) then exit;
+	if AVisual = PControl(PGME.FVersion) then begin
+		FD[0].ID := FmtInteger;
+		FD[0].IntegerValue := Version.Year;
+		FD[1].ID := FmtInteger;
+		FD[1].IntegerValue := Version.Month;
+		FD[2].ID := FmtInteger;
+		FD[2].IntegerValue := Version.Day;
+		FD[3].ID := fmtInteger;
+		FD[3].IntegerValue := Version.Revision;
+		FD[4].ID := fmtString;
+		FD[4].StringValue := Version.URL;
+		AValue := FormatStr(PGME.FVersion^.GetCaption, FD, 5);
 	end;
 end;
 
@@ -243,8 +264,10 @@ begin
 
 		{ Title Display }
 		TextAttr := $71;
-		with PLabel(New(PLabel, Create(P, 'SAM_I_AM')))^ do begin
-			SetCaption('PGM Eternity');
+		FVersion := PLabel(New(PLabel, Create(P, 'SAM_I_AM')));
+		with FVersion^ do begin
+			OnFormat := FormatVersion;
+			SetCaption('0[Z4,X3.2],1,2[Z2];Version %1/%2/%0');
 			SetAnchors(alClient);
 		end;
 	
