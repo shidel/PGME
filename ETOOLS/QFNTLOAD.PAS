@@ -17,6 +17,19 @@ uses QBIOS;
 const
 	AppTitle = 'QuickCrt Font Loader';
 	AppID = 'QLOADFNT';
+	
+procedure FixCursor; assembler;
+asm
+  MOV AH, $03
+  MOV BH, 0
+  INT $10
+  PUSH CX 
+  MOV  CX, $2000
+  MOV  AH, $01
+  INT  $10
+  POP  CX
+  INT  $10
+end;
 		
 procedure Execute;
 const
@@ -78,6 +91,7 @@ begin
 		Close(F);
 		
 		SetUserFont(H, P); 
+		FixCursor;
 
 		FreeMem(P, Size);
 	end;
