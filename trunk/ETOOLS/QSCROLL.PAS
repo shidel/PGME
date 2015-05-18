@@ -184,7 +184,7 @@ begin
 		Bottom := Bottom^.Prev;
 		Dec(Count);
 		GetEvent(E);
-		if ((E.What <> evNothing) or (Count > 0)) and DirectVideo then begin
+		if ((E.What <> evNothing) or (Count > 0)) or (not DirectVideo) then begin
 			if E.What <> evNothing then PutEvent(E);
 			GotoXY(1,1);
 			InsLine;
@@ -205,7 +205,7 @@ begin
 		Bottom := Bottom^.Next;
 		Dec(Count);
 		GetEvent(E);
-		if ((E.What <> evNothing) or (Count > 0)) and DirectVideo then begin
+		if ((E.What <> evNothing) or (Count > 0)) or (not DirectVideo) then begin
 			if E.What <> evNothing then PutEvent(E);
 			GotoXY(1,1);
 			DelLine;
