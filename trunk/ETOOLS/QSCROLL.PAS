@@ -171,6 +171,7 @@ begin
 	ScanStart(0);
 	DelLine;
 	ScreenMax := ScreenMax - $100;
+	WindMax := ScreenMax;
 end;
 
 procedure MoveUp(Count : integer);
@@ -183,7 +184,7 @@ begin
 		Bottom := Bottom^.Prev;
 		Dec(Count);
 		GetEvent(E);
-		if (E.What <> evNothing) or (Count > 0) then begin
+		if ((E.What <> evNothing) or (Count > 0)) and DirectVideo then begin
 			if E.What <> evNothing then PutEvent(E);
 			GotoXY(1,1);
 			InsLine;
@@ -204,7 +205,7 @@ begin
 		Bottom := Bottom^.Next;
 		Dec(Count);
 		GetEvent(E);
-		if (E.What <> evNothing) or (Count > 0) then begin
+		if ((E.What <> evNothing) or (Count > 0)) and DirectVideo then begin
 			if E.What <> evNothing then PutEvent(E);
 			GotoXY(1,1);
 			DelLine;
@@ -254,7 +255,8 @@ begin
 					MoveDown(Hi(ScreenMax));
 				end;
 			end;
-	until E.What <> evNothing;
+	until (E.What = evCommand) or (E.What = evKeyboard);
+	CheckCursor := True;
 	GotoXY(1,Hi(ScreenMax)+1);		
 	NormalCursor;
 end;
