@@ -27,6 +27,7 @@ type
 			PWLabel, PHLabel, PSLabel, PCLabel, PALabel : PLabel;
 			PBtnChar, PBtnDemo, PBtnInfo, PBtnSize : PButton;
 			PBtnPrev, PBtnNext : PButton;
+			pBtnCopy, PBtnPaste : PButton;
 			PBtnUp, PBtnDown, PBtnLeft, PBtnRight : PButton;
 			FLastFont : String;
 		procedure BeforeShow; virtual;
@@ -259,7 +260,6 @@ begin
 	inherited Create(nil, AppID);
 	FInfo.Settitle(AppTitle);
 	FLastFont := GetExePath;
-	
 	SetHelpText('This is the Eternity Font Designer help system.');
 {	AddHelpText('');
 	AddHelpText('With this program you can create custom fonts to use with PGME and');
@@ -534,11 +534,11 @@ begin
 	
 	{ Prev/Next Char Buttons }
 	BWide := 16;
-	Bounds(30 - BWide - 1, P^.Height - 8, 14, 1, B);
+	Bounds(29 - BWide - 1, P^.Height - 8, 14, 1, B);
 	TextAttr := $5F;
 	PBtnPrev := New(PButton, Create(P, 'BUTTON.PREV'));
 	with PButton(PBtnPrev)^ do begin
-		SetHelpText('5;"%0" Button: Selects the charcater before the current one for editing.');
+		SetHelpText('5;"%0" Button: Selects the character before the current one for editing.');
 		AddHelpText('The default keyboard shortcut is "PageUp".');
 		SetAnchors(abRight or abBottom);  
 		Inc(B.Left, BWide);
@@ -551,10 +551,10 @@ begin
 	end;	
 	PBtnNext := New(PButton, Create(P, 'BUTTON.NEXT'));
 	with PButton(PBtnNext)^ do begin
-		SetHelpText('5;"%0" Button: Selects the charcater after the current one for editing.');
+		SetHelpText('5;"%0" Button: Selects the character after the current one for editing.');
 		AddHelpText('The default keyboard shortcut is "PageDown".');
 		SetAnchors(abRight or abBottom);  
-		Inc(B.Left, BWide);
+		Inc(B.Left, BWide + 1);
 		SetBounds(B);
 		SetCaption('Next');
 		SetCommand(cmNextChar); 
@@ -563,13 +563,41 @@ begin
 		L := T;
 	end;	
 
+	{ Prev/Next Char Buttons }
+	BWide := 9;
+	Bounds(43 - BWide - 1, P^.Height - 4, BWide, 1, B);
+	TextAttr := $3F;
+	PBtnCopy := New(PButton, Create(P, 'BUTTON.COPY'));
+	with PButton(PBtnCopy)^ do begin
+		SetHelpText('5;"%0" Button: Copies the current character to the clipboard.');
+		AddHelpText('The default keyboard shortcut is "ALT+C".');
+		SetAnchors(abRight or abBottom);  
+		SetBounds(B);
+		SetCaption('Copy');
+		SetCommand(cmCopy); 
+		SetEnabled(False);
+		L := T;
+	end;	
+	PBtnPaste := New(PButton, Create(P, 'BUTTON.PASTE'));
+	with PButton(PBtnPaste)^ do begin
+		SetHelpText('5;"%0" Button: Copies the the clipboard onto the current character.');
+		AddHelpText('The default keyboard shortcut is "PageDown".');
+		SetAnchors(abRight or abBottom);  
+		Inc(B.Left, BWide + 3);
+		SetBounds(B);
+		SetCaption('Paste');
+		SetCommand(cmPaste); 
+		SetEnabled(False);
+		L := T;
+	end;	
+
 	{ Shifting Buttons }
 	BWide := 9;
-	Bounds(44 - BWide div 2, 4, BWide, 1, B);
+	Bounds(43 - BWide div 2, 4, BWide, 1, B);
 	TextAttr := $3F;
 	PBtnUp := New(PButton, Create(P, 'BUTTON.UP'));
 	with PButton(PBtnUp)^ do begin
-		SetHelpText('5;"%0" Button: Shifts the current charcater up one line.');
+		SetHelpText('5;"%0" Button: Shifts the current character up one line.');
 		AddHelpText('The default keyboard shortcut is "Up Arrow".');
 		SetAnchors(abRight);  
 		SetBounds(B);
@@ -579,10 +607,10 @@ begin
 		SetEnabled(False);
 		L := T;
 	end;	
-	Bounds(44 - BWide div 2, 8, BWide, 1, B);
+	Bounds(43 - BWide div 2, 8, BWide, 1, B);
 	PBtnDown := New(PButton, Create(P, 'BUTTON.DOWN'));
 	with PButton(PBtnDown)^ do begin
-		SetHelpText('5;"%0" Button: Shifts the current charcater down one line.');
+		SetHelpText('5;"%0" Button: Shifts the current character down one line.');
 		AddHelpText('The default keyboard shortcut is "Down Arrow".');
 		SetAnchors(abRight);  
 		SetBounds(B);
@@ -592,10 +620,10 @@ begin
 		SetEnabled(False);
 		L := T;
 	end;	
-	Bounds(44 - BWide div 2 - BWide, 6, BWide, 1, B);
+	Bounds(43 - BWide div 2 - BWide, 6, BWide, 1, B);
 	PBtnLeft := New(PButton, Create(P, 'BUTTON.LEFT'));
 	with PButton(PBtnLeft)^ do begin
-		SetHelpText('5;"%0" Button: Shifts the current charcater left one pixel.');
+		SetHelpText('5;"%0" Button: Shifts the current character left one pixel.');
 		AddHelpText('The default keyboard shortcut is "Left Arrow".');
 		SetAnchors(abRight);  
 		SetBounds(B);
@@ -605,10 +633,10 @@ begin
 		SetEnabled(False);
 		L := T;
 	end;	
-	Bounds(44 - BWide div 2 + BWide, 6, BWide, 1, B);
+	Bounds(43 - BWide div 2 + BWide, 6, BWide, 1, B);
 	PBtnRight := New(PButton, Create(P, 'BUTTON.RIGHT'));
 	with PButton(PBtnRight)^ do begin
-		SetHelpText('5;"%0" Button: Shifts the current charcater right one pixel.');
+		SetHelpText('5;"%0" Button: Shifts the current character right one pixel.');
 		AddHelpText('The default keyboard shortcut is "Right Arrow".');
 		SetAnchors(abRight);  
 		SetBounds(B);
@@ -693,6 +721,8 @@ begin
 	PBtnDown^.SetEnabled(AEnabled);
 	PBtnLeft^.SetEnabled(AEnabled);
 	PBtnRight^.SetEnabled(AEnabled);
+	PBtnCopy^.SetEnabled(AEnabled);
+	PBtnPaste^.SetEnabled(AEnabled);	
 	FinishDrawing;
 end;
 
@@ -815,6 +845,14 @@ begin
 			cmShiftRight : begin
 				ClearEvent(AEvent);
 				PEditor^.ShiftRight;
+			end;
+			cmCopy : begin
+				ClearEvent(AEvent);
+				PEditor^.CopyChar;
+			end;
+			cmPaste : begin
+				ClearEvent(AEvent);
+				PEditor^.PasteChar;
 			end;
 		end;
 	inherited CheckLocal(AEvent);
