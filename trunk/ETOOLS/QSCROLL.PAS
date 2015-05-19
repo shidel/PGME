@@ -256,6 +256,14 @@ begin
 				end;
 			end;
 	until (E.What = evCommand) or (E.What = evKeyboard);
+	if DirectVideo then begin
+		ScreenMax := ScreenMax + $100;
+		WindMax := ScreenMax;
+		GotoXY(1,Hi(ScreenMax) + 1);
+		ClrEol;
+		ScreenMax := ScreenMax - $100;
+		WindMax := ScreenMax;
+	end;
 	CheckCursor := True;
 	GotoXY(1,Hi(ScreenMax)+1);		
 	NormalCursor;
