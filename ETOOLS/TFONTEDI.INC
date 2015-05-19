@@ -26,6 +26,7 @@ type
 		FDemoColor,
 		FContColor : Integer; 
 		FPressKey : String;
+		FClipboard : array[0..31] of byte;
 		function GetCharByte(Row : Integer) : Integer; virtual;
 		procedure SetCharByte(Row : Integer; Value : Integer); virtual;
 		procedure UpdatePoint(XY : TPoint; Toggle : boolean); virtual;
@@ -51,6 +52,8 @@ type
 		procedure DemoFont(NullDac : boolean); virtual;
 		procedure ApplyTheme( AConfig : PConfigFile ); virtual;
 		procedure ApplyLanguage( AConfig : PConfigFile ); virtual;
+		procedure CopyChar; virtual;
+		procedure PasteChar; virtual;
 	end;
 {$ENDIF}
 
@@ -67,6 +70,7 @@ constructor TFontEdit.Create;
 begin
 	inherited Create(AParent, AName);
 	FFont := New(PFont, Create('EDITFONT'));
+	FillChar(FClipboard, Sizeof(FClipboard), 0);
 	FStyle := bxSingle;
 	FShadow := False;
 	FCurrent := -1;
@@ -514,5 +518,20 @@ begin;
 	Update;
 end;
 
+procedure TFontEdit.CopyChar;
+var
+	I : integer;
+begin
+	for I := 0 to FFont^.GetHeight - 1 do
+		FClipboard[I] := GetCharByte(I);
+end;
 
+procedure TFontEdit.PasteChar;
+var
+	I : integer;
+begin
+	for I := 0 to FFont^.GetHeight - 1 do
+		SetCharByte(I, FClipboard[I]);
+	Update;
+end;
 {$ENDIF}
