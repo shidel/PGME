@@ -581,7 +581,7 @@ begin
 	PBtnPaste := New(PButton, Create(P, 'BUTTON.PASTE'));
 	with PButton(PBtnPaste)^ do begin
 		SetHelpText('5;"%0" Button: Copies the the clipboard onto the current character.');
-		AddHelpText('The default keyboard shortcut is "PageDown".');
+		AddHelpText('The default keyboard shortcut is "ALT+V".');
 		SetAnchors(abRight or abBottom);  
 		Inc(B.Left, BWide + 3);
 		SetBounds(B);
