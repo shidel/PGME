@@ -15,7 +15,8 @@ type
 	public { protected }
 			FReadOnly : boolean;
 			FEditing, 
-			FWritable : boolean;
+			FWritable,
+			FBatLoop : boolean;
 			FEditTitle : PEdit;
 			FBtnQuit,
 			FBtnRun,
@@ -27,6 +28,7 @@ type
 			FMenus : PListView;
 			FLastMenu, FLastProgram : PListItem;
 			FVersion : PLabel;
+			FNoTempDir, FNoBatchLoop : PDialog;
 			FFind : record
 				FLabel : PLabel;
 				FEdit : PEdit;
@@ -45,6 +47,9 @@ type
 		procedure ApplyConfig( AConfig : PConfigFile ); virtual;
 		procedure Idle; virtual;
 		procedure ExecuteItem(AItem : PListItem); virtual;
+		function GetNoTempDir : PDialog; virtual;
+		function GetNoBatchLoop : PDialog; virtual;
+		procedure CreateAllDialogs(ConserveMemory : boolean); virtual;
 	end;   
 
 { Some Global Variables }	
@@ -127,12 +132,15 @@ var
 	B : TBounds;
 begin	
 	inherited Create(nil, 'PGM');
+	FBatLoop := False;
 	FReadOnly := False;
 	FCanQuit := True;
 	FEditing := False;
 	FWritable := True;
 	FLastMenu := nil;
 	FLastProgram := nil;
+	FNoTempDir := nil;
+	FNoBatchLoop := nil;
 	OldIdleProc := QCrt.IdleProc;
 	QCrt.IdleProc := PGMIdleProc;
 	FMenuCache := New(PMenuCache, Create);
@@ -372,13 +380,103 @@ begin
 	inherited Destroy;
 end;
 
+function TPGME.GetNoTempDir;
+var
+	B : TBounds;
+begin
+	if Not Assigned(FNoTempDir) then begin
+		TextAttr := $4F;
+		FNoTempDir := New(PMessageBox, Create(@Self, 'DIALOG.NOTEMPDIR'));
+		with PMessageBox(FNoTempDir)^ do begin
+			SetHelpText('This is an error dialog box.');
+			AddHelpText('');
+			AddHelpText('It means what it says. You do not have a TEMP directory setup.');
+			AddHelpText('You should really think about adding one. Then declare it');
+			AddHelpText('in your AUTOEXEC batch file using the SET command.');
+			SetBackground(4);
+			SetTextAttr($4F);
+			Bounds(1,1,68,10, B);
+			SetBounds(B);
+			SetTitle('Oh, NO! Me so sorry! :(');
+			SetMessage(' ');
+			AppendMessage('');
+			AppendMessage('Unfortunately, the system has no TEMP directory defined.');
+			AppendMessage('So, I am unable to execute that program at this time.');
+			AppendMessage(' ');
+			AppendMessage('Maybe, try adding SET TEMP=C:\TEMP to the AUTOEXEC.BAT file.'); 
+			AppendMessage('(That assumes you have a directory called C:\TEMP somewhere)'); 
+		end;
+		ApplySettings(FNoTempDir);
+	end;
+	GetNoTempDir := FNoTempDir;
+end;
+
+function TPGME.GetNoBatchLoop;
+var
+	B : TBounds;
+begin
+	if Not Assigned(FNoBatchLoop) then begin
+		TextAttr := $4F;
+		FNoBatchLoop := New(PMessageBox, Create(@Self, 'DIALOG.NOBATCH'));
+		with PMessageBox(FNoBatchLoop)^ do begin
+			SetHelpText('This is an error dialog box.');
+			AddHelpText('');
+			AddHelpText('It means what it says. You ran PGME directly. When you');
+			AddHelpText('should be running it by using the PGM.BAT launcher file.');
+			AddHelpText('PGME does not really care how you start it. But, it can');
+			AddHelpText('only perform simple launching when you run it directly.');
+			AddHelpText('Complex and Max Memory style launches are not available unless');
+			AddHelpText('you start PGME by using PGM.BAT file.');
+			SetBackground(4);
+			SetTextAttr($4F);
+			Bounds(1,1,66,10, B);
+			SetBounds(B);
+			SetTitle('Oh, NO! Me so sorry! :(');
+			SetMessage(' ');
+			AppendMessage('');
+			AppendMessage('Unfortunately, you did not use the launcher batch file');
+			AppendMessage('PGM.BAT and PGME can only perform simple launching at');
+			AppendMessage('this time.');
+			AppendMessage(' ');
+			AppendMessage('Maybe, next time start PGME using the PGM.BAT launcher.'); 
+		end;
+		ApplySettings(FNoBatchLoop);
+	end;
+	GetNoBatchLoop := FNoBatchLoop;
+end;
+
+procedure TPGME.CreateAllDialogs;
+begin
+	inherited CreateAllDialogs(ConserveMemory);
+	GetNoTempDir;
+	if ConserveMemory then FreeDialog(PDialog(FNoTempDir));
+	GetNoBatchLoop;
+	if ConserveMemory then FreeDialog(PDialog(FNoBatchLoop));
+end;
+
 procedure TPGME.BeforeShow;
+var
+	P : PLabel;
+	B : TBounds;
+	I : integer;
 begin
 	inherited BeforeShow;
 	{ if ParamStr(2) = '/INIT' then begin }
 	GotoXY(1, WhereY);
 	TextAttr := $07;
 	ClrEOL;
+	P := New(PLabel, Create(@Self, 'Label.PARMS'));
+	with P^ do begin
+		SetHelpText('PGME Startup Parameters:');
+		AddHelpText('');
+		for I := 1 to ParamCount do
+			AddHelpText(ParamStr(I));
+		Bounds(1,1,1,1, B);
+		SetBounds(B);
+		SetCaption(' ');
+	end;
+	ApplySettings(P);
+	if ParamCount > 0 then P^.Show;
 end;
 
 procedure TPGME.Configure;
@@ -414,6 +512,8 @@ begin
 	inherited ApplyConfig(AConfig);
 	AConfig^.OpenSection(GetPathID + '.VIEWERS');
 	AConfig^.GetValue('TXT', 'QSCROLL.EXE');
+	AConfig^.GetValue('DOC', 'QSCROLL.EXE');
+	AConfig^.GetValue('ME', 'QSCROLL.EXE');
 	AConfig^.OpenSection(GetPathID);
 	FReadOnly := StrBool(AConfig^.GetValue('READONLY', BoolStr(FReadOnly)));
 	FCanQuit := StrBool(AConfig^.GetValue('CANQUIT', BoolStr(FCanQuit)));
@@ -544,14 +644,15 @@ var
 	FExt,
 	FOpts,
 	FRet,
-	FView : String;
+	FView,
+	FTemp : String;
 begin
 	if Not Assigned(AItem) then exit;
 	if Not Assigned(AItem^.Data) then exit;	
 	FConfig.OpenSection(GetPathID + '.VIEWERS');
 	with PCacheApp(AItem^.Data)^ do begin
-		FRet := '/MENU=' + PCacheMenu(Parent)^.GetNameID + 
-			'/PROG=' + GetNameID;
+		FRet := '/M=' + PCacheMenu(Parent)^.GetNameID + 
+			' /P=' + GetNameID;
 		if SimpleExec and (not MaxMemory) and (Count = 0) then begin
 			FName := FileExpand(FileName);
 			FExt := Copy(FName, LastPos('.', FName) + 1, Length(FName) );
@@ -563,6 +664,20 @@ begin
 			end;
 			CallBack(FName, FOpts, FRet, ReturnAfter or (not FCanQuit));
 			Terminate;
+		end else begin
+			FTemp := GetEnv('TEMP');
+			if FTemp = '' then begin
+				{ Cannot Do Complex, no temp dir } 
+				GetNoTempDir;
+				FNoTempDir^.ShowModal;		
+				exit;
+			end;
+			if not FBatLoop  then begin
+				{ Cannot Do Complex, no batch looping } 
+				GetNoBatchLoop;
+				FNoBatchLoop^.ShowModal;		
+				exit;
+			end;
 		end;
 	end;
 end;
