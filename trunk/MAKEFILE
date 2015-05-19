@@ -87,6 +87,7 @@ templates: bin
 	
 bin:
 	@if not exist $(BINDIR) mkdir $(BINDIR)
+	@if exist LICENSE.TXT copy LICENSE.TXT $(BINDIR)\LICENSE.TXT
 	
 addins:
 	copy ETERNITY\*.TXT $(BINDIR)

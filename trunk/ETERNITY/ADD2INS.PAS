@@ -113,6 +113,7 @@ begin
 	Append('INSTALL.EXE', igInstall );
 	AppendAll('INSTALL.*', igInstall );
 	AppendAll('PGM.*', igEternity );
+	AppendAll('LICENSE.TXT', igEternity );
 	AppendAll('ETERNITY.BIN', igEternity );
 	AppendAll('ETERNITY.DAT', igEternity ); { Force rescanning of menus }
 	AppendAll('ETERNITY' + EMenuExt, igEternity ); { Add Eternity Menu }
