@@ -16,7 +16,8 @@ type
 			FReadOnly : boolean;
 			FEditing, 
 			FWritable,
-			FBatLoop : boolean;
+			FBatLoop, FInitRun : boolean;
+			FReqMenu, FReqProg : String;
 			FEditTitle : PEdit;
 			FBtnQuit,
 			FBtnRun,
@@ -41,6 +42,7 @@ type
 		procedure UpdateButtons; virtual;
 		procedure UpdateMenuCache; virtual;
 		procedure OpenCurrentMenu; virtual;
+		procedure ParseCommandLine; virtual;
 	public
 		constructor Create;
 		destructor Destroy; virtual;
@@ -133,6 +135,9 @@ var
 begin	
 	inherited Create(nil, 'PGM');
 	FBatLoop := False;
+	FInitRun := False;
+	FReqMenu := '';
+	FReqProg := '';
 	FReadOnly := False;
 	FCanQuit := True;
 	FEditing := False;
@@ -143,6 +148,9 @@ begin
 	FNoBatchLoop := nil;
 	OldIdleProc := QCrt.IdleProc;
 	QCrt.IdleProc := PGMIdleProc;
+	
+	ParseCommandLine;
+	
 	FMenuCache := New(PMenuCache, Create);
 	
 	FInfo.SetFileName('PGM.EXE');
@@ -388,15 +396,11 @@ begin
 		TextAttr := $4F;
 		FNoTempDir := New(PMessageBox, Create(@Self, 'DIALOG.NOTEMPDIR'));
 		with PMessageBox(FNoTempDir)^ do begin
-			SetHelpText('This is an error dialog box.');
-			AddHelpText('');
-			AddHelpText('It means what it says. You do not have a TEMP directory setup.');
-			AddHelpText('You should really think about adding one. Then declare it');
-			AddHelpText('in your AUTOEXEC batch file using the SET command.');
 			SetBackground(4);
 			SetTextAttr($4F);
 			Bounds(1,1,68,10, B);
 			SetBounds(B);
+			FAutoEndModal := True;
 			SetTitle('Oh, NO! Me so sorry! :(');
 			SetMessage(' ');
 			AppendMessage('');
@@ -405,6 +409,11 @@ begin
 			AppendMessage(' ');
 			AppendMessage('Maybe, try adding SET TEMP=C:\TEMP to the AUTOEXEC.BAT file.'); 
 			AppendMessage('(That assumes you have a directory called C:\TEMP somewhere)'); 
+			SetHelpText('This is an error dialog box.');
+			AddHelpText('');
+			AddHelpText('It means what it says. You do not have a TEMP directory setup.');
+			AddHelpText('You should really think about adding one. Then declare it');
+			AddHelpText('in your AUTOEXEC batch file using the SET command.');
 		end;
 		ApplySettings(FNoTempDir);
 	end;
@@ -419,18 +428,11 @@ begin
 		TextAttr := $4F;
 		FNoBatchLoop := New(PMessageBox, Create(@Self, 'DIALOG.NOBATCH'));
 		with PMessageBox(FNoBatchLoop)^ do begin
-			SetHelpText('This is an error dialog box.');
-			AddHelpText('');
-			AddHelpText('It means what it says. You ran PGME directly. When you');
-			AddHelpText('should be running it by using the PGM.BAT launcher file.');
-			AddHelpText('PGME does not really care how you start it. But, it can');
-			AddHelpText('only perform simple launching when you run it directly.');
-			AddHelpText('Complex and Max Memory style launches are not available unless');
-			AddHelpText('you start PGME by using PGM.BAT file.');
 			SetBackground(4);
 			SetTextAttr($4F);
 			Bounds(1,1,66,10, B);
-			SetBounds(B);
+			SetBounds(B);					
+			FAutoEndModal := True;
 			SetTitle('Oh, NO! Me so sorry! :(');
 			SetMessage(' ');
 			AppendMessage('');
@@ -439,6 +441,14 @@ begin
 			AppendMessage('this time.');
 			AppendMessage(' ');
 			AppendMessage('Maybe, next time start PGME using the PGM.BAT launcher.'); 
+			SetHelpText('This is an error dialog box.');
+			AddHelpText('');
+			AddHelpText('It means what it says. You ran PGME directly. When you');
+			AddHelpText('should be running it by using the PGM.BAT launcher file.');
+			AddHelpText('PGME does not really care how you start it. But, it can');
+			AddHelpText('only perform simple launching when you run it directly.');
+			AddHelpText('Complex and Max Memory style launches are not available unless');
+			AddHelpText('you start PGME by using PGM.BAT file.');
 		end;
 		ApplySettings(FNoBatchLoop);
 	end;
@@ -454,9 +464,29 @@ begin
 	if ConserveMemory then FreeDialog(PDialog(FNoBatchLoop));
 end;
 
+procedure TPGME.ParseCommandLine;
+var
+	I : integer;
+	O, V : String;
+begin
+	for I := 1 to ParamCount do begin
+		V := Trim(ParamStr(I));
+		if (Length(V) > 1) and (V[1] = '/') then begin
+			O := UCase(Trim(PullStr('=', V)));
+			if O = '/BAT' then 
+				FBatLoop := True
+			else if O = '/INIT' then 
+				FInitRun := True
+			else if O = '/M' then
+				FReqMenu := V
+			else if O = '/P' then
+				FReqProg := V			
+		end;
+	end;
+end;
+
 procedure TPGME.BeforeShow;
 var
-	P : PLabel;
 	B : TBounds;
 	I : integer;
 begin
@@ -465,46 +495,46 @@ begin
 	GotoXY(1, WhereY);
 	TextAttr := $07;
 	ClrEOL;
-	P := New(PLabel, Create(@Self, 'Label.PARMS'));
-	with P^ do begin
+	with PLabel(New(PLabel, Create(@Self, 'Label.PARMS')))^ do begin
 		SetHelpText('PGME Startup Parameters:');
 		AddHelpText('');
 		for I := 1 to ParamCount do
 			AddHelpText(ParamStr(I));
-		Bounds(1,1,1,1, B);
+		Bounds(2,2,1,1, B);
 		SetBounds(B);
-		SetCaption(' ');
+		SetCaption('');
 	end;
-	ApplySettings(P);
-	if ParamCount > 0 then P^.Show;
 end;
 
 procedure TPGME.Configure;
 begin
-{	GotoXY(1, WhereY);
-	TextAttr := $0B;
-	Write('Initializing...');
-	ClrEol; }
+	if (Not FInitRun) then begin
+		GotoXY(1, WhereY);
+		TextAttr := $0B;
+		Write('Resuming...');
+		ClrEol; 
+	end;
 	inherited Configure;
 	PMenuCache(FMenuCache)^.ApplyLanguage(@FLanguage, GetPathID);
 	FEditTitle^.SetCaption(PMenuCache(FMenuCache)^.FNoMenuStr); {Set Initially to No Title}
-	GotoXY(1, WhereY);
-	TextAttr := $0E;
-	Write(FLanguage.GetValue(GetPathID + '.BOOT.CACHE.UPDATE', 'Updating Menu Cache...'));
-	ClrEol;
+	if FInitRun then begin
+		GotoXY(1, WhereY);
+		TextAttr := $0E;
+		Write(FLanguage.GetValue(GetPathID + '.BOOT.CACHE.UPDATE', 'Updating Menu Cache...'));
+		ClrEol;
+	end;
 	FConfig.OpenSection(GetPathID);
 	PMenuCache(FMenuCache)^.Load;
 	PMenuCache(FMenuCache)^.SetPaths(FConfig.GetValue('PATH.MENU', ''));
 	UpdateMenuCache;
 	OpenCurrentMenu; 
 	{ Later add ability to return to a menu and program }
-	GotoXY(1, WhereY);
-	TextAttr := $07;
-	ClrEol;		
-	GotoXY(1, WhereY);
-	TextAttr := $0B;
-	Write(FLanguage.GetValue(GetPathID + '.BOOT.STARTING', 'Beginning Eternity...'));
-	ClrEol;
+	if FInitRun then begin
+		GotoXY(1, WhereY);
+		TextAttr := $0B;
+		Write(FLanguage.GetValue(GetPathID + '.BOOT.STARTING', 'Beginning Eternity...'));
+		ClrEol;
+	end;
 end;
 
 procedure TPGME.ApplyConfig( AConfig : PConfigFile );
