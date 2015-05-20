@@ -675,7 +675,10 @@ var
 	FOpts,
 	FRet,
 	FView,
-	FTemp : String;
+	FTemp, S : String;
+	F : TFile;
+	OK : Boolean;
+	P : PCacheProc;
 begin
 	if Not Assigned(AItem) then exit;
 	if Not Assigned(AItem^.Data) then exit;	
@@ -683,15 +686,16 @@ begin
 	with PCacheApp(AItem^.Data)^ do begin
 		FRet := '/M=' + PCacheMenu(Parent)^.GetNameID + 
 			' /P=' + GetNameID;
+		FName := FileExpand(FileName);
+		FExt := UCase(Copy(FName, LastPos('.', FName) + 1, Length(FName) ));
+		FOpts := '';
+		FView := FConfig.GetValue(FExt, '');
+		if FView <> '' then begin
+			FOpts := FName;
+			FName := FileExpand(FView);
+			FExt := UCase(Copy(FName, LastPos('.', FName) + 1, Length(FName) ));
+		end;
 		if SimpleExec and (not MaxMemory) and (Count = 0) then begin
-			FName := FileExpand(FileName);
-			FExt := Copy(FName, LastPos('.', FName) + 1, Length(FName) );
-			FOpts := '';
-			FView := FConfig.GetValue(FExt, '');
-			if FView <> '' then begin
-				FOpts := FName;
-				FName := FileExpand(FView);
-			end;
 			CallBack(FName, FOpts, FRet, ReturnAfter or (not FCanQuit));
 			Terminate;
 		end else begin
@@ -707,6 +711,51 @@ begin
 				GetNoBatchLoop;
 				FNoBatchLoop^.ShowModal;		
 				exit;
+			end;
+			F.Create;
+			F.Assign(Dir(FTemp) + 'PGMEGORN.BAT');
+			F.Rewrite;
+			
+			OK := (F.IOResult = 0);
+			if OK then begin
+				S := '@ECHO OFF';
+				F.WriteLn(S);
+				OK := (F.IOResult = 0);				
+			end;
+			P := PCacheProc(First);
+			if OK then begin
+				if Not assigned(P) then begin
+					if FExt = 'BAT' then
+						S := 'CALL ' + FName + ' ' + FOpts
+					else
+						S := FName + ' ' + FOpts;
+						F.WriteLn(S);
+					OK := (F.IOResult = 0);
+				end else while Assigned(P) and OK do begin
+					P := PCacheProc(P^.Next);
+				end;
+			end;
+			
+			if OK then begin
+				S := '';
+				F.WriteLn(S);
+				OK := (F.IOResult = 0);				
+			end;
+			if OK and (ReturnAfter or (not FCanQuit)) then begin
+				S := 'PGM.BAT ' + FRet;
+				F.WriteLn(S);
+				OK := (F.IOResult = 0);				
+			end;
+			if OK then begin
+				F.Close;
+				OK := (F.IOResult = 0);				
+			end;
+			F.Destroy;
+			if OK then 
+				Terminate
+			else begin
+{				GetGornError;
+				FGornError^.ShowModal;}
 			end;
 		end;
 	end;
