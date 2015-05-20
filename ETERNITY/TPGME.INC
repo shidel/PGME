@@ -483,6 +483,8 @@ begin
 				FReqProg := V			
 		end;
 	end;
+	if (FReqMenu <> '') and (FReqProg <> '') then
+		FInitRun := False;
 end;
 
 procedure TPGME.BeforeShow;
@@ -511,7 +513,7 @@ begin
 	if (Not FInitRun) then begin
 		GotoXY(1, WhereY);
 		TextAttr := $0B;
-		Write('Resuming...');
+		Write('Resuming Eternity...');
 		ClrEol; 
 	end;
 	inherited Configure;
@@ -681,6 +683,12 @@ var
 	P : PCacheProc;
 begin
 {	FBatLoop := true; }
+
+	{ Add expand relative to Menu Path }
+	{ Add parsing of ?:\ for removable media }
+	{ Add Option prompting and parsing }
+	{ Add Restore Current Paths }
+	
 	if Not Assigned(AItem) then exit;
 	if Not Assigned(AItem^.Data) then exit;	
 	FConfig.OpenSection(GetPathID + '.VIEWERS');
