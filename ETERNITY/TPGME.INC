@@ -680,6 +680,7 @@ var
 	OK : Boolean;
 	P : PCacheProc;
 begin
+{	FBatLoop := true; }
 	if Not Assigned(AItem) then exit;
 	if Not Assigned(AItem^.Data) then exit;	
 	FConfig.OpenSection(GetPathID + '.VIEWERS');
@@ -722,6 +723,7 @@ begin
 				F.WriteLn(S);
 				OK := (F.IOResult = 0);				
 			end;
+			
 			P := PCacheProc(First);
 			if OK then begin
 				if Not assigned(P) then begin
@@ -732,6 +734,8 @@ begin
 						F.WriteLn(S);
 					OK := (F.IOResult = 0);
 				end else while Assigned(P) and OK do begin
+					S := P^.GetNameID;
+					F.WriteLn(S);
 					P := PCacheProc(P^.Next);
 				end;
 			end;
