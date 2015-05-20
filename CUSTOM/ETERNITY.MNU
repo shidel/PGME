@@ -9,7 +9,7 @@
 	CLASS=DOCUMENT
 	FILE=BLAHBLAH.TXT
 	GROUP=ETERNITY
-	TITLE.EN_US=The Program Manager Eternity's Documentation
+	TITLE.EN_US=PGM Eternity Documentation
 	MAXAVAIL=False
 	SIMPLE=True
 
@@ -17,7 +17,7 @@
 	CLASS=DOCUMENT
 	FILE=LICENSE.TXT
 	GROUP=ETERNITY
-	TITLE.EN_US=The Program Manager Eternity's License
+	TITLE.EN_US=PGM Eternity License
 	MAXAVAIL=False
 	SIMPLE=True
 
