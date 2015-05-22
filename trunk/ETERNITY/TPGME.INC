@@ -716,6 +716,7 @@ end;
 
 procedure TPGME.ExecuteItem(AItem : PListItem); 
 var
+	FHoldDir,
 	FDir,
 	FName,
 	FExt,
@@ -736,11 +737,7 @@ var
 	end;
 	
 begin
-	FBatLoop := True; 
-	{ Add expand relative to Menu Path }
-	{ Add parsing of ?:\ for removable media }
 	{ Add Option prompting and parsing }
-	{ Add Restore Current Paths }
 	
 	if Not Assigned(AItem) then exit;
 	if Not Assigned(AItem^.Data) then exit;	
@@ -748,9 +745,14 @@ begin
 	FConfig.OpenSection(GetPathID + '.VIEWERS');
 	with PCacheApp(AItem^.Data)^ do begin
 		FDir := PCacheDir(Parent^.Parent)^.GetNameID;
+		GetDir(0, FHoldDir);
+		ChDir(FDir);
 		FRet := '/M=' + PCacheMenu(Parent)^.GetNameID + 
 			' /P=' + GetNameID;
-		FName := FileExpand(FileName);
+		if FileName <> '' then 
+			FName := FileExpand(FileName)
+		else
+			FName := '';
 		FExt := UCase(Copy(FName, LastPos('.', FName) + 1, Length(FName) ));
 		FOpts := '';
 		FView := FConfig.GetValue(FExt, '');
@@ -759,8 +761,9 @@ begin
 			FName := FileExpand(FView);
 			FExt := UCase(Copy(FName, LastPos('.', FName) + 1, Length(FName) ));
 		end;
-		
-		if SimpleExec and (not MaxMemory) and (Count = 0) then begin
+		ChDir(FHoldDir);
+		if SimpleExec and (not MaxMemory) and (Count = 0) and (FName <> '') then begin
+			ChDir(PathOf(Fname));
 			CallBack(FName, FOpts, FRet, ReturnAfter or (not FCanQuit));
 			Terminate;
 		end else begin
@@ -783,9 +786,19 @@ begin
 			
 			OK := (F.IOResult = 0);
 			FileWrite('@ECHO OFF');
-			FileWrite('REM MENU is ' + FDir + PCacheMenu(Parent)^.GetNameID);
-			FileWrite('REM PROGRAM is ' + GetNameID);
 			FileWrite('');
+			FileWrite('REM PGME location is ' + GetExePath);
+			FileWrite('REM MENU DIRECTORY is ' + FDir );
+			FileWrite('REM MENU FILE is ' + PCacheMenu(Parent)^.GetNameID);
+			FileWrite('REM PROGRAM ID is ' + GetNameID);
+			if FName <> '' then FileWrite('REM FILE is ' + FName);
+			if FOpts <> '' then FileWrite('REM OPTIONS are ' + FOpts);
+			FileWrite('');
+			FileWrite('REM Begin by setting current dir and drive to menu directory.');
+			FileWrite(Copy(FDir, 1, 2));
+			FileWrite('CD ' + Copy(FDir, 3, Length(FDir)));
+			FileWrite('');
+			FileWrite('REM Continue by running complex launching processes.');
 
 			P := PCacheProc(First);
 			if OK then begin
@@ -801,6 +814,7 @@ begin
 			end;
 			
 			FileWrite('');
+			FileWrite('REM Return to Program Manager Eternity');
 			FileWrite('PGM.BAT ' + FRet);
 
 			if OK then begin
@@ -808,9 +822,9 @@ begin
 				OK := (F.IOResult = 0);				
 			end;
 			F.Destroy;
-{			if OK then 
+			if OK then 
 				Terminate
-			else }begin
+			else begin
 				GetGornError;
 				FGornError^.ShowModal;
 			end;

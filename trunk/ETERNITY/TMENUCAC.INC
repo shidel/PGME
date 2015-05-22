@@ -273,9 +273,9 @@ begin
 				if not MemCheck(Sizeof(TCacheApp)) then Halt(8);
 				A := New(PCacheApp, Create(M^.GetNameID));
 				with PCacheApp(A)^ do begin
-					if S = '' then
-						S := 'unknown';
-					SetFileName(S);
+					 { if S = '' then
+						S := 'unknown'; }
+					SetFileName(Trim(uCase(S)));
 					S := Trim(Temp.GetValue('TITLE.' + Application^.FLanguageID, ''));
 					if S = '' then 
 						S := Trim(Temp.GetValue('TITLE', ''));
