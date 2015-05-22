@@ -488,16 +488,15 @@ begin
 end;
 
 procedure TPGME.BeforeShow;
-var
+{ var
 	B : TBounds;
-	I : integer;
+	I : integer; }
 begin
 	inherited BeforeShow;
-	{ if ParamStr(2) = '/INIT' then begin }
 	GotoXY(1, WhereY);
 	TextAttr := $07;
 	ClrEOL;
-	with PLabel(New(PLabel, Create(@Self, 'Label.PARMS')))^ do begin
+{	with PLabel(New(PLabel, Create(@Self, 'Label.PARMS')))^ do begin
 		SetHelpText('PGME Startup Parameters:');
 		AddHelpText('');
 		for I := 1 to ParamCount do
@@ -505,7 +504,7 @@ begin
 		Bounds(2,2,1,1, B);
 		SetBounds(B);
 		SetCaption('');
-	end;
+	end; }
 end;
 
 procedure TPGME.Configure;

@@ -268,11 +268,13 @@ begin
 		while assigned(M) do begin
 			Temp.OpenSection(M^.GetNameID);
 			S := Temp.GetValue('FILE', '');
-			if S <> '' then begin
+			if (S <> '') or (Temp.FindID('COMMANDS') <> nil) then begin
 				{ It is a program entry }
 				if not MemCheck(Sizeof(TCacheApp)) then Halt(8);
 				A := New(PCacheApp, Create(M^.GetNameID));
 				with PCacheApp(A)^ do begin
+					if S = '' then
+						S := 'unknown';
 					SetFileName(S);
 					S := Trim(Temp.GetValue('TITLE.' + Application^.FLanguageID, ''));
 					if S = '' then 
