@@ -29,7 +29,7 @@ type
 			FMenus : PListView;
 			FLastMenu, FLastProgram : PListItem;
 			FVersion : PLabel;
-			FNoTempDir, FNoBatchLoop : PDialog;
+			FNoTempDir, FNoBatchLoop, FGornError : PDialog;
 			FFind : record
 				FLabel : PLabel;
 				FEdit : PEdit;
@@ -51,6 +51,7 @@ type
 		procedure ExecuteItem(AItem : PListItem); virtual;
 		function GetNoTempDir : PDialog; virtual;
 		function GetNoBatchLoop : PDialog; virtual;
+		function GetGornError : PDialog; virtual;
 		procedure CreateAllDialogs(ConserveMemory : boolean); virtual;
 	end;   
 
@@ -146,6 +147,7 @@ begin
 	FLastProgram := nil;
 	FNoTempDir := nil;
 	FNoBatchLoop := nil;
+	FGornError := nil;
 	OldIdleProc := QCrt.IdleProc;
 	QCrt.IdleProc := PGMIdleProc;
 	
@@ -455,6 +457,44 @@ begin
 	GetNoBatchLoop := FNoBatchLoop;
 end;
 
+function TPGME.GetGornError;
+var
+	B : TBounds;
+begin
+	if Not Assigned(FGornError) then begin
+		TextAttr := $4F;
+		FGornError := New(PMessageBox, Create(@Self, 'DIALOG.GORNERROR'));
+		with PMessageBox(FGornError)^ do begin
+			SetBackground(4);
+			SetTextAttr($4F);
+			Bounds(1,1,66,10, B);
+			SetBounds(B);					
+			FAutoEndModal := True;
+			SetTitle('Oh, NO! Me so sorry! :(');
+			SetMessage(' ');
+			AppendMessage('');
+			AppendMessage('An error occurred when trying to write to the PGMEGORN.BAT');
+			AppendMessage('temporary file. The file may be locked, readonly or just');
+			AppendMessage('unaccessible at this time.');
+			AppendMessage(' ');
+			AppendMessage('Maybe, if you delete the file manually it will fix it.'); 
+			SetHelpText('This is an error dialog box.');
+			AddHelpText('');
+			AddHelpText('PGME encountered an error will trying to create a temporary');
+			AddHelpText('file called PGMEGORN.BAT in your TEMP directory. PGME needs to be');
+			AddHelpText('able to write to the "Go Run" file in order to free the');
+			AddHelpText('maximum amount of memory and to perform complex program launching.');
+			AddHelpText('If you can not give PGME write access to that location or file,');
+			AddHelpText('PGME can only perform simple launching. You may be able');
+			AddHelpText('to resolve the issue by deleting it manually, rebooting the');
+			AddHelpText('computer or standing on one leg, hopping up and down and');
+			AddHelpText('spelling your full name backwards three times.'); 
+		end;
+		ApplySettings(FGornError);
+	end;
+	GetGornError := FGornError;
+end;
+
 procedure TPGME.CreateAllDialogs;
 begin
 	inherited CreateAllDialogs(ConserveMemory);
@@ -462,6 +502,8 @@ begin
 	if ConserveMemory then FreeDialog(PDialog(FNoTempDir));
 	GetNoBatchLoop;
 	if ConserveMemory then FreeDialog(PDialog(FNoBatchLoop));
+	GetGornError;
+	if ConserveMemory then FreeDialog(PDialog(FGornError));
 end;
 
 procedure TPGME.ParseCommandLine;
@@ -567,6 +609,9 @@ begin
 	if (Not Assigned(Application)) or (Not Application^.GetVisible) then exit;
 	if Ticks = L then Exit;
 	if Assigned(FHelp) and FHelp^.GetVisible then Exit;
+	if Assigned(FNoTempDir) and FNoTempDir^.GetVisible then Exit;
+	if Assigned(FNoBatchLoop) and FNoBatchLoop^.GetVisible then Exit;
+	if Assigned(FGornError) and FGornError^.GetVisible then Exit;
 	
 	L := Ticks;
 	GetTime(Hour, Min, Sec, Sec100);
@@ -671,6 +716,7 @@ end;
 
 procedure TPGME.ExecuteItem(AItem : PListItem); 
 var
+	FDir,
 	FName,
 	FExt,
 	FOpts,
@@ -680,9 +726,17 @@ var
 	F : TFile;
 	OK : Boolean;
 	P : PCacheProc;
+	
+	procedure FileWrite(S : String);
+	begin
+		if OK then begin
+			F.WriteLn(S);
+			OK := (F.IOResult = 0);				
+		end;
+	end;
+	
 begin
-{	FBatLoop := true; }
-
+	FBatLoop := True; 
 	{ Add expand relative to Menu Path }
 	{ Add parsing of ?:\ for removable media }
 	{ Add Option prompting and parsing }
@@ -690,8 +744,10 @@ begin
 	
 	if Not Assigned(AItem) then exit;
 	if Not Assigned(AItem^.Data) then exit;	
+
 	FConfig.OpenSection(GetPathID + '.VIEWERS');
 	with PCacheApp(AItem^.Data)^ do begin
+		FDir := PCacheDir(Parent^.Parent)^.GetNameID;
 		FRet := '/M=' + PCacheMenu(Parent)^.GetNameID + 
 			' /P=' + GetNameID;
 		FName := FileExpand(FileName);
@@ -703,6 +759,7 @@ begin
 			FName := FileExpand(FView);
 			FExt := UCase(Copy(FName, LastPos('.', FName) + 1, Length(FName) ));
 		end;
+		
 		if SimpleExec and (not MaxMemory) and (Count = 0) then begin
 			CallBack(FName, FOpts, FRet, ReturnAfter or (not FCanQuit));
 			Terminate;
@@ -725,48 +782,37 @@ begin
 			F.Rewrite;
 			
 			OK := (F.IOResult = 0);
-			if OK then begin
-				S := '@ECHO OFF';
-				F.WriteLn(S);
-				OK := (F.IOResult = 0);				
-			end;
-			
+			FileWrite('@ECHO OFF');
+			FileWrite('REM MENU is ' + FDir + PCacheMenu(Parent)^.GetNameID);
+			FileWrite('REM PROGRAM is ' + GetNameID);
+			FileWrite('');
+
 			P := PCacheProc(First);
 			if OK then begin
 				if Not assigned(P) then begin
 					if FExt = 'BAT' then
-						S := 'CALL ' + FName + ' ' + FOpts
+						FileWrite('CALL ' + FName + ' ' + FOpts)
 					else
-						S := FName + ' ' + FOpts;
-						F.WriteLn(S);
-					OK := (F.IOResult = 0);
+						FileWrite(FName + ' ' + FOpts);
 				end else while Assigned(P) and OK do begin
-					S := P^.GetNameID;
-					F.WriteLn(S);
+					FileWrite(P^.GetNameID);
 					P := PCacheProc(P^.Next);
 				end;
 			end;
 			
-			if OK then begin
-				S := '';
-				F.WriteLn(S);
-				OK := (F.IOResult = 0);				
-			end;
-			if OK and (ReturnAfter or (not FCanQuit)) then begin
-				S := 'PGM.BAT ' + FRet;
-				F.WriteLn(S);
-				OK := (F.IOResult = 0);				
-			end;
+			FileWrite('');
+			FileWrite('PGM.BAT ' + FRet);
+
 			if OK then begin
 				F.Close;
 				OK := (F.IOResult = 0);				
 			end;
 			F.Destroy;
-			if OK then 
+{			if OK then 
 				Terminate
-			else begin
-{				GetGornError;
-				FGornError^.ShowModal;}
+			else }begin
+				GetGornError;
+				FGornError^.ShowModal;
 			end;
 		end;
 	end;

@@ -39,7 +39,7 @@ const
 {$UNDEF IMPLEMENTATION}
 
 begin
-	ErrorsOnExit := False;
+{	ErrorsOnExit := True; }
 	PGME.Create;
 	PGME.Execute;
 	PGME.Destroy;  
