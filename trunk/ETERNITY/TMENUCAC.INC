@@ -268,7 +268,7 @@ begin
 		while assigned(M) do begin
 			Temp.OpenSection(M^.GetNameID);
 			S := Temp.GetValue('FILE', '');
-			if (S <> '') or (Temp.FindID('COMMANDS') <> nil) then begin
+			if (S <> '') or (Temp.FindKey('COMMANDS') <> nil) then begin
 				{ It is a program entry }
 				if not MemCheck(Sizeof(TCacheApp)) then Halt(8);
 				A := New(PCacheApp, Create(M^.GetNameID));
