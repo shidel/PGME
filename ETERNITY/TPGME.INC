@@ -813,12 +813,14 @@ begin
 			OK := (F.IOResult = 0);
 			FileWrite('@ECHO OFF');
 			FileWrite('');
-			FileWrite('REM PGME location is ' + GetExePath);
-			FileWrite('REM MENU DIRECTORY is ' + FDir );
-			FileWrite('REM MENU FILE is ' + PCacheMenu(Parent)^.GetNameID);
-			FileWrite('REM PROGRAM ID is ' + GetNameID);
-			if FName <> '' then FileWrite('REM FILE is ' + FName);
-			if FOpts <> '' then FileWrite('REM OPTIONS are ' + FOpts);
+			if PGMVars then 
+				S2 := 'SET '
+			else
+				S2 := 'REM SET ';
+			
+			FileWrite(S2 + 'PGME=' + GetExePath);
+			FileWrite(S2 + 'MENU=' + FDir + PCacheMenu(Parent)^.GetNameID );
+			FileWrite(S2 + 'PROG=' + GetNameID);
 			FileWrite('');
 			FileWrite('REM Begin by setting current dir and drive to menu directory.');
 			FileWrite(Copy(FDir, 1, 2));
@@ -837,6 +839,14 @@ begin
 					FileWrite(P^.GetNameID);
 					P := PCacheProc(P^.Next);
 				end;
+			end;
+
+			if PGMVars then begin			
+				FileWrite('');
+				FileWrite('REM Clear PGME Environment Variables');
+				FileWrite(S2 + 'PGME=');
+				FileWrite(S2 + 'MENU=');
+				FileWrite(S2 + 'PROG=');
 			end;
 			
 			FileWrite('');
