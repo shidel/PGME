@@ -45,7 +45,7 @@ qtest:
 test: qtest
 	
 theme1: 
-	bin\pgm.exe
+	bin\pgme.exe
 	$(BINDIR)\splice $(BINDIR)\TEMPLATE.THM $(BINDIR)\DEFAULT.THM
 	del $(BINDIR)\DEFAULT.THM
 	$(BINDIR)\splice $(BINDIR)\TEMPLATE.KMP $(BINDIR)\DEFAULT.KMP
