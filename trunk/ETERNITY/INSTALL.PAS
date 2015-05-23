@@ -52,7 +52,7 @@ const
 	InstallUses	  : LongInt = 512;
 	BatchPath	  : String = '';	
 	BatchName	  : String = 'PGM.BAT';
-	ExecName	  : String = 'PGM.EXE';
+	ExecName	  : String = 'PGME.EXE';
 	RunName	  	  : String = 'PGMEGORN.BAT';
 	IGOR		  : String = '';
 
