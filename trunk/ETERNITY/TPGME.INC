@@ -31,6 +31,9 @@ type
 			FVersion : PLabel;
 			FNoTempDir, FNoBatchLoop, FGornError,
 			FExecMissing : PDialog;
+			FDlgPAdd, FDlgPEdit, FDlgPDel,
+			FDlgMAdd, FDlgMEdit, FDlgMDel,
+			FDlgPGMOpt : PDialog;			
 			FFind : record
 				FLabel : PLabel;
 				FEdit : PEdit;
@@ -59,6 +62,13 @@ type
 		function GetGornError : PDialog; virtual;
 		function GetExecMissing : PDialog; virtual;
 		function GetEditMenu : PControl; virtual;
+		function GetDlgPAdd : PControl; virtual;
+		function GetDlgPEdit : PControl; virtual;
+		function GetDlgPDelete : PControl; virtual;
+		function GetDlgMAdd : PControl; virtual;
+		function GetDlgMEdit : PControl; virtual;
+		function GetDlgMDelete : PControl; virtual;
+		function GetDlgPGMOpt : PControl; virtual;		
 		procedure CreateAllDialogs(ConserveMemory : boolean); virtual;
 	end;   
 
@@ -164,6 +174,13 @@ begin
 	FBtnMEdit := nil;
 	FBtnMDel := nil;
 	FBtnPGMOpt := nil;
+	FDlgPAdd := nil;
+	FDlgPEdit := nil;
+	FDlgPDel := nil;
+	FDlgMAdd := nil;
+	FDlgMEdit := nil;
+	FDlgMDel := nil;
+	FDlgPGMOpt := nil;
 	OldIdleProc := QCrt.IdleProc;
 	QCrt.IdleProc := PGMIdleProc;
 	
@@ -277,6 +294,8 @@ begin
 			SetCommand(cmEditFile);
 			SetAnchors(alBottom);
 			SetBounds(B);	
+			SetHelpText('5;"%0" Button: This will display the edit popup menu.');
+{			AddHelpText('The default keyboard shortcut is "ALT+E".');}
 		end;
 		
 		TextAttr := $02;
@@ -581,6 +600,8 @@ begin
 		Bounds(FBtnEdit^.Left + FBtnEdit^.Width - 21, FBtnEdit^.Top - 11, 22, 11, B);
 		FEditMenu := New(PPopup, Create(PControl(FBtnEdit^.Parent), 'POPUP.EDITMENU'));
 		with PPopUp(FEditMenu)^ do begin
+			SetHelpText('A note regarding the edit button popup menu shortcut keys.');
+			AddHelpText('They will only work when popup menu is visible.');
 			SetShadow(False);
 			SetBounds(B);	
 			SetAnchors(abBottom or abRight);
@@ -603,64 +624,85 @@ begin
 			Bounds(1,1,Width, 1, B);
 			FBtnPAdd := New(PButton, Create(FEditMenu, 'BTN.PROG.ADD'));
 			with PButton(FBtnPAdd)^ do begin
+				SetHelpText('5;"%0" Option: Select this to add a program to the current menu.');
+				AddHelpText('The default keyboard shortcut is "A".');
 				SetCaption('Add Program...');
 				FHAlign := AlignLeft;
 				SetBounds(B);
 				SetCommand(cmProgAdd);
+				SetKeycode(kbA, 0, kfMatches);
 			end;
 			{TextAttr := $0E;}
 			Inc(B.Top);
 			FBtnPEdit := New(PButton, Create(FEditMenu, 'BTN.PROG.EDIT'));
 			with PButton(FBtnPEdit)^ do begin
+				SetHelpText('5;"%0" Option: Select this to edit the selected programs information or');
+				AddHelpText('its execution process. The default keyboard shortcut is "E".');
 				SetCaption('Edit Program...');
 				FHAlign := AlignLeft;
 				SetBounds(B);
 				SetCommand(cmProgEdit);
+				SetKeycode(kbE, 0, kfMatches);
 			end;
 			{TextAttr := $0C;}
 			Inc(B.Top);
 			FBtnPDel := New(PButton, Create(FEditMenu, 'BTN.PROG.DELETE'));
 			with PButton(FBtnPDel)^ do begin
+				SetHelpText('5;"%0" Option: Select delete the currently selected program from the menu.');
+				AddHelpText('The default keyboard shortcut is "D".');
 				SetCaption('Delete Program...');
 				FHAlign := AlignLeft;
 				SetBounds(B);
 				SetCommand(cmProgDel);
+				SetKeycode(kbD, 0, kfMatches);
 			end;
 			{TextAttr := $0A;}
 			Inc(B.Top, 2);
 			FBtnMAdd := New(PButton, Create(FEditMenu, 'BTN.MENU.ADD'));
 			with PButton(FBtnMAdd)^ do begin
+				SetHelpText('5;"%0" Option: Select this to add a new menu.');
+				AddHelpText('The default keyboard shortcut is "N".');
 				SetCaption('Add Menu...');
 				FHAlign := AlignLeft;
 				SetBounds(B);
 				SetCommand(cmMenuAdd);
+				SetKeycode(kbN, 0, kfMatches);
 			end;
 			{TextAttr := $0E;}
 			Inc(B.Top);
 			FBtnMEdit := New(PButton, Create(FEditMenu, 'BTN.MENU.EDIT'));
 			with PButton(FBtnMEdit)^ do begin
+				SetHelpText('5;"%0" Option: Select this to edit the current menus information.');
+				AddHelpText('The default keyboard shortcut is "N".');
 				SetCaption('Edit Menu...');
 				FHAlign := AlignLeft;
 				SetBounds(B);
 				SetCommand(cmMenuEdit);
+				SetKeycode(kbM, 0, kfMatches);
 			end;
 			{TextAttr := $0C;}
 			Inc(B.Top);
 			FBtnMDel := New(PButton, Create(FEditMenu, 'BTN.MENU.DELETE'));
 			with PButton(FBtnMDel)^ do begin
+				SetHelpText('5;"%0" Option: Select this to delete the current menu.');
+				AddHelpText('The default keyboard shortcut is "K".');
 				SetCaption('Delete Menu...');
 				FHAlign := AlignLeft;
 				SetBounds(B);
 				SetCommand(cmMenuDel);
+				SetKeycode(kbK, 0, kfMatches);
 			end;
 			TextAttr := $0B; 
 			Inc(B.Top, 2);
 			FBtnPGMOpt := New(PButton, Create(FEditMenu, 'BTN.OPTIONS'));
 			with PButton(FBtnPGMOpt)^ do begin
+				SetHelpText('5;"%0" Option: Select this modify PGME program options.');
+				AddHelpText('The default keyboard shortcut is "O".');
 				SetCaption('Eternity Options...');
 				FHAlign := AlignLeft;
 				SetBounds(B);
 				SetCommand(cmPGMOpts);
+				SetKeycode(kbO, 0, kfMatches);
 			end;
 		end;
 		ApplySettings(FEditMenu);
@@ -675,6 +717,83 @@ begin
 	GetEditMenu := FEditMenu;	
 end;
 
+function TPGME.GetDlgPAdd : PControl;
+var
+	B : TBounds;
+begin
+	if Not Assigned(FDlgPAdd) then begin
+		FDlgPAdd := New(PDlgPAdd, Create(@Self));
+		ApplySettings(FDlgPAdd);
+	end;
+	GetDlgPAdd := FDlgPAdd;
+end;
+
+function TPGME.GetDlgPEdit : PControl; 
+var
+	B : TBounds;
+begin
+	if Not Assigned(FDlgPEdit) then begin
+		FDlgPEdit := New(PDlgPEdit, Create(@Self));
+		ApplySettings(FDlgPEdit);
+	end;
+	GetDlgPEdit := FDlgPEdit;
+end;
+
+function TPGME.GetDlgPDelete : PControl;
+var
+	B : TBounds;
+begin
+	if Not Assigned(FDlgPDel) then begin
+		FDlgPDel := New(PDlgPDel, Create(@Self));
+		ApplySettings(FDlgPDel);
+	end;
+	GetDlgPDelete := FDlgPDel;
+end;
+
+function TPGME.GetDlgMAdd : PControl; 
+var
+	B : TBounds;
+begin
+	if Not Assigned(FDlgMAdd) then begin
+		FDlgMAdd := New(PDlgMAdd, Create(@Self));
+		ApplySettings(FDlgMAdd);
+	end;
+	GetDlgMAdd := FDlgMAdd;
+end;
+
+function TPGME.GetDlgMEdit : PControl;
+var
+	B : TBounds;
+begin
+	if Not Assigned(FDlgMEdit) then begin
+		FDlgMEdit := New(PDlgMEdit, Create(@Self));
+		ApplySettings(FDlgMEdit);
+	end;
+	GetDlgMEdit := FDlgMEdit;
+end;
+
+function TPGME.GetDlgMDelete : PControl; 
+var
+	B : TBounds;
+begin
+	if Not Assigned(FDlgMDel) then begin
+		FDlgMDel := New(PDlgMDel, Create(@Self));
+		ApplySettings(FDlgMDel);
+	end;
+	GetDlgMDelete := FDlgMDel;
+end;
+
+function TPGME.GetDlgPGMOpt : PControl;
+var
+	B : TBounds;
+begin
+	if Not Assigned(FDlgPGMOpt) then begin
+		FDlgPGMOpt := New(PDlgPGMOpt, Create(@Self));
+		ApplySettings(FDlgPGMOpt);
+	end;
+	GetDlgPGMOpt := FDlgPGMOpt;
+end;
+
 procedure TPGME.CreateAllDialogs;
 begin
 	inherited CreateAllDialogs(ConserveMemory);
@@ -687,6 +806,20 @@ begin
 	if ConserveMemory then FreeDialog(PDialog(FGornError));
 	GetExecMissing;
 	if ConserveMemory then FreeDialog(PDialog(FExecMissing));
+	GetDlgPAdd;
+	if ConserveMemory then FreeDialog(PDialog(FDlgPAdd));
+	GetDlgPEdit;
+	if ConserveMemory then FreeDialog(PDialog(FDlgPEdit));
+	GetDlgPDelete;
+	if ConserveMemory then FreeDialog(PDialog(FDlgPDel));
+	GetDlgMAdd;
+	if ConserveMemory then FreeDialog(PDialog(FDlgMAdd));
+	GetDlgMEdit;
+	if ConserveMemory then FreeDialog(PDialog(FDlgMEdit));
+	GetDlgMDelete;
+	if ConserveMemory then FreeDialog(PDialog(FDlgMDel));
+	GetDlgPGMOpt;
+	if ConserveMemory then FreeDialog(PDialog(FDlgPGMOpt));
 end;
 
 procedure TPGME.ParseCommandLine;
@@ -814,12 +947,20 @@ begin
 	if Ticks = L then Exit;
 	
 	{ If a Subwindow or Dialog is visible then don't update clock, QuickCrt doesn't
-	 support Write-Behind yet. }
+	 support Write-Behind yet. This list keeps getting longer and longer. I really
+	 need to add write behined! }
 	if Assigned(FHelp) and FHelp^.GetVisible then Exit;
 	if Assigned(FNoTempDir) and FNoTempDir^.GetVisible then Exit;
 	if Assigned(FNoBatchLoop) and FNoBatchLoop^.GetVisible then Exit;
 	if Assigned(FGornError) and FGornError^.GetVisible then Exit;
 	if Assigned(FExecMissing) and FExecMissing^.GetVisible then Exit;
+	if Assigned(FDlgPAdd) and FDlgPAdd^.GetVisible then Exit;
+	if Assigned(FDlgPEdit) and FDlgPEdit^.GetVisible then Exit;
+	if Assigned(FDlgPDel) and FDlgPDel^.GetVisible then Exit;
+	if Assigned(FDlgMAdd) and FDlgMAdd^.GetVisible then Exit;
+	if Assigned(FDlgMEdit) and FDlgMEdit^.GetVisible then Exit;
+	if Assigned(FDlgMDel) and FDlgMDel^.GetVisible then Exit;
+	if Assigned(FDlgPGMOpt) and FDlgPGMOpt^.GetVisible then Exit;
 	
 	L := Ticks;
 	GetTime(Hour, Min, Sec, Sec100);
@@ -885,7 +1026,7 @@ end;
 
 procedure TPGME.UpdateButtons;
 begin
-	FBtnEdit^.SetEnabled((Not FReadOnly) and FWritable);
+	FBtnEdit^.SetEnabled(Not FReadOnly);
 	FBtnRun^.SetEnabled(Assigned(FPrograms^.FCurrent));
 end;
 
@@ -905,11 +1046,48 @@ begin
 				ClearEvent(AEvent);
 				FMenus^.Up(True);
 			end;
-			cmEditFile : if not FReadOnly then begin
+		end; 
+	
+	if (AEvent.What = evCommand) and (not FReadOnly) then
+		case AEvent.Command of
+			cmEditFile : begin
 				GetEditMenu;
 				PWindow(FEditMenu)^.ShowModal;
 			end;
+			cmMenuAdd : begin
+				GetDlgMAdd;
+				PDialog(FDlgMAdd)^.ShowModal;
+			end;
+			cmPGMOpts : begin
+				GetDlgPGMOpt;
+				PDialog(FDlgPGMOpt)^.ShowModal;
+			end;
 		end; 
+
+	if (AEvent.What = evCommand) and (not FReadOnly) and FWritable then
+		case AEvent.Command of
+			cmMenuEdit : begin
+				GetDlgMEdit;
+				PDialog(FDlgMEdit)^.ShowModal;
+			end;
+			cmMenuDel : begin
+				GetDlgMDelete;
+				PDialog(FDlgMDel)^.ShowModal;
+			end;
+			cmProgAdd : begin
+				GetDlgPAdd;
+				PDialog(FDlgPAdd)^.ShowModal;
+			end;
+			cmProgEdit : begin
+				GetDlgPEdit;
+				PDialog(FDlgPEdit)^.ShowModal;
+			end;
+			cmProgDel : begin
+				GetDlgPDelete;
+				PDialog(FDlgPDel)^.ShowModal;
+			end;
+		end; 
+
 	inherited CheckLocal(AEvent);
 	if FLastMenu <> FMenus^.FCurrent then begin
 		OpenCurrentMenu;

@@ -36,12 +36,28 @@ const
 {$DEFINE INTERFACE}
 
 {$I TCacheItems.inc}
-	
+
+{$I TDLGOpts.inc}
+{$I TDLGPAdd.inc}
+{$I TDLGPEdit.inc}
+{$I TDLGPDelete.inc}
+{$I TDLGMAdd.inc}
+{$I TDLGMEdit.inc}
+{$I TDLGMDelete.inc}
+
 {$I TPGME.inc}
 {$I TMenuCache.inc}
 
 {$UNDEF INTERFACE}
 {$DEFINE IMPLEMENTATION}
+
+{$I TDLGOpts.inc}
+{$I TDLGPAdd.inc}
+{$I TDLGPEdit.inc}
+{$I TDLGPDelete.inc}
+{$I TDLGMAdd.inc}
+{$I TDLGMEdit.inc}
+{$I TDLGMDelete.inc}
 
 {$I TPGME.inc}
 {$I TMenuCache.inc}
