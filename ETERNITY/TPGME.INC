@@ -538,6 +538,7 @@ begin
 	end;
 	GetExecMissing := FExecMissing;
 end;
+
 procedure TPGME.CreateAllDialogs;
 begin
 	inherited CreateAllDialogs(ConserveMemory);
@@ -560,6 +561,7 @@ begin
 		V := Trim(ParamStr(I));
 		if (Length(V) > 1) and (V[1] = '/') then begin
 			O := UCase(Trim(PullStr('=', V)));
+			V := uCase(Trim(V));
 			if O = '/BAT' then 
 				FBatLoop := True
 			else if O = '/INIT' then 
@@ -575,23 +577,41 @@ begin
 end;
 
 procedure TPGME.BeforeShow;
-{ var
-	B : TBounds;
-	I : integer; }
+var
+	T, P :PListItem;
+	S : String;
 begin
 	inherited BeforeShow;
 	GotoXY(1, WhereY);
 	TextAttr := $07;
 	ClrEOL;
-{	with PLabel(New(PLabel, Create(@Self, 'Label.PARMS')))^ do begin
-		SetHelpText('PGME Startup Parameters:');
-		AddHelpText('');
-		for I := 1 to ParamCount do
-			AddHelpText(ParamStr(I));
-		Bounds(2,2,1,1, B);
-		SetBounds(B);
-		SetCaption('');
-	end; }
+	if Not (Assigned(FMenus) and Assigned(FMenuCache)) then exit;
+	if FReqMenu <> '' then begin
+		P := FMenus^.FItems.First;
+		while Assigned(P) do begin
+			S := UCase(PCacheDir(PCacheMenu(P^.Data)^.Parent)^.GetNameID + 
+				PCacheMenu(P^.Data)^.GetNameID);
+			if S = FReqMenu then begin
+				FMenus^.FCurrent := P;
+				OpenCurrentMenu;
+				P := nil;
+			end else
+				P := P^.Next;
+		end;
+	end;
+	if Not (Assigned(FPrograms) and Assigned(FMenuCache)) then exit;
+	if FReqProg <> '' then begin
+		P := FPrograms^.FItems.First;
+		while Assigned(P) do begin
+			S := PCacheApp(P^.Data)^.GetNameID;
+			if S = FReqProg then begin
+				FPrograms^.FCurrent := P;
+				P := nil;
+			end else
+				P := P^.Next;
+		end;
+	end;
+	UpdateButtons;
 end;
 
 procedure TPGME.Configure;
@@ -701,6 +721,7 @@ var
 	T, P :PListItem;
 	S : String;
 begin
+	if FLastMenu = FMenus^.FCurrent then exit;
 	StartDrawing; 
 	FLastProgram := nil;
 	FPrograms^.BeginUpdate;
@@ -832,7 +853,7 @@ begin
 		FExecDir := '';
 		GetDir(0, FHoldDir);
 		ChDir(FDir);
-		FRet := '/M=' + PCacheMenu(Parent)^.GetNameID + 
+		FRet := '/M=' + FDir + PCacheMenu(Parent)^.GetNameID + 
 			' /P=' + GetNameID;
 		if FileName <> '' then begin
 			FName := FileExpand(FileName);
