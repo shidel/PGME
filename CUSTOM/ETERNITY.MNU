@@ -28,7 +28,7 @@
 	TITLE.EN_US=Eternity Font Designer
 	MAXAVAIL=False
 	SIMPLE=True
-	RETURN=False
+	RETURN=True
 
 [ATOM]
 	CLASS=ESAVER
