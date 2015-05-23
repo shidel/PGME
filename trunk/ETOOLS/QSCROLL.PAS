@@ -148,10 +148,10 @@ begin
 	Stepping := 1 shl Stepping;
 	I := 0;
 	while (I < FontHeight) and (Stepping > 0) do begin
-		ScanStart(FontHeight - I);
-		WaitSync;
 		Inc(I, Stepping);
 		if I > FontHeight then I := FontHeight;
+		ScanStart(FontHeight - I);
+		WaitSync;
 	end;
 	GotoXY(1,1);
 	ScreenMax := ScreenMax - $100;
@@ -170,10 +170,10 @@ begin
 	I := 0;
 	Stepping := 1 shl Stepping;
 	while (I < FontHeight) and (Stepping > 0) do begin
-		ScanStart(I);
-		WaitSync;
 		Inc(I, Stepping);
 		if I > FontHeight then I := FontHeight;
+		ScanStart(I);
+		WaitSync;
 	end;
 	GotoXY(1,1);
 	ScanStart(0);
@@ -191,6 +191,9 @@ begin
 		Top := Top^.Prev;
 		Bottom := Bottom^.Prev;
 		Dec(Count);
+		if Top = nil then 
+			Count := 0
+		else if Top^.Prev = nil then Count := 2;
 		GetEvent(E);
 		if ((E.What <> evNothing) or (Count > 2)) or (not DirectVideo) then begin
 			if E.What <> evNothing then PutEvent(E);
@@ -212,6 +215,9 @@ begin
 		Top := Top^.Next;
 		Bottom := Bottom^.Next;
 		Dec(Count);
+		if Bottom = nil then 
+			Count := 0
+		else if Bottom^.Next = nil then Count := 1;
 		GetEvent(E);
 		if ((E.What <> evNothing) or (Count > 2)) or (not DirectVideo) then begin
 			if E.What <> evNothing then PutEvent(E);
