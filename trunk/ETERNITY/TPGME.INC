@@ -29,7 +29,8 @@ type
 			FMenus : PListView;
 			FLastMenu, FLastProgram : PListItem;
 			FVersion : PLabel;
-			FNoTempDir, FNoBatchLoop, FGornError : PDialog;
+			FNoTempDir, FNoBatchLoop, FGornError,
+			FExecMissing : PDialog;
 			FFind : record
 				FLabel : PLabel;
 				FEdit : PEdit;
@@ -52,6 +53,7 @@ type
 		function GetNoTempDir : PDialog; virtual;
 		function GetNoBatchLoop : PDialog; virtual;
 		function GetGornError : PDialog; virtual;
+		function GetExecMissing : PDialog; virtual;
 		procedure CreateAllDialogs(ConserveMemory : boolean); virtual;
 	end;   
 
@@ -148,6 +150,7 @@ begin
 	FNoTempDir := nil;
 	FNoBatchLoop := nil;
 	FGornError := nil;
+	FExecMissing := nil;
 	OldIdleProc := QCrt.IdleProc;
 	QCrt.IdleProc := PGMIdleProc;
 	
@@ -495,6 +498,46 @@ begin
 	GetGornError := FGornError;
 end;
 
+function TPGME.GetExecMissing;
+var
+	B : TBounds;
+begin
+	if Not Assigned(FExecMissing) then begin
+		TextAttr := $4F;
+		FExecMissing := New(PMessageBox, Create(@Self, 'DIALOG.ExecMissing'));
+		with PMessageBox(FExecMissing)^ do begin
+			SetBackground(4);
+			SetTextAttr($4F);
+			Bounds(1,1,66,9, B);
+			SetBounds(B);					
+			FAutoEndModal := True;
+			SetTitle('Oh, NO! Me so sorry! :(');
+			SetMessage(' ');
+			AppendMessage('');
+			AppendMessage('PGME was unable to locate a required executable item and');
+			AppendMessage('can not run that menu entry at this time.');
+			AppendMessage(' ');
+			AppendMessage('Maybe, verify that the program has not been relocated.'); 
+			SetHelpText('This is an error dialog box.');
+			AddHelpText('');
+			AddHelpText('PGME was unable to locate a program file needed to launch');
+			AddHelpText('the requested item.');
+			AddHelpText('The "Required" program is specified in the FILE field of the');
+			AddHelpText('appropriate menu. Its path is absolute or relative to the');
+			AddHelpText('menu file. If the FILE field is defined, it is tested');
+			AddHelpText('for both Complex and Simple launching.');
+			AddHelpText('There are a couple of things that can cause');
+			AddHelpText('this error to occur. First, the program has been deleted or moved.');
+			AddHelpText('Second, it was located on removable media that is not currently');
+			AddHelpText('available. Finally, the main file is associated with a viewer');
+			AddHelpText('helper in the ETERNITY.CFG file and the viewer could not');
+			AddHelpText('be found.');
+			
+		end;
+		ApplySettings(FExecMissing);
+	end;
+	GetExecMissing := FExecMissing;
+end;
 procedure TPGME.CreateAllDialogs;
 begin
 	inherited CreateAllDialogs(ConserveMemory);
@@ -504,6 +547,8 @@ begin
 	if ConserveMemory then FreeDialog(PDialog(FNoBatchLoop));
 	GetGornError;
 	if ConserveMemory then FreeDialog(PDialog(FGornError));
+	GetExecMissing;
+	if ConserveMemory then FreeDialog(PDialog(FExecMissing));
 end;
 
 procedure TPGME.ParseCommandLine;
@@ -608,10 +653,14 @@ begin
 	inherited Idle;
 	if (Not Assigned(Application)) or (Not Application^.GetVisible) then exit;
 	if Ticks = L then Exit;
+	
+	{ If a Subwindow or Dialog is visible then don't update clock, QuickCrt doesn't
+	 support Write-Behind yet. }
 	if Assigned(FHelp) and FHelp^.GetVisible then Exit;
 	if Assigned(FNoTempDir) and FNoTempDir^.GetVisible then Exit;
 	if Assigned(FNoBatchLoop) and FNoBatchLoop^.GetVisible then Exit;
 	if Assigned(FGornError) and FGornError^.GetVisible then Exit;
+	if Assigned(FExecMissing) and FExecMissing^.GetVisible then Exit;
 	
 	L := Ticks;
 	GetTime(Hour, Min, Sec, Sec100);
@@ -737,8 +786,9 @@ var
 		end;
 	end;
 	
-	procedure CheckViewer;
+	function CheckViewer : boolean;
 	begin
+		CheckViewer := True;
 		with PCacheApp(AItem^.Data)^ do begin
 			FExt := UCase(Copy(FName, LastPos('.', FName) + 1, Length(FName) ));
 			FView := FConfig.GetValue(FExt, '');
@@ -755,6 +805,12 @@ var
 				FOpts := S2 + FName;
 				FName := FileExpand(S);
 				FExt := UCase(Copy(FName, LastPos('.', FName) + 1, Length(FName) ));
+				if not FileExists(FName) then begin
+					CheckViewer := False;
+					GetExecMissing;
+					FExecMissing^.ShowModal;
+					Exit;
+				end;
 			end;
 		end;
 	end;
@@ -778,12 +834,17 @@ begin
 		ChDir(FDir);
 		FRet := '/M=' + PCacheMenu(Parent)^.GetNameID + 
 			' /P=' + GetNameID;
-		if FileName <> '' then 
-			FName := FileExpand(FileName)
-		else
+		if FileName <> '' then begin
+			FName := FileExpand(FileName);
+			if not FileExists(FName) then begin
+				GetExecMissing;
+				FExecMissing^.ShowModal;
+				Exit;
+			end;
+		end	else
 			FName := '';
 		FOpts := '';
-		CheckViewer;
+		if not CheckViewer then exit;
 		ChDir(FHoldDir);
 		if SimpleExec and (not MaxMemory) and (Count = 0) and (FName <> '') and 
 		(not PGMVars) then begin
@@ -798,13 +859,13 @@ begin
 				{ Cannot Do Complex, no temp dir } 
 				GetNoTempDir;
 				FNoTempDir^.ShowModal;		
-				exit;
+				Exit;
 			end;
 			if not FBatLoop  then begin
 				{ Cannot Do Complex, no batch looping } 
 				GetNoBatchLoop;
 				FNoBatchLoop^.ShowModal;		
-				exit;
+				Exit;
 			end;
 			F.Create;
 			F.Assign(Dir(FTemp) + 'PGMEGORN.BAT');
