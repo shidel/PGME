@@ -585,6 +585,7 @@ begin
 	GotoXY(1, WhereY);
 	TextAttr := $07;
 	ClrEOL;
+	{ if requested from command line open menu }
 	if Not (Assigned(FMenus) and Assigned(FMenuCache)) then exit;
 	if FReqMenu <> '' then begin
 		P := FMenus^.FItems.First;
@@ -599,6 +600,7 @@ begin
 				P := P^.Next;
 		end;
 	end;
+	{ if requested from command line select program }
 	if Not (Assigned(FPrograms) and Assigned(FMenuCache)) then exit;
 	if FReqProg <> '' then begin
 		P := FPrograms^.FItems.First;
@@ -838,9 +840,7 @@ var
 	
 begin
 	(* 
-	 * Verify Program exists prior to simple Execute
 	 * Add Option prompting and parsing
-	 * Add SET PGME Values to Program Process
 	 * Add PGME Value as Formatting to Options like %E for eternity path...
 	 *)
 	
