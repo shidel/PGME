@@ -15,7 +15,7 @@ const
 
 type 
 	PDlgMDel = ^TDlgMDel;
-	TDlgMDel = object (TDIALOG)
+	TDlgMDel = object (TMessageBox)
     public { protected }
 		function  ObjectClass ( AName : String ) : String; virtual;
     public { protected }
@@ -42,11 +42,37 @@ var
 	B : TBounds;
 begin	
 	inherited Create(AParent, 'DIALOG.MENU.DELETE');
-	Bounds(1,1,55,15, B);
+	Bounds(1,1,45,9, B);
 	SetBounds(B);					
 	SetTitle('Delete Menu');
-	SetHelpText('');
-	AddHelpText('');
+	SetMessage(' ');
+	AppendMessage('Are you sure you want to delete this');
+	AppendMessage('menu from the computer?');
+	SetHelpText('The remove program dialog box.');
+	FAutoEndModal := True;
+	TextAttr := $2E;
+	with PButton(New(PButton, Create(@Self, 'BUTTON.NO')))^ do begin
+		Bounds(Self.Width - 16,Self.Height - 4 , 12,1, B);
+		SetBounds(B);					
+		SetCaption('Cancel');
+		SetAnchors(abRight or abBottom);
+		SetCommand(cmCancel);
+		SetHelpText('5;"%0" Button: Will close the dialog and leave the menu');
+		AddHelpText('intact.');
+	end;
+	TextAttr := $4E;
+	with PButton(New(PButton, Create(@Self, 'BUTTON.OK')))^ do begin
+		Dec(B.Left, 14);
+		SetBounds(B);					
+		SetCaption('Delete');
+		SetAnchors(abRight or abBottom);
+		SetCommand(cmOK);
+		SetHelpText('5;"%0" Button: Will cause the current selected menu and all of its');
+		AddHelpText('programs to be removed from the computer.');
+		AddHelpText('It will not remove it other');
+		AddHelpText('menus or delete the programs from the computer or its drive. It only');
+		AddHelpText('will remove this menu and its entries.');
+	end;
 end;
 
 destructor TDlgMDel.Destroy;
