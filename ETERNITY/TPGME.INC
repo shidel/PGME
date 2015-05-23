@@ -737,6 +737,28 @@ var
 		end;
 	end;
 	
+	procedure CheckViewer;
+	begin
+		with PCacheApp(AItem^.Data)^ do begin
+			FExt := UCase(Copy(FName, LastPos('.', FName) + 1, Length(FName) ));
+			FView := FConfig.GetValue(FExt, '');
+			if SimpleExec and (not MaxMemory) and (Count = 0) and (FName <> '') and 
+			(not PGMVars) and (FView = '') and (FExt = 'BAT') then begin
+				FExecDir := PathOf(FName);
+				FView := GetEnv('COMSPEC') + ' /C';
+			end;
+			if FView <> '' then begin
+				S2 := FView;
+				S := Trim(PullStr(' ', S2));
+				S2 := Trim(S2);
+				if S2 <> '' then S2 := S2 + ' ';
+				FOpts := S2 + FName;
+				FName := FileExpand(S);
+				FExt := UCase(Copy(FName, LastPos('.', FName) + 1, Length(FName) ));
+			end;
+		end;
+	end;
+	
 begin
 	(* 
 	 * Verify Program exists prior to simple Execute
@@ -760,24 +782,11 @@ begin
 			FName := FileExpand(FileName)
 		else
 			FName := '';
-		FExt := UCase(Copy(FName, LastPos('.', FName) + 1, Length(FName) ));
 		FOpts := '';
-		FView := FConfig.GetValue(FExt, '');
-		if (FView = '') and (FExt = 'BAT') then begin
-			FExecDir := PathOf(FName);
-			FView := GetEnv('COMSPEC') + ' /C';
-		end;
-		if FView <> '' then begin
-			S2 := FView;
-			S := Trim(PullStr(' ', S2));
-			S2 := Trim(S2);
-			if S2 <> '' then S2 := S2 + ' ';
-			FOpts := S2 + FName;
-			FName := FileExpand(S);
-			FExt := UCase(Copy(FName, LastPos('.', FName) + 1, Length(FName) ));
-		end;
+		CheckViewer;
 		ChDir(FHoldDir);
-		if SimpleExec and (not MaxMemory) and (Count = 0) and (FName <> '') then begin
+		if SimpleExec and (not MaxMemory) and (Count = 0) and (FName <> '') and 
+		(not PGMVars) then begin
 			if FExecDir <> '' then 
 				FOriginalPath := FExecDir;
 			CallBack(FName, FOpts, FRet, ReturnAfter or (not FCanQuit));

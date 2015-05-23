@@ -289,6 +289,7 @@ begin
 					MaxMemory := StrBool(Temp.GetValue('MAXAVAIL', 'NO'));
 					SimpleExec := StrBool(Temp.GetValue('SIMPLE', 'YES'));
 					ReturnAfter := StrBool(Temp.GetValue('RETURN', 'YES'));
+					PGMVars := StrBool(Temp.GetValue('PGMEVARS', 'NO'));
 				end;
 				{ Read App's Process }
 				V := M^.FindID('COMMANDS');
