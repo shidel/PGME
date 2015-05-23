@@ -8,15 +8,15 @@
 *)
 
 {$I ETOOLS.DEF}
-program Eternity_Config_File_Toolkit; { X Series }
+program Eternity_Keymapping_Tool; { X Series }
 
 {uses QObjects;}
 
 {$I ..\ETERNITY\LICENSE.INC}
 
 const
-	AppTitle = 'Eternity Configuration File Toolkit';
-	AppID = 'QCNFTOOL';
+	AppTitle = 'Eternity Key Mapping Utility';
+	AppID = 'QKEYS';
 
 	
 begin
