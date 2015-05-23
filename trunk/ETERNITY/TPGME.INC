@@ -516,7 +516,7 @@ begin
 			AppendMessage('Maybe, if you delete the file manually it will fix it.'); 
 			SetHelpText('This is an error dialog box.');
 			AddHelpText('');
-			AddHelpText('PGME encountered an error will trying to create a temporary');
+			AddHelpText('PGME encountered an error while trying to create a temporary');
 			AddHelpText('file called PGMEGORN.BAT in your TEMP directory. PGME needs to be');
 			AddHelpText('able to write to the "Go Run" file in order to free the');
 			AddHelpText('maximum amount of memory and to perform complex program launching.');
