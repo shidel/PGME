@@ -130,7 +130,7 @@ begin
 	Port[$3d5] := Line;
 end;
 
-procedure ScrollUp;
+procedure ScrollUp( Stepping : integer );
 var
 	I : byte;
 	P : Pointer;
@@ -145,15 +145,19 @@ begin
 	InsLine;
 	FWrite(PtrStr(Top^.Line));
 	ClrEol;
-	for I := 0 to FontHeight do begin
+	Stepping := 1 shl Stepping;
+	I := 0;
+	while (I < FontHeight) and (Stepping > 0) do begin
 		ScanStart(FontHeight - I);
 		WaitSync;
+		Inc(I, Stepping);
+		if I > FontHeight then I := FontHeight;
 	end;
 	GotoXY(1,1);
 	ScreenMax := ScreenMax - $100;
 end;
 
-procedure ScrollDown;
+procedure ScrollDown( Stepping : integer );
 var
 	I : byte;
 begin
@@ -163,9 +167,13 @@ begin
 	FWrite(PtrStr(Bottom^.Line));
 	ClrEol;
 	WaitSync;
-	for I := 0 to FontHeight do begin
+	I := 0;
+	Stepping := 1 shl Stepping;
+	while (I < FontHeight) and (Stepping > 0) do begin
 		ScanStart(I);
 		WaitSync;
+		Inc(I, Stepping);
+		if I > FontHeight then I := FontHeight;
 	end;
 	GotoXY(1,1);
 	ScanStart(0);
@@ -184,14 +192,14 @@ begin
 		Bottom := Bottom^.Prev;
 		Dec(Count);
 		GetEvent(E);
-		if ((E.What <> evNothing) or (Count > 0)) or (not DirectVideo) then begin
+		if ((E.What <> evNothing) or (Count > 2)) or (not DirectVideo) then begin
 			if E.What <> evNothing then PutEvent(E);
 			GotoXY(1,1);
 			InsLine;
 			FWrite(PtrStr(Top^.Line)); 
 			ClrEol;
 		end else
-			ScrollUp;
+			ScrollUp(Count);
 	end;
 end;
 
@@ -205,7 +213,7 @@ begin
 		Bottom := Bottom^.Next;
 		Dec(Count);
 		GetEvent(E);
-		if ((E.What <> evNothing) or (Count > 0)) or (not DirectVideo) then begin
+		if ((E.What <> evNothing) or (Count > 2)) or (not DirectVideo) then begin
 			if E.What <> evNothing then PutEvent(E);
 			GotoXY(1,1);
 			DelLine;
@@ -213,7 +221,7 @@ begin
 			FWrite(PtrStr(Bottom^.Line)); 
 			ClrEol;
 		end else
-			ScrollDown;
+			ScrollDown(Count);
 	end;
 end;
 	
