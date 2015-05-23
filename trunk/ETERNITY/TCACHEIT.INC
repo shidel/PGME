@@ -50,7 +50,8 @@ type
 		FTitle	: PString;
 		MaxMemory, 
 		SimpleExec,
-		ReturnAfter : boolean;
+		ReturnAfter,
+		PGMVars : boolean;
 		constructor Create(AName : String);
 		destructor Destroy; virtual;
 		function	NewChild(AID : String) : PListItem; virtual;
@@ -280,6 +281,7 @@ begin
 	MaxMemory := false;
 	SimpleExec := true;
 	ReturnAfter := True;
+	PGMVars := False;
 end;
 
 destructor TCacheApp.Destroy;
@@ -358,6 +360,10 @@ begin
 		OK := F.IOResult = 0;
 	end;
 	if OK then begin
+		F.ReadBoolean(PGMVars);
+		OK := F.IOResult = 0;
+	end;
+	if OK then begin
 		SetClassName (F.GetString);
 		OK := F.IOResult = 0;
 	end;
@@ -392,6 +398,10 @@ begin
 	end;
 	if OK then begin
 		F.WriteBoolean(ReturnAfter);
+		OK := F.IOResult = 0;
+	end;
+	if OK then begin
+		F.WriteBoolean(PGMVars);
 		OK := F.IOResult = 0;
 	end;
 	if OK then begin
