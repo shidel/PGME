@@ -718,12 +718,13 @@ procedure TPGME.ExecuteItem(AItem : PListItem);
 var
 	FHoldDir,
 	FDir,
+	FExecDir,
 	FName,
 	FExt,
 	FOpts,
 	FRet,
 	FView,
-	FTemp, S : String;
+	FTemp, S, S2 : String;
 	F : TFile;
 	OK : Boolean;
 	P : PCacheProc;
@@ -737,7 +738,12 @@ var
 	end;
 	
 begin
-	{ Add Option prompting and parsing }
+	(* 
+	 * Verify Program exists prior to simple Execute
+	 * Add Option prompting and parsing
+	 * Add SET PGME Values to Program Process
+	 * Add PGME Value as Formatting to Options like %E for eternity path...
+	 *)
 	
 	if Not Assigned(AItem) then exit;
 	if Not Assigned(AItem^.Data) then exit;	
@@ -745,6 +751,7 @@ begin
 	FConfig.OpenSection(GetPathID + '.VIEWERS');
 	with PCacheApp(AItem^.Data)^ do begin
 		FDir := PCacheDir(Parent^.Parent)^.GetNameID;
+		FExecDir := '';
 		GetDir(0, FHoldDir);
 		ChDir(FDir);
 		FRet := '/M=' + PCacheMenu(Parent)^.GetNameID + 
@@ -756,18 +763,28 @@ begin
 		FExt := UCase(Copy(FName, LastPos('.', FName) + 1, Length(FName) ));
 		FOpts := '';
 		FView := FConfig.GetValue(FExt, '');
+		if (FView = '') and (FExt = 'BAT') then begin
+			FExecDir := PathOf(FName);
+			FView := GetEnv('COMSPEC') + ' /C';
+		end;
 		if FView <> '' then begin
-			FOpts := FName;
-			FName := FileExpand(FView);
+			S2 := FView;
+			S := Trim(PullStr(' ', S2));
+			S2 := Trim(S2);
+			if S2 <> '' then S2 := S2 + ' ';
+			FOpts := S2 + FName;
+			FName := FileExpand(S);
 			FExt := UCase(Copy(FName, LastPos('.', FName) + 1, Length(FName) ));
 		end;
 		ChDir(FHoldDir);
 		if SimpleExec and (not MaxMemory) and (Count = 0) and (FName <> '') then begin
-			ChDir(PathOf(Fname));
+			if FExecDir <> '' then 
+				FOriginalPath := FExecDir;
 			CallBack(FName, FOpts, FRet, ReturnAfter or (not FCanQuit));
 			Terminate;
 		end else begin
 			FTemp := GetEnv('TEMP');
+			
 			if FTemp = '' then begin
 				{ Cannot Do Complex, no temp dir } 
 				GetNoTempDir;
