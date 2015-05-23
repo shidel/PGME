@@ -20,6 +20,16 @@ const
 	cmExecute 	= cmExecuteFile;
 	cmNextMenu  = cmAfter;
 	cmPrevMenu  = cmBefore;
+	
+	cmProgAdd 	= $1100;
+	cmProgEdit	= cmProgAdd + 1;
+	cmProgDel	= cmProgEdit + 1;
+	
+	cmMenuAdd 	= cmProgDel + 1;
+	cmMenuEdit	= cmMenuAdd + 1;
+	cmMenuDel	= cmMenuEdit + 1;
+	
+	cmPGMOpts   = cmMenuDel + 1;
 		
 	ftMenu	= 'MENU';
 

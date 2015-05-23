@@ -37,6 +37,10 @@ type
 			end;
 			FDate, FTime : PLabel;
 			FMenuCache : PObject;
+			FEditMenu : PControl;
+			FBtnPAdd, FBtnPEdit, FBtnPDel,
+			FBtnMAdd, FBtnMEdit, FBtnMDel,
+			FBtnPGMOpt : PButton;
 		procedure BeforeShow; virtual;
 		procedure Configure; virtual;
 		procedure CheckLocal(var AEvent : TEvent); virtual;		
@@ -54,6 +58,7 @@ type
 		function GetNoBatchLoop : PDialog; virtual;
 		function GetGornError : PDialog; virtual;
 		function GetExecMissing : PDialog; virtual;
+		function GetEditMenu : PControl; virtual;
 		procedure CreateAllDialogs(ConserveMemory : boolean); virtual;
 	end;   
 
@@ -151,6 +156,14 @@ begin
 	FNoBatchLoop := nil;
 	FGornError := nil;
 	FExecMissing := nil;
+	FEditMenu := nil;
+	FBtnPAdd := nil;
+	FBtnPEdit := nil;
+	FBtnPDel := nil;
+	FBtnMAdd := nil;
+	FBtnMEdit := nil;
+	FBtnMDel := nil;
+	FBtnPGMOpt := nil;
 	OldIdleProc := QCrt.IdleProc;
 	QCrt.IdleProc := PGMIdleProc;
 	
@@ -160,12 +173,24 @@ begin
 	
 	FInfo.SetFileName('PGM.EXE');
 	FInfo.SetTitle('Program Manager Eternity');
+	SetHelpText('Program Manager Eternity Edition Help System');
+	AddHelpText('');
+	AddHelpText('The help system is context sensitive based on the current active');
+	AddHelpText('window. You can close the help window by clicking its close button');
+	AddHelpText('or outside the window with the mouse. Also, by using the keyboard');
+	AddHelpText('to generate a CloseWindow or Escape command (Default Alt+W or Esc).');
+	AddHelpText('Generating a Exit program command (Alt+Q) will close help and exit');
+	AddHelpText('the program. This assumes that the configuration option for CANCLOSE');
+	AddHelpText('is not set to FALSE. ');
 	
 	{ Left Pane }
 	TextAttr := $06;
 	Bounds(1,1,Application^.Width - Split,5, B);
 	FProgramWindow := New(PWindow, Create(@Self, 'PROGRAMS'));
 	with PWindow(FProgramWindow)^ do begin
+		SetHelpText('The main Program List window:');
+		AddHelpText('');
+
 		SetAnchors(alTop or alLeft or alBottom or abRight);
 		SetBounds(B);
 		SetMainWindow(True);
@@ -196,6 +221,10 @@ begin
 		Bounds(1, 1, 8, 1, B);
 		FBtnQuit := New(PButton, Create(FProgramWindow, 'BUTTON.QUIT'));
 		with FBtnQuit^ do begin
+			SetHelpText('5;"%0" Button: Assuming that PGME is not running in KIOSK mode');
+			AddHelpText('and allows you to quit to a command prompt this button will');
+			AddHelpText('shutdown PGME.');
+			AddHelpText('The default keyboard shortcut is "ALT+Q".');
 			SetCaption('Quit');
 			SetCommand(cmQuit);
 			SetAnchors(alBottom or alRight);
@@ -206,6 +235,8 @@ begin
 		Bounds(1, 1, 11, 1, B);
 		FBtnRun := New(PButton, Create(FProgramWindow, 'BUTTON.RUN'));
 		with FBtnRun^ do begin
+			SetHelpText('5;"%0" Button: This will launch the currently selected program.');
+			AddHelpText('The default keyboard shortcut is "ENTER".');
 			SetCaption('Execute');
 			SetCommand(cmExecute);
 			SetAnchors(alBottom or alLeft);
@@ -217,6 +248,8 @@ begin
 		Bounds(B.Left + B.Width + 2, 1, 8, 1, B);
 		FBtnHelp := New(PButton, Create(FProgramWindow, 'BUTTON.HELP'));
 		with FBtnHelp^ do begin
+			SetHelpText('5;"%0" Button: This will open a help window.');
+			AddHelpText('The default keyboard shortcut is "ALT+H".');
 			SetCaption('Help');
 			SetCommand(cmHelp);
 			SetAnchors(alBottom);
@@ -381,7 +414,7 @@ begin
 			SetAnchors(alRight or alBottom);
 {			SetVisible(False)}
 		end;
-		
+	
 	FClrScr := True;
 end;
 
@@ -539,9 +572,113 @@ begin
 	GetExecMissing := FExecMissing;
 end;
 
+function TPGME.GetEditMenu : PControl; 
+var
+	B : TBounds;
+begin
+	if Not Assigned(FEditMenu) then begin
+		TextAttr := $04;
+		Bounds(FBtnEdit^.Left + FBtnEdit^.Width - 21, FBtnEdit^.Top - 11, 22, 11, B);
+		FEditMenu := New(PPopup, Create(PControl(FBtnEdit^.Parent), 'POPUP.EDITMENU'));
+		with PPopUp(FEditMenu)^ do begin
+			SetShadow(False);
+			SetBounds(B);	
+			SetAnchors(abBottom or abRight);
+			Bounds(0,4,Width, 1, B);
+			with PLine(New(PLine, Create(FEditMenu, 'LINE.UPPER')))^ do begin
+				SetStyle(lnSingle or lnHorizontal);
+				SetAllowedOutside(True);
+				SetAnchors(abLeft or abRight or abTop);
+				SetBounds(B);
+			end;
+			Bounds(0,8,Width, 1, B);
+			with PLine(New(PLine, Create(FEditMenu, 'LINE.LOWER')))^ do begin
+				SetStyle(lnSingle or lnHorizontal);
+				SetAllowedOutside(True);
+				SetAnchors(abLeft or abRight or abBottom);
+				SetBounds(B);
+			end;
+			{TextAttr := $0A;}
+			TextAttr := $0E;
+			Bounds(1,1,Width, 1, B);
+			FBtnPAdd := New(PButton, Create(FEditMenu, 'BTN.PROG.ADD'));
+			with PButton(FBtnPAdd)^ do begin
+				SetCaption('Add Program...');
+				FHAlign := AlignLeft;
+				SetBounds(B);
+				SetCommand(cmProgAdd);
+			end;
+			{TextAttr := $0E;}
+			Inc(B.Top);
+			FBtnPEdit := New(PButton, Create(FEditMenu, 'BTN.PROG.EDIT'));
+			with PButton(FBtnPEdit)^ do begin
+				SetCaption('Edit Program...');
+				FHAlign := AlignLeft;
+				SetBounds(B);
+				SetCommand(cmProgEdit);
+			end;
+			{TextAttr := $0C;}
+			Inc(B.Top);
+			FBtnPDel := New(PButton, Create(FEditMenu, 'BTN.PROG.DELETE'));
+			with PButton(FBtnPDel)^ do begin
+				SetCaption('Delete Program...');
+				FHAlign := AlignLeft;
+				SetBounds(B);
+				SetCommand(cmProgDel);
+			end;
+			{TextAttr := $0A;}
+			Inc(B.Top, 2);
+			FBtnMAdd := New(PButton, Create(FEditMenu, 'BTN.MENU.ADD'));
+			with PButton(FBtnMAdd)^ do begin
+				SetCaption('Add Menu...');
+				FHAlign := AlignLeft;
+				SetBounds(B);
+				SetCommand(cmMenuAdd);
+			end;
+			{TextAttr := $0E;}
+			Inc(B.Top);
+			FBtnMEdit := New(PButton, Create(FEditMenu, 'BTN.MENU.EDIT'));
+			with PButton(FBtnMEdit)^ do begin
+				SetCaption('Edit Menu...');
+				FHAlign := AlignLeft;
+				SetBounds(B);
+				SetCommand(cmMenuEdit);
+			end;
+			{TextAttr := $0C;}
+			Inc(B.Top);
+			FBtnMDel := New(PButton, Create(FEditMenu, 'BTN.MENU.DELETE'));
+			with PButton(FBtnMDel)^ do begin
+				SetCaption('Delete Menu...');
+				FHAlign := AlignLeft;
+				SetBounds(B);
+				SetCommand(cmMenuDel);
+			end;
+			TextAttr := $0B; 
+			Inc(B.Top, 2);
+			FBtnPGMOpt := New(PButton, Create(FEditMenu, 'BTN.OPTIONS'));
+			with PButton(FBtnPGMOpt)^ do begin
+				SetCaption('Eternity Options...');
+				FHAlign := AlignLeft;
+				SetBounds(B);
+				SetCommand(cmPGMOpts);
+			end;
+		end;
+		ApplySettings(FEditMenu);
+	end;
+	FBtnPAdd^.SetEnabled(FWritable and Assigned(FMenus^.FCurrent));
+	FBtnPEdit^.SetEnabled(FWritable and Assigned(FMenus^.FCurrent) and Assigned(FPrograms^.FCurrent));
+	FBtnPDel^.SetEnabled(FWritable and Assigned(FMenus^.FCurrent) and Assigned(FPrograms^.FCurrent));
+	FBtnMAdd^.SetEnabled((Not FReadOnly));
+	FBtnMEdit^.SetEnabled(FWritable and Assigned(FMenus^.FCurrent));
+	FBtnMDel^.SetEnabled(FWritable and Assigned(FMenus^.FCurrent));
+	FBtnPGMOpt^.SetEnabled(Not FReadOnly);
+	GetEditMenu := FEditMenu;	
+end;
+
 procedure TPGME.CreateAllDialogs;
 begin
 	inherited CreateAllDialogs(ConserveMemory);
+	GetEditMenu;
 	GetNoTempDir;
 	if ConserveMemory then FreeDialog(PDialog(FNoTempDir));
 	GetNoBatchLoop;
@@ -767,6 +904,10 @@ begin
 			cmPrevMenu : begin
 				ClearEvent(AEvent);
 				FMenus^.Up(True);
+			end;
+			cmEditFile : if not FReadOnly then begin
+				GetEditMenu;
+				PWindow(FEditMenu)^.ShowModal;
 			end;
 		end; 
 	inherited CheckLocal(AEvent);
