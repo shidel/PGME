@@ -42,8 +42,6 @@ var
 	B : TBounds;
 begin	
 	inherited Create(AParent, 'DIALOG.MENU.ADD');
-	Bounds(1,1,55,15, B);
-	SetBounds(B);					
 	SetTitle('New Menu');
 	SetHelpText('');
 	AddHelpText('');

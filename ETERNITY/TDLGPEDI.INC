@@ -42,8 +42,6 @@ var
 	B : TBounds;
 begin	
 	inherited Create(AParent, 'DIALOG.PROG.EDIT');
-	Bounds(1,1,55,15, B);
-	SetBounds(B);					
 	SetTitle('Edit Program');
 	SetHelpText('');
 	AddHelpText('');

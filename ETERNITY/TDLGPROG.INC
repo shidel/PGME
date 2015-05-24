@@ -44,8 +44,6 @@ begin
 	inherited Create(AParent, AName);
 	Bounds(1,1,55,15, B);
 	SetBounds(B);					
-	SetHelpText('');
-	AddHelpText('');
 end;
 
 destructor TDlgProg.Destroy;
