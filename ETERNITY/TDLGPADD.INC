@@ -15,7 +15,7 @@ const
 
 type 
 	PDlgPAdd = ^TDlgPAdd;
-	TDlgPAdd = object (TDIALOG)
+	TDlgPAdd = object (TDlgProg)
     public { protected }
 		function  ObjectClass ( AName : String ) : String; virtual;
     public { protected }

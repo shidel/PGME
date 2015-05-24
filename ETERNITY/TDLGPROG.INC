@@ -7,59 +7,58 @@
 	
 *)
 
-{ --- TDlgPEdit --- }
+{ --- TDlgProg --- }
 
 {$IFDEF INTERFACE}
 const
-	class_TDlgPEdit = 'TDlgPEdit';
+	class_TDlgProg = 'TDlgProg';
 
 type 
-	PDlgPEdit = ^TDlgPEdit;
-	TDlgPEdit = object (TDlgProg)
+	PDlgProg = ^TDlgProg;
+	TDlgProg = object (TDIALOG)
     public { protected }
 		function  ObjectClass ( AName : String ) : String; virtual;
     public { protected }
 		procedure CheckLocal(var AEvent : TEvent); virtual;
 		procedure BeforeShow; virtual;
 	public
-		constructor Create(AParent : PControl);
+		constructor Create(AParent : PControl; AName : String);
 		destructor Destroy; virtual;
 	end;   
 
 {$ENDIF}
 
 {$IFDEF IMPLEMENTATION}
-function TDlgPEdit.ObjectClass(AName : String) : String; 
+function TDlgProg.ObjectClass(AName : String) : String; 
 begin
-	if (AName = '') or (AName = class_TDlgPEdit) then 
-		ObjectClass := class_TDlgPEdit
+	if (AName = '') or (AName = class_TDlgProg) then 
+		ObjectClass := class_TDlgProg
 	else
 		ObjectClass := inherited ObjectClass(AName);
 end;
 
-constructor TDlgPEdit.Create;
+constructor TDlgProg.Create;
 var
 	B : TBounds;
 begin	
-	inherited Create(AParent, 'DIALOG.PROG.EDIT');
+	inherited Create(AParent, AName);
 	Bounds(1,1,55,15, B);
 	SetBounds(B);					
-	SetTitle('Edit Program');
 	SetHelpText('');
 	AddHelpText('');
 end;
 
-destructor TDlgPEdit.Destroy;
+destructor TDlgProg.Destroy;
 begin
 	inherited Destroy;
 end;
 
-procedure TDlgPEdit.CheckLocal(var AEvent : TEvent);
+procedure TDlgProg.CheckLocal(var AEvent : TEvent);
 begin
 	inherited CheckLocal(AEvent);
 end;
 
-procedure TDlgPEdit.BeforeShow;
+procedure TDlgProg.BeforeShow;
 begin
 	inherited BeforeShow;
 end;
