@@ -15,7 +15,7 @@ const
 
 type 
 	PDlgMAdd = ^TDlgMAdd;
-	TDlgMAdd = object (TDIALOG)
+	TDlgMAdd = object (TDlgMenu)
     public { protected }
 		function  ObjectClass ( AName : String ) : String; virtual;
     public { protected }

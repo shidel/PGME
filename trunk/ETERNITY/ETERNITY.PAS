@@ -38,9 +38,11 @@ const
 {$I TCacheItems.inc}
 
 {$I TDLGOpts.inc}
+{$I TDLGProg.inc}
 {$I TDLGPAdd.inc}
 {$I TDLGPEdit.inc}
 {$I TDLGPDelete.inc}
+{$I TDLGMenu.inc}
 {$I TDLGMAdd.inc}
 {$I TDLGMEdit.inc}
 {$I TDLGMDelete.inc}
@@ -52,9 +54,11 @@ const
 {$DEFINE IMPLEMENTATION}
 
 {$I TDLGOpts.inc}
+{$I TDLGProg.inc}
 {$I TDLGPAdd.inc}
 {$I TDLGPEdit.inc}
 {$I TDLGPDelete.inc}
+{$I TDLGMenu.inc}
 {$I TDLGMAdd.inc}
 {$I TDLGMEdit.inc}
 {$I TDLGMDelete.inc}
