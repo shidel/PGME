@@ -69,6 +69,7 @@ type
 		function GetDlgMEdit : PControl; virtual;
 		function GetDlgMDelete : PControl; virtual;
 		function GetDlgPGMOpt : PControl; virtual;		
+		function GetDlgPGMCfg : PControl; virtual;		
 		procedure CreateAllDialogs(ConserveMemory : boolean); virtual;
 	end;   
 
@@ -807,6 +808,17 @@ begin
 	GetDlgPGMOpt := FDlgPGMOpt;
 end;
 
+function TPGME.GetDlgPGMCfg : PControl;
+var
+	B : TBounds;
+begin
+	if Not Assigned(FDlgPGMCfg) then begin
+		FDlgPGMCfg := New(PDlgPGMCfg, Create(@Self));
+		ApplySettings(FDlgPGMCfg);
+	end;
+	GetDlgPGMCfg := FDlgPGMCfg;
+end;
+
 procedure TPGME.CreateAllDialogs;
 begin
 	inherited CreateAllDialogs(ConserveMemory);
@@ -833,6 +845,8 @@ begin
 	if ConserveMemory then FreeDialog(PDialog(FDlgMDel));
 	GetDlgPGMOpt;
 	if ConserveMemory then FreeDialog(PDialog(FDlgPGMOpt));
+	GetDlgPGMCfg;
+	if ConserveMemory then FreeDialog(PDialog(FDlgPGMCfg));
 end;
 
 procedure TPGME.ParseCommandLine;
@@ -974,6 +988,7 @@ begin
 	if Assigned(FDlgMEdit) and FDlgMEdit^.GetVisible then Exit;
 	if Assigned(FDlgMDel) and FDlgMDel^.GetVisible then Exit;
 	if Assigned(FDlgPGMOpt) and FDlgPGMOpt^.GetVisible then Exit;
+	if Assigned(FDlgPGMCfg) and FDlgPGMCfg^.GetVisible then Exit;
 	
 	L := Ticks;
 	GetTime(Hour, Min, Sec, Sec100);
@@ -1074,6 +1089,10 @@ begin
 			cmPGMOpts : begin
 				GetDlgPGMOpt;
 				PDialog(FDlgPGMOpt)^.ShowModal;
+			end;
+			cmPGMCfg : begin
+				GetDlgPGMCfg;
+				PDialog(FDlgPGMCfg)^.ShowModal;
 			end;
 		end; 
 

@@ -31,6 +31,11 @@ const
 	
 	cmPGMOpts   = cmMenuDel + 1;
 	cmPGMCfg	= cmPGMOpts + 1;
+	
+	cmBrowseTheme = cmPGMCfg + 1;
+	cmBrowseFont = cmBrowseTheme + 1;
+	cmBrowseESaver = cmBrowseFont + 1;
+	cmBrowseLang = cmBrowseESaver + 1;
 		
 	ftMenu	= 'MENU';
 
@@ -39,6 +44,7 @@ const
 {$I TCacheItems.inc}
 
 {$I TDLGOpts.inc}
+{$I TDLGCfg.inc}
 {$I TDLGProg.inc}
 {$I TDLGPAdd.inc}
 {$I TDLGPEdit.inc}
@@ -55,6 +61,7 @@ const
 {$DEFINE IMPLEMENTATION}
 
 {$I TDLGOpts.inc}
+{$I TDLGCfg.inc}
 {$I TDLGProg.inc}
 {$I TDLGPAdd.inc}
 {$I TDLGPEdit.inc}
