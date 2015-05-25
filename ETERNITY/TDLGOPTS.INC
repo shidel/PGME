@@ -56,11 +56,10 @@ constructor TDlgPGMOpt.Create;
 const
 	ColorLabel = $70;
 	ColorDrop  = $1E;
-	ColorFind  = $1A;
 	ColorSlide = $0F;
 	ColorOK    = $2E;
 var
-	B, E, D, F : TBounds;
+	B, E, D : TBounds;
 	SRec : TSearchRec;
 begin	
 	inherited Create(AParent, 'DIALOG.OPTIONS');
@@ -76,8 +75,8 @@ begin
 	Bounds(3,2, 15, 1, B);
 	Bounds(B.Left + B.Width + 1, B.Top, Self.Width - B.Left - B.Width - 4, 1, E);
 	if GetShadow then Dec(E.Width, 2);
-	Bounds(E.Left, E.Top, E.Width - 11, 10, D);
-	Bounds(D.Left + D.Width + 1, B.Top, E.Width - D.Width - 1, 1, F);
+	D := E;
+	D.Height := 10;
 	with PLabel(New(PLabel, Create(@Self, 'THEME.LABEL')))^ do begin
 		SetBounds(B);
 		FHAlign := AlignRight;
@@ -93,11 +92,6 @@ begin
 				AddItem(SRec.Name);
 			FindNext(SRec);
 		end;
-	end;
-	TextAttr := ColorFind;
-	with PButton(New(PButton, Create(@Self, 'THEME.FIND')))^ do begin
-		SetBounds(F);
-		SetCaption('Browse');
 	end;
 	Inc(B.Top);	
 	Inc(B.Top);	
@@ -134,12 +128,6 @@ begin
 			FindNext(SRec);
 		end;
 	end;
-	TextAttr := ColorFind;
-	with PButton(New(PButton, Create(@Self, 'FONT.FIND')))^ do begin
-		F.Top := B.Top;
-		SetBounds(F);
-		SetCaption('Browse');
-	end;
 	Inc(B.Top);	
 	Inc(B.Top);	
 	TextAttr := ColorLabel;
@@ -151,6 +139,8 @@ begin
 	TextAttr := ColorDrop;
 	with PDropList(New(PDropList, Create(@Self, 'ESAVER.DROP')))^ do begin
 		D.Top := B.Top;
+		Dec(D.Height,2);
+		if Self.GetShadow = false then Dec(D.Height);
 		SetBounds(D);
 		SetCaption('DEFAULT.SCR');
 		FindFirst(GetExePath + '*' + ESaverExt, faAnyFile, SRec);
@@ -159,12 +149,6 @@ begin
 				AddItem(SRec.Name);
 			FindNext(SRec);
 		end;
-	end;
-	TextAttr := ColorFind;
-	with PButton(New(PButton, Create(@Self, 'ESAVER.FIND')))^ do begin
-		F.Top := B.Top;
-		SetBounds(F);
-		SetCaption('Browse');
 	end;
 	Inc(B.Top);	
 	Inc(B.Top);	
