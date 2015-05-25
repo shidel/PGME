@@ -30,6 +30,7 @@ const
 	cmMenuDel	= cmMenuEdit + 1;
 	
 	cmPGMOpts   = cmMenuDel + 1;
+	cmPGMCfg	= cmPGMOpts + 1;
 		
 	ftMenu	= 'MENU';
 
