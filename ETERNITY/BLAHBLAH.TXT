@@ -27,6 +27,7 @@ Building PGME from source requires:
 	DOS compatible OS. FreeDOS or DosBox is fine.
 	Borland Turbo Pascal 7.0. 
 	Borland BCC Make (included with TP7)
+	Run BUILD.BAT
 	
 By default all QuickCRT based programs (These maybe changed in a custom KMP file):
 
