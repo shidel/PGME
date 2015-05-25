@@ -72,6 +72,8 @@ theme3:
 	del $(BINDIR)\DEFAULT.LNG
 		
 templates: bin	
+	@if exist $(BINDIR)\TEMPLATE.THM del $(BINDIR)\TEMPLATE.*
+	
 	CD QUICKCRT
 	make -S templates
 	CD ..
