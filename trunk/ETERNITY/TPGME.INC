@@ -33,7 +33,7 @@ type
 			FExecMissing : PDialog;
 			FDlgPAdd, FDlgPEdit, FDlgPDel,
 			FDlgMAdd, FDlgMEdit, FDlgMDel,
-			FDlgPGMOpt : PDialog;			
+			FDlgPGMOpt, FDlgPGMCfg : PDialog;			
 			FFind : record
 				FLabel : PLabel;
 				FEdit : PEdit;
@@ -43,7 +43,7 @@ type
 			FEditMenu : PControl;
 			FBtnPAdd, FBtnPEdit, FBtnPDel,
 			FBtnMAdd, FBtnMEdit, FBtnMDel,
-			FBtnPGMOpt : PButton;
+			FBtnPGMOpt, FBtnPGMCfg : PButton;
 		procedure BeforeShow; virtual;
 		procedure Configure; virtual;
 		procedure CheckLocal(var AEvent : TEvent); virtual;		
@@ -181,6 +181,7 @@ begin
 	FDlgMEdit := nil;
 	FDlgMDel := nil;
 	FDlgPGMOpt := nil;
+	FDlgPGMCfg := nil;
 	OldIdleProc := QCrt.IdleProc;
 	QCrt.IdleProc := PGMIdleProc;
 	
@@ -597,7 +598,7 @@ var
 begin
 	if Not Assigned(FEditMenu) then begin
 		TextAttr := $04;
-		Bounds(FBtnEdit^.Left + FBtnEdit^.Width - 21, FBtnEdit^.Top - 11, 22, 11, B);
+		Bounds(FBtnEdit^.Left + FBtnEdit^.Width - 21, FBtnEdit^.Top - 12, 22, 12, B);
 		FEditMenu := New(PPopup, Create(PControl(FBtnEdit^.Parent), 'POPUP.EDITMENU'));
 		with PPopUp(FEditMenu)^ do begin
 			SetHelpText('A note regarding the edit button popup menu shortcut keys.');
@@ -696,13 +697,24 @@ begin
 			Inc(B.Top, 2);
 			FBtnPGMOpt := New(PButton, Create(FEditMenu, 'BTN.OPTIONS'));
 			with PButton(FBtnPGMOpt)^ do begin
-				SetHelpText('5;"%0" Option: Select this modify PGME program options.');
+				SetHelpText('5;"%0" Option: Select this modify PGME display options.');
 				AddHelpText('The default keyboard shortcut is "O".');
-				SetCaption('Eternity Options...');
+				SetCaption('Display Options...');
 				FHAlign := AlignLeft;
 				SetBounds(B);
 				SetCommand(cmPGMOpts);
 				SetKeycode(kbO, 0, kfMatches);
+			end;
+			Inc(B.Top);
+			FBtnPGMCfg := New(PButton, Create(FEditMenu, 'BTN.CONFIG'));
+			with PButton(FBtnPGMCfg)^ do begin
+				SetHelpText('5;"%0" Option: Select this modify PGME behavior options.');
+				AddHelpText('The default keyboard shortcut is "P".');
+				SetCaption('Config Settings...');
+				FHAlign := AlignLeft;
+				SetBounds(B);
+				SetCommand(cmPGMCfg);
+				SetKeycode(kbP, 0, kfMatches);
 			end;
 		end;
 		ApplySettings(FEditMenu);
@@ -714,6 +726,7 @@ begin
 	FBtnMEdit^.SetEnabled(FWritable and Assigned(FMenus^.FCurrent));
 	FBtnMDel^.SetEnabled(FWritable and Assigned(FMenus^.FCurrent));
 	FBtnPGMOpt^.SetEnabled(Not FReadOnly);
+	FBtnPGMCfg^.SetEnabled(Not FReadOnly);
 	GetEditMenu := FEditMenu;	
 end;
 
