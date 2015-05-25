@@ -7,10 +7,7 @@ ARCH = arch\msdos
 BINDIR = BIN
 INSDIR = INSTALL
 
-default:
-	make clean
-	make -S templates
-	make -S install
+default: clean templates themes themefiles notemplates install
 
 pgm:
 	CD ETERNITY
@@ -71,22 +68,26 @@ theme3:
 	$(BINDIR)\splice $(BINDIR)\TEMPLATE.LNG $(BINDIR)\DEFAULT.LNG
 	del $(BINDIR)\DEFAULT.LNG
 		
-templates: bin	
-	@if exist $(BINDIR)\TEMPLATE.THM del $(BINDIR)\TEMPLATE.*
-	
+templates: bin		
 	CD QUICKCRT
 	make -S templates
 	CD ..
-	
+
+themes:
+	@if exist $(BINDIR)\TEMPLATE.THM del $(BINDIR)\TEMPLATE.*
+
 	make -S pgm eternity etools esavers instools ins
+
+themefiles:
 	make -S theme3
 	make -S theme2
 	make -S theme1
-		
+			
+notemplates:
 	CD QUICKCRT
 	make notemplates
 	CD ..
-	
+
 bin:
 	@if not exist $(BINDIR) mkdir $(BINDIR)
 	@if exist LICENSE.TXT copy LICENSE.TXT $(BINDIR)\LICENSE.TXT
