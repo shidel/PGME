@@ -183,8 +183,9 @@ begin
 		Buffer.R := '';
 		Exec(EXE, CALLS + PARMS);
 		Buffer := TCallBackBuffer(Ptr(Seg(CallBack), OFS(CallBack) + $0003 + $0009)^);	
-		if (DosError = 0) and (Buffer.C <> '') then begin
-			Exec(Buffer.C, Buffer.P);
+		if (DosError = 0) then begin
+			if (Buffer.C <> '') then
+				Exec(Buffer.C, Buffer.P);
 			PARMS := ' ' + Buffer.R;
 			if BAT then
 				PARMS := ' /BAT' + PARMS;

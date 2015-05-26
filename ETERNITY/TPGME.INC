@@ -69,8 +69,10 @@ type
 		function GetDlgMEdit : PControl; virtual;
 		function GetDlgMDelete : PControl; virtual;
 		function GetDlgPGMOpt : PControl; virtual;		
-		function GetDlgPGMCfg : PControl; virtual;		
+		function GetDlgPGMCfg : PControl; virtual;
+		function GetReturnStr : String; virtual;		
 		procedure CreateAllDialogs(ConserveMemory : boolean); virtual;
+		procedure Restart; virtual;
 	end;   
 
 { Some Global Variables }	
@@ -955,7 +957,7 @@ begin
 	FReadOnly := StrBool(AConfig^.GetValue('READONLY', BoolStr(FReadOnly)));
 	FCanQuit := StrBool(AConfig^.GetValue('CANQUIT', BoolStr(FCanQuit)));
 	if Not FCanQuit then 
-		CallBack('', '', '', True);
+		CallBack('', '', '', True); { Preset return to PGME, incase of crash }
 	FBtnQuit^.SetEnabled(FCanQuit);
 	FProgramWindow^.SetCanClose(FCanQuit);
 	UpdateButtons;
@@ -1059,6 +1061,8 @@ begin
 end;
 
 procedure TPGME.CheckLocal(var AEvent : TEvent); 
+var
+	R : integer;
 begin
 	if AEvent.What = evCommand then
 		case AEvent.Command of
@@ -1079,20 +1083,33 @@ begin
 	if (AEvent.What = evCommand) and (not FReadOnly) then
 		case AEvent.Command of
 			cmEditFile : begin
+				ClearEvent(AEvent);
 				GetEditMenu;
-				PWindow(FEditMenu)^.ShowModal;
+				R := PWindow(FEditMenu)^.ShowModal;
 			end;
 			cmMenuAdd : begin
+				ClearEvent(AEvent);
 				GetDlgMAdd;
-				PDialog(FDlgMAdd)^.ShowModal;
+				R := PDialog(FDlgMAdd)^.ShowModal;
 			end;
 			cmPGMOpts : begin
+				ClearEvent(AEvent);
 				GetDlgPGMOpt;
-				PDialog(FDlgPGMOpt)^.ShowModal;
+				R := PDialog(FDlgPGMOpt)^.ShowModal;
+				if R = mrOK then begin
+					CallBack('', '', GetReturnStr, True);
+					Terminate;	
+					Restart;							
+				end;
 			end;
 			cmPGMCfg : begin
+				ClearEvent(AEvent);
 				GetDlgPGMCfg;
-				PDialog(FDlgPGMCfg)^.ShowModal;
+				R := PDialog(FDlgPGMCfg)^.ShowModal;
+				if R = mrOK then begin
+					FConfig.Write;
+					Restart;
+				end;
 			end;
 		end; 
 
@@ -1100,23 +1117,23 @@ begin
 		case AEvent.Command of
 			cmMenuEdit : begin
 				GetDlgMEdit;
-				PDialog(FDlgMEdit)^.ShowModal;
+				R := PDialog(FDlgMEdit)^.ShowModal;
 			end;
 			cmMenuDel : begin
 				GetDlgMDelete;
-				PDialog(FDlgMDel)^.ShowModal;
+				R := PDialog(FDlgMDel)^.ShowModal;
 			end;
 			cmProgAdd : begin
 				GetDlgPAdd;
-				PDialog(FDlgPAdd)^.ShowModal;
+				R := PDialog(FDlgPAdd)^.ShowModal;
 			end;
 			cmProgEdit : begin
 				GetDlgPEdit;
-				PDialog(FDlgPEdit)^.ShowModal;
+				R := PDialog(FDlgPEdit)^.ShowModal;
 			end;
 			cmProgDel : begin
 				GetDlgPDelete;
-				PDialog(FDlgPDel)^.ShowModal;
+				R := PDialog(FDlgPDel)^.ShowModal;
 			end;
 		end; 
 
@@ -1135,6 +1152,16 @@ begin
 				ExecuteItem(FLastProgram)
 			end;
 		end; 
+end;
+
+function TPGME.GetReturnStr : String; 
+begin
+	GetReturnStr := '';
+	if not Assigned(FMenuCache) then exit;
+	if Assigned(FPrograms) and Assigned(FPrograms^.FCurrent) then 
+		with PCacheApp(FPrograms^.FCurrent^.Data)^ do 
+			GetReturnStr := '/M=' + PCacheDir(Parent^.Parent)^.GetNameID + 
+				PCacheMenu(Parent)^.GetNameID + ' /P=' + GetNameID;
 end;
 
 procedure TPGME.ExecuteItem(AItem : PListItem); 
@@ -1204,7 +1231,9 @@ begin
 		FExecDir := '';
 		GetDir(0, FHoldDir);
 		ChDir(FDir);
-		FRet := '/M=' + FDir + PCacheMenu(Parent)^.GetNameID + 
+		FRet := GetReturnStr;
+		if FRet = '' then 
+			FRet := '/M=' + FDir + PCacheMenu(Parent)^.GetNameID + 
 			' /P=' + GetNameID;
 		if FileName <> '' then begin
 			FName := FileExpand(FileName);
@@ -1301,4 +1330,9 @@ begin
 	end;
 end;
 
+procedure TPGME.Restart;
+begin
+	CallBack('', '', GetReturnStr, True);
+	Terminate;								
+end;
 {$ENDIF}

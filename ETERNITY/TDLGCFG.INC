@@ -86,6 +86,7 @@ begin
 		SetBounds(B);
 		SetCaption('OK');
 		SetAllowedOutside(True);
+		SetCommand(cmOK);
 	end;
 	
 end;
