@@ -177,6 +177,7 @@ begin
 		SetBounds(B);
 		SetCaption('OK');
 		SetAllowedOutside(True);
+		setCOmmand(cmOK);
 	end;
 	
 end;
