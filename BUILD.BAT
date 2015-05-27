@@ -7,7 +7,7 @@ call make -S clean templates themes
 rem internalize themefiles for mor memory
 cd bin
 
-mkdir TEMPLATES
+rem mkdir TEMPLATES
 pgme.exe
 	copy DEFAULT.THM ETERNITY.THM
 	copy DEFAULT.KMP ETERNITY.KMP

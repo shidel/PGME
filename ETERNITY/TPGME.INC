@@ -1359,11 +1359,25 @@ end;
 procedure TPGME.ScreenSaver;
 var
 	S : String;
+	E : TEvent;
 begin
 	FConfig.OpenSection(GetPathID);
 	S := FileExpand(FConfig.GetValue('SCREEN_SAVER', 'BLANKER.SCR'));
-	CallBack(S, '', GetReturnStr, True);
-	FOutSound := False;
-	Terminate;
+	if FileExists(S) then begin
+		CallBack(S, '', GetReturnStr, True);
+		FOutSound := False;
+		Terminate;
+	end else begin
+		Hide;
+		TextAttr := $07;
+		ClrScr;
+		TurnMouseOff;
+		repeat
+			FIdleCount := 0;
+			GetEvent(E);
+		until E.What <> evNothing;
+		TurnMouseOn;
+		Show;
+	end;
 end;
 {$ENDIF}
