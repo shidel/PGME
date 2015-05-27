@@ -1376,6 +1376,7 @@ begin
 			FIdleCount := 0;
 			GetEvent(E);
 		until E.What <> evNothing;
+		PurgeEvents;
 		TurnMouseOn;
 		Show;
 	end;
