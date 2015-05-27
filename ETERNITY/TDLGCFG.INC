@@ -18,10 +18,12 @@ type
 	TDlgPGMCfg = object (TDIALOG)
     public { protected }
     	FTimeout : PLabel;
+    	FLang : PDropList;
 		function  ObjectClass ( AName : String ) : String; virtual;
     public { protected }
 		procedure CheckLocal(var AEvent : TEvent); virtual;
 		procedure BeforeShow; virtual;
+		procedure Save; virtual;
 	public
 		constructor Create(AParent : PControl);
 		destructor Destroy; virtual;
@@ -58,15 +60,17 @@ begin
 	AddHelpText('settings of PGME.');
 	TextAttr := ColorLabel;
 	Bounds(3,2, 15, 1, B);
-	Bounds(B.Left + B.Width + 1, B.Top, Self.Width - B.Left - B.Width - 4, 1, E);
+	Bounds(B.Left + B.Width + 1, B.Top, Self.Width - B.Left - B.Width - 4, 10, E);
 	if GetShadow then Dec(E.Width, 2);
+	if not GetShadow then Dec(E.Height, 2);
 	with PLabel(New(PLabel, Create(@Self, 'LANGUAGE.LABEL')))^ do begin
 		SetBounds(B);
 		FHAlign := AlignRight;
 		SetCaption('Language File:');
 	end;
 	TextAttr := ColorDrop;
-	with PDropList(New(PDropList, Create(@Self, 'LANGUAGE.DROP')))^ do begin
+	FLang := New(PDropList, Create(@Self, 'LANGUAGE.DROP'));
+	with PDropList(FLang)^ do begin
 		SetBounds(E);
 		SetCaption('DEFAULT.LNG');
 		FindFirst(GetExePath + '*' + LanguageExt, faAnyFile, SRec);
@@ -104,5 +108,18 @@ end;
 procedure TDlgPGMCfg.BeforeShow;
 begin
 	inherited BeforeShow;
+	with Application^.FConfig do begin
+		OpenSection('*');
+		FLang^.SetCaption(GetValue('LANGUAGE', 'DEFAULT.LNG'));
+	end;
+end;
+
+procedure TDlgPGMCfg.Save;
+begin
+	with Application^.FConfig do begin
+		OpenSection('*');
+		SetValue('LANGUAGE', FLang^.GetCaption);
+		Write;
+	end;
 end;
 {$ENDIF}

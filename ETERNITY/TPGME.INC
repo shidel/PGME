@@ -13,6 +13,8 @@
 type 
 	TPGME = object (TApplication)
 	public { protected }
+			FIdleCount : integer;
+			FTimeOut : integer;
 			FReadOnly : boolean;
 			FEditing, 
 			FWritable,
@@ -73,6 +75,7 @@ type
 		function GetReturnStr : String; virtual;		
 		procedure CreateAllDialogs(ConserveMemory : boolean); virtual;
 		procedure Restart; virtual;
+		procedure ScreenSaver; virtual;
 	end;   
 
 { Some Global Variables }	
@@ -156,6 +159,7 @@ var
 begin	
 	inherited Create(nil, 'PGM');
 	FBatLoop := False;
+	FIdleCount := 0;
 	FInitRun := False;
 	FReqMenu := '';
 	FReqProg := '';
@@ -185,6 +189,7 @@ begin
 	FDlgMDel := nil;
 	FDlgPGMOpt := nil;
 	FDlgPGMCfg := nil;
+	FTimeOut := 0;
 	OldIdleProc := QCrt.IdleProc;
 	QCrt.IdleProc := PGMIdleProc;
 	
@@ -871,6 +876,7 @@ begin
 				FReqProg := V			
 		end;
 	end;
+	FInSound := FInitRun;
 	if (FReqMenu <> '') and (FReqProg <> '') then
 		FInitRun := False;
 end;
@@ -960,12 +966,14 @@ begin
 		CallBack('', '', '', True); { Preset return to PGME, incase of crash }
 	FBtnQuit^.SetEnabled(FCanQuit);
 	FProgramWindow^.SetCanClose(FCanQuit);
+	AConfig^.GetInts('SCREEN_TIMEOUT', FTimeOut, 1);
 	UpdateButtons;
 end;
 
 procedure TPGME.Idle;
 const
-	S : word = 0;
+	I : word = 100;
+	S : word = 100;
 	L : longInt = 0;
 var
 	Ticks : LongInt absolute $0040:$006c;
@@ -974,7 +982,20 @@ begin
 	inherited Idle;
 	if (Not Assigned(Application)) or (Not Application^.GetVisible) then exit;
 	if Ticks = L then Exit;
-	
+	L := Ticks;
+
+	GetTime(Hour, Min, Sec, Sec100);
+	if Sec <> I then begin
+		I := Sec;
+		Inc(FIdleCount);
+	end;	
+	if EventFlag then begin
+		EventFlag := False;
+		FIdleCount := 0;
+	end;
+	if ((FTimeOut = 0) and (FIdleCount >= 30)) or 
+	((FTimeOut > 0) and (FIdleCount >= FTimeOut * 60)) then 
+		ScreenSaver;
 	{ If a Subwindow or Dialog is visible then don't update clock, QuickCrt doesn't
 	 support Write-Behind yet. This list keeps getting longer and longer. I really
 	 need to add write behined! }
@@ -992,9 +1013,7 @@ begin
 	if Assigned(FDlgPGMOpt) and FDlgPGMOpt^.GetVisible then Exit;
 	if Assigned(FDlgPGMCfg) and FDlgPGMCfg^.GetVisible then Exit;
 	
-	L := Ticks;
-	GetTime(Hour, Min, Sec, Sec100);
-	if Sec <> S then begin
+	if S <> Sec then begin
 		S := Sec;
 		FTime^.Update;
 		FDate^.Update;
@@ -1097,8 +1116,8 @@ begin
 				GetDlgPGMOpt;
 				R := PDialog(FDlgPGMOpt)^.ShowModal;
 				if R = mrOK then begin
+					PDlgPGMOpt(FDlgPGMOpt)^.Save;
 					CallBack('', '', GetReturnStr, True);
-					Terminate;	
 					Restart;							
 				end;
 			end;
@@ -1107,7 +1126,8 @@ begin
 				GetDlgPGMCfg;
 				R := PDialog(FDlgPGMCfg)^.ShowModal;
 				if R = mrOK then begin
-					FConfig.Write;
+					PDlgPGMCfg(FDlgPGMCfg)^.Save;
+					CallBack('', '', GetReturnStr, True);
 					Restart;
 				end;
 			end;
@@ -1333,6 +1353,17 @@ end;
 procedure TPGME.Restart;
 begin
 	CallBack('', '', GetReturnStr, True);
-	Terminate;								
+	Terminate;
+end;
+
+procedure TPGME.ScreenSaver;
+var
+	S : String;
+begin
+	FConfig.OpenSection(GetPathID);
+	S := FileExpand(FConfig.GetValue('SCREEN_SAVER', 'BLANKER.SCR'));
+	CallBack(S, '', GetReturnStr, True);
+	FOutSound := False;
+	Terminate;
 end;
 {$ENDIF}
