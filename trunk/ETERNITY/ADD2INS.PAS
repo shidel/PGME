@@ -105,6 +105,9 @@ begin
 	ExcludeFile('SPLICE.EXE');
 	ExcludeFile('EXESIZE.EXE');
 	ExcludeFile('INSTALL.TMP');
+	ExcludeFile('TEMPLATE.THM');
+	ExcludeFile('TEMPLATE.LNG');
+	ExcludeFile('TEMPLATE.KMP');
 end;
 	
 begin
@@ -117,7 +120,7 @@ begin
 	AppendAll('ETERNITY.BIN', igEternity );
 	AppendAll('ETERNITY.DAT', igEternity ); { Force rescanning of menus }
 	AppendAll('ETERNITY' + EMenuExt, igEternity ); { Add Eternity Menu }
-	AppendAll('TEMPLATE.*', igSupplement );
+{	AppendAll('TEMPLATE.*', igSupplement ); }
 	AppendAll('*' + ConfigExt, igConfig );
 	AppendAll('*' + FontExt, igFonts);
 	AppendAll('*' + KeymapExt, igKeymaps);

@@ -7,7 +7,9 @@ ARCH = arch\msdos
 BINDIR = BIN
 INSDIR = INSTALL
 
-default: clean templates themes themefiles notemplates install
+default: clean notemplates install
+
+olddefault: clean templates themes themefiles notemplates install
 
 pgm:
 	CD ETERNITY
@@ -129,6 +131,8 @@ clean: do_clean
 distclean: do_clean
 
 do_clean:
+	if exist $(BINDIR)\TEMPLATES del $(BINDIR)\TEMPLATES\*.*
+	if exist $(BINDIR)\TEMPLATES rmdir $(BINDIR)\TEMPLATES
 	if exist $(BINDIR) del $(BINDIR)\*.*
 	if exist $(BINDIR) rmdir $(BINDIR)
 	if exist $(INSDIR) del $(INSDIR)\*.*
