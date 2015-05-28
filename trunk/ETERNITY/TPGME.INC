@@ -57,6 +57,7 @@ type
 		constructor Create;
 		destructor Destroy; virtual;
 		procedure ApplyConfig( AConfig : PConfigFile ); virtual;
+		procedure ApplyTheme( AConfig : PConfigFile ); virtual;
 		procedure Idle; virtual;
 		procedure ExecuteItem(AItem : PListItem); virtual;
 		function GetNoTempDir : PDialog; virtual;
@@ -876,7 +877,7 @@ begin
 				FReqProg := V			
 		end;
 	end;
-	FInSound := FInitRun;
+	FInSound := True;
 	if (FReqMenu <> '') and (FReqProg <> '') then
 		FInitRun := False;
 end;
@@ -956,9 +957,9 @@ procedure TPGME.ApplyConfig( AConfig : PConfigFile );
 begin
 	inherited ApplyConfig(AConfig);
 	AConfig^.OpenSection(GetPathID + '.VIEWERS');
-	AConfig^.GetValue('TXT', 'QSCROLL.EXE');
-	AConfig^.GetValue('DOC', 'QSCROLL.EXE');
-	AConfig^.GetValue('ME', 'QSCROLL.EXE');
+	AConfig^.SetValue('TXT', AConfig^.GetValue('TXT', 'QSCROLL.EXE'));
+	AConfig^.SetValue('DOC', AConfig^.GetValue('DOC', 'QSCROLL.EXE'));
+	AConfig^.SetValue('ME', AConfig^.GetValue('ME', 'QSCROLL.EXE'));
 	AConfig^.OpenSection(GetPathID);
 	FReadOnly := StrBool(AConfig^.GetValue('READONLY', BoolStr(FReadOnly)));
 	FCanQuit := StrBool(AConfig^.GetValue('CANQUIT', BoolStr(FCanQuit)));
@@ -1352,8 +1353,11 @@ end;
 
 procedure TPGME.Restart;
 begin
+	FTheme.OpenSection(GetNameID);
+	FEndTone := FTHeme.GetValue('TONE.RESTART', '400:1,600:1,800:1,200:1');
 	CallBack('', '', GetReturnStr, True);
 	Terminate;
+	FOutSound := True;
 end;
 
 procedure TPGME.ScreenSaver;
@@ -1380,5 +1384,13 @@ begin
 		TurnMouseOn;
 		Show;
 	end;
+end;
+
+procedure TPGME.ApplyTheme;
+begin
+	inherited ApplyTheme(AConfig);
+	AConfig^.OpenSection(GetNameID);
+	if FInitRun = false then
+		FStartTone := AConfig^.GetValue('TONE.RETURN', '800:2,0:1,600:2,0:1,400:6,0:2');
 end;
 {$ENDIF}

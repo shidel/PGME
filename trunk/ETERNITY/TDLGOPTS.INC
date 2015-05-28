@@ -209,7 +209,12 @@ begin
 	if AEvent.What = evCommand then
 		case AEvent.Command of 
 			cmScrollBar : if AEvent.InfoPtr = FSlide then begin
+				ClearEvent(AEvent);
 				FTimeout^.Update;
+			end;
+			cmCheckbox : if AEvent.InfoPtr = FDAC then begin
+				ClearEvent(AEvent);
+				FFader^.SetEnabled(FDAC^.Checked);
 			end;
 		end;
 end;
@@ -237,6 +242,8 @@ begin
 		else
 			FFader^.SetState(0);
 	end;
+	FFader^.SetEnabled(FDAC^.Checked);
+
 end;
 
 procedure TDlgPGMOpt.Save;
