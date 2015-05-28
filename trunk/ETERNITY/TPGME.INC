@@ -1272,6 +1272,8 @@ begin
 		(not PGMVars) then begin
 			if FExecDir <> '' then 
 				FOriginalPath := FExecDir;
+			if Tone <> '' then 
+				FEndTone := Tone;
 			CallBack(FName, FOpts, FRet, ReturnAfter or (not FCanQuit));
 			Terminate;
 		end else begin
@@ -1341,9 +1343,11 @@ begin
 				OK := (F.IOResult = 0);				
 			end;
 			F.Destroy;
-			if OK then 
+			if OK then begin
+				if Tone <> '' then 
+					FEndTone := Tone;
 				Terminate
-			else begin
+			end else begin
 				GetGornError;
 				FGornError^.ShowModal;
 			end;

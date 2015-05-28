@@ -47,7 +47,8 @@ type
 		FClassName,
 		FFilename,
 		FGroupName,
-		FTitle	: PString;
+		FTitle, 
+		FTone : PString;
 		MaxMemory, 
 		SimpleExec,
 		ReturnAfter,
@@ -61,10 +62,12 @@ type
 		function Filename : String;
 		function GroupName : String;
 		function Title: String;
+		function Tone: String;
 		procedure SetClassName(AValue : String);
 		procedure SetFilename(AValue : String);
 		procedure SetGroupName(AValue : String);
 		procedure SetTitle(AValue : String);
+		procedure SetTone(AValue : String);
 	end;
 
 	PCacheProc = ^TCacheProc;
@@ -273,10 +276,10 @@ constructor TCacheApp.Create(AName : String);
 begin
 	inherited Create(AName);
 	Sorted := False;
-
 	FClassName := nil;
 	FFilename := nil;
 	FGroupName := nil;
+	FTone := nil;
 	FTitle:= nil;
 	MaxMemory := false;
 	SimpleExec := true;
@@ -290,6 +293,7 @@ begin
 	FreeStr(FFilename);
 	FreeStr(FGroupName);
 	FreeStr(FTitle);
+	FreeStr(FTone);
 	inherited Destroy;
 end;
 
@@ -318,6 +322,11 @@ begin
 	Title := PtrStr(FTitle);
 end;
 
+function TCacheApp.Tone: String;
+begin
+	Tone := PtrStr(FTone);
+end;
+
 procedure TCacheApp.SetClassName(AValue : String);
 begin
 	FreeStr(FClassName);
@@ -340,6 +349,12 @@ procedure TCacheApp.SetTitle(AValue : String);
 begin
 	FreeStr(FTitle);
 	FTitle := StrPtr(AValue);
+end;
+
+procedure TCacheApp.SetTone(AValue : String);
+begin
+	FreeStr(FTone);
+	FTone := StrPtr(AValue);
 end;
 
 function TCacheApp.ReadSelf(var F : TFile) : boolean; 
@@ -377,6 +392,10 @@ begin
 	end;
 	if OK then begin
 		SetTitle (F.GetString);
+		OK := F.IOResult = 0;
+	end;
+	if OK then begin
+		SetTone (F.GetString);
 		OK := F.IOResult = 0;
 	end;
 	ReadSelf := OK;
@@ -421,6 +440,11 @@ begin
 	end;
 	if OK then begin
 		S := Title;
+		F.PutString(S);
+		OK := F.IOResult = 0;
+	end;
+	if OK then begin
+		S := Tone;
 		F.PutString(S);
 		OK := F.IOResult = 0;
 	end;

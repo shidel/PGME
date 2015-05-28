@@ -10,8 +10,7 @@
 	FILE=BLAHBLAH.TXT
 	GROUP=ETERNITY
 	TITLE.EN_US=PGM Eternity Documentation
-	MAXAVAIL=False
-	SIMPLE=True
+	TONE=0:0
 
 [LICENSE]
 	CLASS=DOCUMENT
@@ -27,7 +26,7 @@
 	GROUP=ETERNITY
 	TITLE.EN_US=Eternity Font Designer
 	MAXAVAIL=False
-	SIMPLE=True
+	SIMPLE=Yes
 	RETURN=True
 
 [ATOM]
@@ -37,3 +36,4 @@
 	TITLE.EN_US=Atom Screen Saver
 	MAXAVAIL=False
 	SIMPLE=True
+	TONE=400:1,300:1,400:1,500:1,600:1,0:2

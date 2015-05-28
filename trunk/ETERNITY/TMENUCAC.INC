@@ -286,6 +286,7 @@ begin
 					SetTitle(S);
 					SetClassName(Trim(Temp.GetValue('CLASS', '')));
 					SetGroupName(Trim(Temp.GetValue('GROUP', '')));
+					SetTone(Trim(Temp.GetValue('TONE', '')));
 					MaxMemory := StrBool(Temp.GetValue('MAXAVAIL', 'NO'));
 					SimpleExec := StrBool(Temp.GetValue('SIMPLE', 'YES'));
 					ReturnAfter := StrBool(Temp.GetValue('RETURN', 'YES'));
