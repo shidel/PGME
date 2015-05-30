@@ -1394,10 +1394,10 @@ procedure TPGME.ApplyTheme;
 begin
 	inherited ApplyTheme(AConfig);
 	AConfig^.OpenSection(GetNameID);
-	{$IFDEF TEMPLATES}
-		AConfig^.GetValue('TONE.RESTART', '400:1,600:1,800:1,200:1');
-		AConfig^.GetValue('TONE.RETURN', '800:2,0:1,600:2,0:1,400:6,0:2');
-	{$ENDIF}
+	with AConfig^ do begin
+		SetValue('TONE.RESTART', GetValue('TONE.RESTART', '400:1,600:1,800:1,200:1');
+		SetValue('TONE.RETURN', GetValue('TONE.RETURN', '800:2,0:1,600:2,0:1,400:6,0:2');
+	end;
 	if FInitRun = false then
 		FStartTone := AConfig^.GetValue('TONE.RETURN', FStartTone);
 end;
