@@ -1090,6 +1090,11 @@ begin
 	if Not Assigned(FMenus^.FCurrent) then exit;
 	H := FMenus^.FCurrent;
 	P := PListItem(H^.Data);
+
+	Assign(F, PCacheDir(P^.Parent)^.GetNameID + PCacheMenu(P)^.GetNameID);
+	Erase(F);
+	if IOResult <> 0 then exit; { Should show an error here! }
+
 	if Assigned(FMenus^.FCurrent^.Next) then
 		FMenus^.Down(True)
 	else if Assigned(FMenus^.FCurrent^.Prior) then
@@ -1097,9 +1102,6 @@ begin
 	else begin 
 		FMenus^.FCurrent := nil;
 	end;
-	Assign(F, PCacheDir(P^.Parent)^.GetNameID + PCacheMenu(P)^.GetNameID);
-	Erase(F);
-	
 	{ Only removing for searching, cache will update itself on next launch }
 	PListItem(P^.Parent)^.Remove(P);
 	Dispose(P, Destroy);
@@ -1111,7 +1113,41 @@ begin
 end;
 
 procedure TPGME.DeleteProgram;
+var
+	H, P : PListItem;
+	M : PConfigFile;
 begin
+	if Not Assigned(FPrograms^.FCurrent) then exit;
+	if Not MemCheck(Sizeof(TConfigFile)) then Halt(8);
+	H := FPrograms^.FCurrent;
+	P := PListItem(H^.Data);
+	M := New(PConfigFile, Create('ROOT'));
+	with PCacheApp(FPrograms^.FCurrent^.Data)^ do begin
+		M^.SetFileName(PCacheDir(Parent^.Parent)^.GetNameID + 
+			PCacheMenu(Parent)^.GetNameID);
+		M^.Read;
+		M^.OpenSection(GetNameID);
+		M^.DeleteSection;
+		M^.Write;
+	end;	
+	Dispose(M, Destroy);
+	
+	if Assigned(FPrograms^.FCurrent^.Next) then
+		FPrograms^.Down(True)
+	else if Assigned(FPrograms^.FCurrent^.Prior) then
+		FPrograms^.Up(True)
+	else begin 
+		FPrograms^.FCurrent := nil;
+	end;
+	
+	{ Only removing for searching, cache will update itself on next launch }
+	PListItem(P^.Parent)^.Remove(P);
+	Dispose(P, Destroy);
+	{ Remove program from menu }
+	PListItem(H^.Parent)^.Remove(H);
+	Dispose(H, Destroy);
+
+	FPrograms^.Update;
 end;
 
 procedure TPGME.CheckLocal(var AEvent : TEvent); 
