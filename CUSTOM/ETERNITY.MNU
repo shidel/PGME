@@ -9,7 +9,7 @@
 	CLASS=DOCUMENT
 	FILE=BLAHBLAH.TXT
 	GROUP=ETERNITY
-	TITLE.EN_US=PGM Eternity Documentation
+	TITLE.EN_US=Eternity Documentation
 	TONE=0:0
 
 [README-BIG]
@@ -28,7 +28,7 @@
 	CLASS=DOCUMENT
 	FILE=LICENSE.TXT
 	GROUP=ETERNITY
-	TITLE.EN_US=PGM Eternity License
+	TITLE.EN_US=Eternity License Agreement
 	MAXAVAIL=False
 	SIMPLE=True
 

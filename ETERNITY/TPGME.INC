@@ -1358,7 +1358,7 @@ end;
 procedure TPGME.Restart;
 begin
 	FTheme.OpenSection(GetNameID);
-	FEndTone := FTHeme.GetValue('TONE.RESTART', '400:1,600:1,800:1,200:1');
+	FEndTone := FTheme.GetValue('TONE.RESTART', FEndTone);
 	CallBack('', '', GetReturnStr, True);
 	Terminate;
 	FOutSound := True;
@@ -1394,7 +1394,11 @@ procedure TPGME.ApplyTheme;
 begin
 	inherited ApplyTheme(AConfig);
 	AConfig^.OpenSection(GetNameID);
+	{$IFDEF TEMPLATES}
+		AConfig^.GetValue('TONE.RESTART', '400:1,600:1,800:1,200:1');
+		AConfig^.GetValue('TONE.RETURN', '800:2,0:1,600:2,0:1,400:6,0:2');
+	{$ENDIF}
 	if FInitRun = false then
-		FStartTone := AConfig^.GetValue('TONE.RETURN', '800:2,0:1,600:2,0:1,400:6,0:2');
+		FStartTone := AConfig^.GetValue('TONE.RETURN', FStartTone);
 end;
 {$ENDIF}
