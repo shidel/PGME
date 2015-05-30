@@ -77,6 +77,8 @@ type
 		procedure CreateAllDialogs(ConserveMemory : boolean); virtual;
 		procedure Restart; virtual;
 		procedure ScreenSaver; virtual;
+		procedure DeleteMenu; virtual;
+		procedure DeleteProgram; virtual;
 	end;   
 
 { Some Global Variables }	
@@ -1080,6 +1082,38 @@ begin
 	FBtnRun^.SetEnabled(Assigned(FPrograms^.FCurrent));
 end;
 
+procedure TPGME.DeleteMenu;
+var
+	F : File;
+	H, P : PListItem;
+begin
+	if Not Assigned(FMenus^.FCurrent) then exit;
+	H := FMenus^.FCurrent;
+	P := PListItem(H^.Data);
+	if Assigned(FMenus^.FCurrent^.Next) then
+		FMenus^.Down(True)
+	else if Assigned(FMenus^.FCurrent^.Prior) then
+		FMenus^.Up(True)
+	else begin 
+		FMenus^.FCurrent := nil;
+	end;
+	Assign(F, PCacheDir(P^.Parent)^.GetNameID + PCacheMenu(P)^.GetNameID);
+	Erase(F);
+	
+	{ Only removing for searching, cache will update itself on next launch }
+	PListItem(P^.Parent)^.Remove(P);
+	Dispose(P, Destroy);
+	
+	{ Remove menu from menu list }
+	PListItem(H^.Parent)^.Remove(H);
+	Dispose(H, Destroy);
+	FMenus^.Update;
+end;
+
+procedure TPGME.DeleteProgram;
+begin
+end;
+
 procedure TPGME.CheckLocal(var AEvent : TEvent); 
 var
 	R : integer;
@@ -1137,24 +1171,33 @@ begin
 	if (AEvent.What = evCommand) and (not FReadOnly) and FWritable then
 		case AEvent.Command of
 			cmMenuEdit : begin
+				ClearEvent(AEvent);
 				GetDlgMEdit;
 				R := PDialog(FDlgMEdit)^.ShowModal;
 			end;
 			cmMenuDel : begin
+				ClearEvent(AEvent);
 				GetDlgMDelete;
 				R := PDialog(FDlgMDel)^.ShowModal;
+				if R = mrOK then 
+					DeleteMenu;
 			end;
 			cmProgAdd : begin
+				ClearEvent(AEvent);
 				GetDlgPAdd;
 				R := PDialog(FDlgPAdd)^.ShowModal;
 			end;
 			cmProgEdit : begin
+				ClearEvent(AEvent);
 				GetDlgPEdit;
 				R := PDialog(FDlgPEdit)^.ShowModal;
 			end;
 			cmProgDel : begin
+				ClearEvent(AEvent);
 				GetDlgPDelete;
 				R := PDialog(FDlgPDel)^.ShowModal;
+				if R = mrOK then 
+					DeleteProgram;
 			end;
 		end; 
 
