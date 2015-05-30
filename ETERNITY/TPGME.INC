@@ -1095,21 +1095,13 @@ begin
 	Erase(F);
 	if IOResult <> 0 then exit; { Should show an error here! }
 
-	if Assigned(FMenus^.FCurrent^.Next) then
-		FMenus^.Down(True)
-	else if Assigned(FMenus^.FCurrent^.Prior) then
-		FMenus^.Up(True)
-	else begin 
-		FMenus^.FCurrent := nil;
-	end;
 	{ Only removing for searching, cache will update itself on next launch }
 	PListItem(P^.Parent)^.Remove(P);
 	Dispose(P, Destroy);
 	
-	{ Remove menu from menu list }
-	PListItem(H^.Parent)^.Remove(H);
-	Dispose(H, Destroy);
-	FMenus^.Update;
+	StartDrawing;
+	FMenus^.DeleteItem(FMenus^.FCurrent);
+	FinishDrawing;
 end;
 
 procedure TPGME.DeleteProgram;
@@ -1132,22 +1124,13 @@ begin
 	end;	
 	Dispose(M, Destroy);
 	
-	if Assigned(FPrograms^.FCurrent^.Next) then
-		FPrograms^.Down(True)
-	else if Assigned(FPrograms^.FCurrent^.Prior) then
-		FPrograms^.Up(True)
-	else begin 
-		FPrograms^.FCurrent := nil;
-	end;
-	
 	{ Only removing for searching, cache will update itself on next launch }
 	PListItem(P^.Parent)^.Remove(P);
 	Dispose(P, Destroy);
-	{ Remove program from menu }
-	PListItem(H^.Parent)^.Remove(H);
-	Dispose(H, Destroy);
 
-	FPrograms^.Update;
+	StartDrawing;
+	FPrograms^.DeleteItem(FPrograms^.FCurrent);
+	FinishDrawing;
 end;
 
 procedure TPGME.CheckLocal(var AEvent : TEvent); 
