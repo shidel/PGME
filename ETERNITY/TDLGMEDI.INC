@@ -41,7 +41,7 @@ constructor TDlgMEdit.Create;
 var
 	B : TBounds;
 begin	
-	inherited Create(AParent, 'DIALOG.MENU.EDIT');
+	inherited Create(AParent, 'DIALOG.MENU.EDIT', False);
 	SetTitle('Menu Options');
 	SetHelpText('');
 	AddHelpText('');
