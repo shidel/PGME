@@ -79,6 +79,8 @@ type
 		procedure ScreenSaver; virtual;
 		procedure DeleteMenu; virtual;
 		procedure DeleteProgram; virtual;
+		procedure SelectMenu(AValue : String); virtual;
+		procedure SelectProg(AValue : String); virtual;		
 	end;   
 
 { Some Global Variables }	
@@ -884,43 +886,50 @@ begin
 		FInitRun := False;
 end;
 
-procedure TPGME.BeforeShow;
+procedure TPGME.SelectMenu(AValue : String);
 var
 	T, P :PListItem;
 	S : String;
+begin
+	if Not (Assigned(FMenus) and Assigned(FMenuCache)) then exit;
+	P := FMenus^.FItems.First;
+	while Assigned(P) do begin
+		S := UCase(PCacheDir(PCacheMenu(P^.Data)^.Parent)^.GetNameID + 
+			PCacheMenu(P^.Data)^.GetNameID);
+		if S = AValue then begin
+			FMenus^.FCurrent := P;
+			OpenCurrentMenu;
+			P := nil;
+		end else
+			P := P^.Next;
+	end;
+end;
+
+procedure TPGME.SelectProg(AValue : String);
+var
+	T, P :PListItem;
+	S : String;
+begin
+	if Not (Assigned(FPrograms) and Assigned(FMenuCache)) then exit;
+	P := FPrograms^.FItems.First;
+	while Assigned(P) do begin
+		S := PCacheApp(P^.Data)^.GetNameID;
+		if S = AValue then begin
+			FPrograms^.FCurrent := P;
+			P := nil;
+		end else
+			P := P^.Next;
+	end;
+end;
+
+procedure TPGME.BeforeShow;
 begin
 	inherited BeforeShow;
 	GotoXY(1, WhereY);
 	TextAttr := $07;
 	ClrEOL;
-	{ if requested from command line open menu }
-	if Not (Assigned(FMenus) and Assigned(FMenuCache)) then exit;
-	if FReqMenu <> '' then begin
-		P := FMenus^.FItems.First;
-		while Assigned(P) do begin
-			S := UCase(PCacheDir(PCacheMenu(P^.Data)^.Parent)^.GetNameID + 
-				PCacheMenu(P^.Data)^.GetNameID);
-			if S = FReqMenu then begin
-				FMenus^.FCurrent := P;
-				OpenCurrentMenu;
-				P := nil;
-			end else
-				P := P^.Next;
-		end;
-	end;
-	{ if requested from command line select program }
-	if Not (Assigned(FPrograms) and Assigned(FMenuCache)) then exit;
-	if FReqProg <> '' then begin
-		P := FPrograms^.FItems.First;
-		while Assigned(P) do begin
-			S := PCacheApp(P^.Data)^.GetNameID;
-			if S = FReqProg then begin
-				FPrograms^.FCurrent := P;
-				P := nil;
-			end else
-				P := P^.Next;
-		end;
-	end;
+	if FReqMenu <> '' then SelectMenu(FReqMenu);
+	if FReqProg <> '' then SelectProg(FReqProg);
 	UpdateButtons;
 end;
 
