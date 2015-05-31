@@ -41,7 +41,7 @@ constructor TDlgMAdd.Create;
 var
 	B : TBounds;
 begin	
-	inherited Create(AParent, 'DIALOG.MENU.ADD');
+	inherited Create(AParent, 'DIALOG.MENU.ADD', True);
 	SetTitle('New Menu');
 	SetHelpText('');
 	AddHelpText('');
