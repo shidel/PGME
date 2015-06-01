@@ -19,8 +19,6 @@ type
     public { protected }
 		function  ObjectClass ( AName : String ) : String; virtual;
     public { protected }
-    	FLongName, FShortName, FFileName : String;
-    	FReadOnly : boolean;
     	FEditLong, FEditShort : PEdit;
     	FLabelFile : PLabel;
     	FLockToggle : PToggle;
@@ -30,6 +28,7 @@ type
 	public
 		constructor Create(AParent : PControl; AName : String; ANewMenu : boolean);
 		destructor Destroy; virtual;
+		procedure SetData(AItem : PListItem); virtual;
 	end;   
 
 {$ENDIF}
@@ -55,10 +54,6 @@ var
 	B, T : TBounds;
 begin	
 	inherited Create(AParent, AName);
-	FLongName := '';
-	FShortName := '';
-	FFileName := '';
-	FReadOnly := False;
 	Bounds(1,1,55,15, B);
 	if Not ANewMenu then begin
 		if AParent^.Height < 16 then 
@@ -106,7 +101,7 @@ begin
 			SetBounds(B);
 			SetAnchors(abLeft or abRight or abTop);
 			FHAlign := AlignLeft;
-			SetCaption('Menu filename:' + IntStr(AParent^.Height));
+			SetCaption('Menu filename:');
 		end;
 		Inc(B.Top);
 		TextAttr := ColorFile;
@@ -115,7 +110,7 @@ begin
 			SetBounds(B);
 			SetAnchors(abLeft or abRight or abTop);
 			FHAlign := AlignLeft;
-			SetCaption(GetExePath);
+			SetCaption('');
 		end;
 		FLockToggle := nil;
 		FLockAccept := nil;
@@ -188,5 +183,17 @@ end;
 procedure TDlgMenu.BeforeShow;
 begin
 	inherited BeforeShow;
+end;
+
+procedure TDlgMenu.SetData(AItem : PListItem);
+begin
+	if Not Assigned(AItem) then begin
+		FEditLong^.SetCaption('');
+		FEditShort^.SetCaption('');
+		if Assigned(FLabelFile) then FLabelFile^.SetCaption('');
+	end;
+	if Assigned(FLockToggle) then FLockToggle^.SetOn(False);
+	if Assigned(FLockAccept) then FLockAccept^.SetState(0);
+	if Assigned(FLockAccept) then FLockAccept^.SetEnabled(False);
 end;
 {$ENDIF}
