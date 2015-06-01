@@ -1,0 +1,136 @@
+[#]
+	#=Notas:
+
+		+=Este es un archivo de idioma Eternidad Administrador de programas.
+		+=Estos son los valores por defecto y no son obligatorios a menos
+		+=que se necesitan cambios.
+
+
+[*]
+	FILE.DATE=0[X3.2],1[L2],2[Z2];%0.%1.%2
+	FILE.TIME=0[Z2],1[L2],2[Z2],3[Z2],4{a,p};%1:%2%4
+	ID=Spanish
+	NAME=Spanish
+	TYPE=LANGUAGE
+
+[HELP]
+	PGM=Eternidad Programa Manager Edition Sistema de ayuda
+
+		+=Eternidad Programa Manager Edition Ayuda SystemWarehouse
+		+=sistema de ayuda es sensible al contexto basado en la corriente
+		+=activa ventana. Puede cerrar la ventana de ayuda haciendo clic 
+		+=en el botón de cierre o fuera de la ventana con el ratón. También, 
+		+=usando el teclado para generar un CloseWindow o el comando 
+		+=( por defecto Alt + W o Esc ) Escapar. Generación de un comando 
+		+=de programa Salir ( Alt + Q ) cerrará ayuda y sale el programa. 
+		+=Esto supone que la opción de configuración para CANCLOSE no se 
+		+=establece en false.
+		
+	PGM.DIALOG.CONFIG=El cuadro de diálogo de opciones de configuración del programa 
+		+=Eternidad Administrador de programas.
+		+=Aquí es donde se puede cambiar el idioma y otros ajustes de PGME.
+
+[STRINGS]
+	PGM.BOOT.CACHE.UPDATE=Actualizando Menú caché...
+	PGM.BOOT.STARTING=A partir Eternidad...
+	PGM.DIALOG.CONFIG.BUTTON.OK=OK
+	PGM.DIALOG.CONFIG.FRAME.TITLE= Eternity Config Settings 
+	PGM.DIALOG.CONFIG.LANGUAGE.DROP.LIST.FRAME.TITLE=
+	PGM.DIALOG.CONFIG.LANGUAGE.DROP.LIST.LIST.COLUMN.NONE= 
+	PGM.DIALOG.CONFIG.LANGUAGE.LABEL=Language File:
+	PGM.DIALOG.EXECMISSING.FRAME.TITLE= Oh, NO! Me so sorry! :( 
+	PGM.DIALOG.EXECMISSING.MESSAGE= 
+
+		+=PGME was unable to locate a required executable item and
+		+=can not run that menu entry at this time.
+		+= 
+		+=Maybe, verify that the program has not been relocated.
+
+	PGM.DIALOG.GORNERROR.FRAME.TITLE= Oh, NO! Me so sorry! :( 
+	PGM.DIALOG.GORNERROR.MESSAGE= 
+
+		+=An error occurred when trying to write to the PGMEGORN.BAT
+		+=temporary file. The file may be locked, readonly or just
+		+=unaccessible at this time.
+		+= 
+		+=Maybe, if you delete the file manually it will fix it.
+
+	PGM.DIALOG.MENU.ADD.FRAME.TITLE= New Menu 
+	PGM.DIALOG.MENU.DELETE.BUTTON.NO=Cancel
+	PGM.DIALOG.MENU.DELETE.BUTTON.OK=Delete
+	PGM.DIALOG.MENU.DELETE.FRAME.TITLE= Delete Menu 
+	PGM.DIALOG.MENU.DELETE.MESSAGE= 
+
+		+=Are you sure you want to delete this
+		+=menu from the computer?
+
+	PGM.DIALOG.MENU.EDIT.FRAME.TITLE= Menu Options 
+	PGM.DIALOG.NOBATCH.FRAME.TITLE= Oh, NO! Me so sorry! :( 
+	PGM.DIALOG.NOBATCH.MESSAGE= 
+
+		+=Unfortunately, you did not use the launcher batch file
+		+=PGM.BAT and PGME can only perform simple launching at
+		+=this time.
+		+= 
+		+=Maybe, next time start PGME using the PGM.BAT launcher.
+
+	PGM.DIALOG.NOTEMPDIR.FRAME.TITLE= Oh, NO! Me so sorry! :( 
+	PGM.DIALOG.NOTEMPDIR.MESSAGE= 
+
+		+=Unfortunately, the system has no TEMP directory defined.
+		+=So, I am unable to execute that program at this time.
+		+= 
+		+=Maybe, try adding SET TEMP=C:\TEMP to the AUTOEXEC.BAT file.
+		+=(That assumes you have a directory called C:\TEMP somewhere)
+
+	PGM.DIALOG.OPTIONS.BUTTON.OK=OK
+	PGM.DIALOG.OPTIONS.DAC.CHECK=Custom Colors
+	PGM.DIALOG.OPTIONS.ESAVER.DROP.LIST.FRAME.TITLE=
+	PGM.DIALOG.OPTIONS.ESAVER.DROP.LIST.LIST.COLUMN.NONE= 
+	PGM.DIALOG.OPTIONS.ESAVER.LABEL=Screen Saver:
+	PGM.DIALOG.OPTIONS.FADER.CHECK=Screen Fader
+	PGM.DIALOG.OPTIONS.FONT.DROP.LIST.FRAME.TITLE=
+	PGM.DIALOG.OPTIONS.FONT.DROP.LIST.LIST.COLUMN.NONE= 
+	PGM.DIALOG.OPTIONS.FONT.LABEL=Font File:
+	PGM.DIALOG.OPTIONS.FRAME.TITLE= Eternity Display Options 
+	PGM.DIALOG.OPTIONS.THEME.DROP.LIST.FRAME.TITLE=
+	PGM.DIALOG.OPTIONS.THEME.DROP.LIST.LIST.COLUMN.NONE= 
+	PGM.DIALOG.OPTIONS.THEME.LABEL=Theme File:
+	PGM.DIALOG.PROG.ADD.FRAME.TITLE= New Program 
+	PGM.DIALOG.PROG.DELETE.BUTTON.NO=Cancel
+	PGM.DIALOG.PROG.DELETE.BUTTON.OK=Delete
+	PGM.DIALOG.PROG.DELETE.FRAME.TITLE= Remove Program 
+	PGM.DIALOG.PROG.DELETE.MESSAGE= 
+
+		+=Are you sure you want to remove this
+		+=program from the menu?
+
+	PGM.DIALOG.PROG.EDIT.FRAME.TITLE= Edit Program 
+	PGM.HELP.FRAME.TITLE=0; Help on "%0" 
+	PGM.MENU.TEXT.EMPTY=
+	PGM.MENU.TEXT.UNDESCRIBED=Untitled Menu
+	PGM.MENU.TEXT.UNNAMED=no name
+	PGM.MENU.TEXT.UNTITLED=Untitled Menu
+	PGM.MENUS.CLOCK.DATE=0[Z4],1{Null,Jan,Feb,Mar,Apr,May,Jun,Jul,Aug,Sep,Oct,Nov,Dec},2,3{Sun,Mon,Tues,Wed,Thurs,Fri,Sat};%3 %1 %2, %0
+	PGM.MENUS.CLOCK.TIME=0[Z2],1[L2],2[Z2],3[Z2],4{am,pm};%1:%2:%3 %4
+	PGM.MENUS.LABEL=Available Menus:
+	PGM.MENUS.MENUS.COLUMN.NONE= 
+	PGM.MENUS.SEARCH.LABEL= Find>
+	PGM.PROGRAMS.BUTTON.EDIT=Editar
+	PGM.PROGRAMS.BUTTON.HELP=Ayuda
+	PGM.PROGRAMS.BUTTON.QUIT=Dejar
+	PGM.PROGRAMS.BUTTON.RUN=Ejecutar
+	PGM.PROGRAMS.BUTTON.SEARCH=Búsqueda
+	PGM.PROGRAMS.FRAME.TITLE= Eternidad Program Manager 
+	PGM.PROGRAMS.POPUP.EDITMENU.BTN.CONFIG=Config Settings...
+	PGM.PROGRAMS.POPUP.EDITMENU.BTN.MENU.ADD=Add Menu...
+	PGM.PROGRAMS.POPUP.EDITMENU.BTN.MENU.DELETE=Delete Menu...
+	PGM.PROGRAMS.POPUP.EDITMENU.BTN.MENU.EDIT=Edit Menu...
+	PGM.PROGRAMS.POPUP.EDITMENU.BTN.OPTIONS=Display Options...
+	PGM.PROGRAMS.POPUP.EDITMENU.BTN.PROG.ADD=Add Program...
+	PGM.PROGRAMS.POPUP.EDITMENU.BTN.PROG.DELETE=Delete Program...
+	PGM.PROGRAMS.POPUP.EDITMENU.BTN.PROG.EDIT=Edit Program...
+	PGM.PROGRAMS.POPUP.EDITMENU.FRAME.TITLE=
+	PGM.PROGRAMS.PROGRAMS.COLUMN.NONE= 
+	PGM.PROGRAMS.TITLE.LABEL=Título del menú:
+	PGM.TITLE.SAM_I_AM=0[Z4,X3.2],1,2[Z2];Version %1/%2/%0
