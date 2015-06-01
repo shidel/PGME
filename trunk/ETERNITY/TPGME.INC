@@ -1180,7 +1180,6 @@ begin
 				R := PDialog(FDlgPGMOpt)^.ShowModal;
 				if R = mrOK then begin
 					PDlgPGMOpt(FDlgPGMOpt)^.Save;
-					CallBack('', '', GetReturnStr, True);
 					Restart;							
 				end;
 			end;
@@ -1190,7 +1189,6 @@ begin
 				R := PDialog(FDlgPGMCfg)^.ShowModal;
 				if R = mrOK then begin
 					PDlgPGMCfg(FDlgPGMCfg)^.Save;
-					CallBack('', '', GetReturnStr, True);
 					Restart;
 				end;
 			end;
@@ -1250,10 +1248,14 @@ function TPGME.GetReturnStr : String;
 begin
 	GetReturnStr := '';
 	if not Assigned(FMenuCache) then exit;
-	if Assigned(FPrograms) and Assigned(FPrograms^.FCurrent) then 
+	if Assigned(FPrograms) and Assigned(FPrograms^.FCurrent) then begin
 		with PCacheApp(FPrograms^.FCurrent^.Data)^ do 
 			GetReturnStr := '/M=' + PCacheDir(Parent^.Parent)^.GetNameID + 
 				PCacheMenu(Parent)^.GetNameID + ' /P=' + GetNameID;
+	end else if Assigned(FMenus) and Assigned(FMenus^.FCurrent) then begin
+		with PCacheMenu(FMenus^.FCurrent^.Data)^ do 
+			GetReturnStr := '/M=' + PCacheDir(Parent)^.GetNameID + GetNameID;
+	end;
 end;
 
 procedure TPGME.ExecuteItem(AItem : PListItem); 

@@ -60,6 +60,12 @@ begin
 	FFileName := '';
 	FReadOnly := False;
 	Bounds(1,1,55,15, B);
+	if Not ANewMenu then begin
+		if AParent^.Height < 16 then 
+			SetShadow(False)
+		else
+			Inc(B.Height);
+	end;
 	SetBounds(B);
 	Bounds(3,2,47,1, B);		
 	TextAttr := ColorLabel;
@@ -100,7 +106,7 @@ begin
 			SetBounds(B);
 			SetAnchors(abLeft or abRight or abTop);
 			FHAlign := AlignLeft;
-			SetCaption('Menu filename:');
+			SetCaption('Menu filename:' + IntStr(AParent^.Height));
 		end;
 		Inc(B.Top);
 		TextAttr := ColorFile;
@@ -132,7 +138,7 @@ begin
 			SetBounds(T);
 			SetAnchors(abRight or abTop);
 		end;
-		Inc(B.Top);
+		Inc(B.Top, 2);
 		TextAttr := ColorAccept;
 		FLockAccept := New(PCheckBox, Create(@Self, 'LOCK.ACCEPT'));
 		with FLockAccept^ do begin 
