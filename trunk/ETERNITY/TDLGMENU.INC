@@ -54,6 +54,7 @@ var
 	B, T : TBounds;
 begin	
 	inherited Create(AParent, AName);
+	FAutoEndModal := True;
 	Bounds(1,1,55,15, B);
 	if Not ANewMenu then begin
 		if AParent^.Height < 16 then 
@@ -190,7 +191,13 @@ begin
 	if Not Assigned(AItem) then begin
 		FEditLong^.SetCaption('');
 		FEditShort^.SetCaption('');
-		if Assigned(FLabelFile) then FLabelFile^.SetCaption('');
+		if Assigned(FLabelFile) then 
+			FLabelFile^.SetCaption('');
+	end else with PCacheMenu(AItem^.Data)^ do begin
+		FEditLong^.SetCaption(LongTitle);
+		FEditShort^.SetCaption(ShortTitle);
+		if Assigned(FLabelFile) then 
+			FLabelFile^.SetCaption(PCacheDir(Parent)^.GetNameID + GetNameID);	
 	end;
 	if Assigned(FLockToggle) then FLockToggle^.SetOn(False);
 	if Assigned(FLockAccept) then FLockAccept^.SetState(0);

@@ -72,6 +72,7 @@ var
 	SRec : TSearchRec;
 begin	
 	inherited Create(AParent, 'DIALOG.OPTIONS');
+	FAutoEndModal := True;
 	if PControl(Parent)^.Height <= 16 then 
 		SetShadow(False);
 	Bounds(1,1,56,17, B);

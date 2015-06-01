@@ -1168,11 +1168,16 @@ begin
 				ClearEvent(AEvent);
 				GetEditMenu;
 				R := PWindow(FEditMenu)^.ShowModal;
+				if R = mrOK then begin
+				end;
 			end;
 			cmMenuAdd : begin
 				ClearEvent(AEvent);
 				GetDlgMAdd;
+				PDlgMAdd(FDlgMAdd)^.SetData(nil);
 				R := PDialog(FDlgMAdd)^.ShowModal;
+				if R = mrOK then begin
+				end;
 			end;
 			cmPGMOpts : begin
 				ClearEvent(AEvent);
@@ -1199,7 +1204,13 @@ begin
 			cmMenuEdit : begin
 				ClearEvent(AEvent);
 				GetDlgMEdit;
+				if Assigned(FMenus) and Assigned(FMenus^.FCurrent) then 
+					PDlgMEdit(FDlgMEdit)^.SetData(FMenus^.FCurrent)
+				else
+					PDlgMEdit(FDlgMEdit)^.SetData(nil);
 				R := PDialog(FDlgMEdit)^.ShowModal;
+				if R = mrOK then begin
+				end;
 			end;
 			cmMenuDel : begin
 				ClearEvent(AEvent);
@@ -1212,11 +1223,15 @@ begin
 				ClearEvent(AEvent);
 				GetDlgPAdd;
 				R := PDialog(FDlgPAdd)^.ShowModal;
+				if R = mrOK then begin
+				end;
 			end;
 			cmProgEdit : begin
 				ClearEvent(AEvent);
 				GetDlgPEdit;
 				R := PDialog(FDlgPEdit)^.ShowModal;
+				if R = mrOK then begin
+				end;
 			end;
 			cmProgDel : begin
 				ClearEvent(AEvent);
