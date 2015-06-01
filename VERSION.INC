@@ -7,8 +7,8 @@ const
 		URL : String; 
 	end = ( 
 		Year:2015; 
-		Month:05; 
-		Day:31; 
+		Month:06; 
+		Day:01; 
 		Revision:-1; 
 		URL:'http://pgme.sourceforge.net' 
 	); 
