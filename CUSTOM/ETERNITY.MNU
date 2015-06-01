@@ -2,7 +2,7 @@
 	ID=ETERNITY
 	TYPE=MENU
 	TITLE.EN_US=Eternal Menu
-	DESCRIPTION=The Eternal Menu
+	DESCRIPTION.EN_US=The Eternal Menu
 	WRITABLE=no
 
 [README]
