@@ -33,7 +33,7 @@
 	FILE=LICENSE.TXT
 	GROUP=ETERNITY
 	TITLE=Eternity License Agreement
-	TITLE.SPANSIH=Acuerdo de licencia de la Eternidad
+	TITLE.SPANISH=Acuerdo de licencia de la Eternidad
 	MAXAVAIL=False
 	SIMPLE=True
 

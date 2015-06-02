@@ -46,6 +46,7 @@ type
 			FBtnPAdd, FBtnPEdit, FBtnPDel,
 			FBtnMAdd, FBtnMEdit, FBtnMDel,
 			FBtnPGMOpt, FBtnPGMCfg : PButton;
+			FResumeText : String;
 		procedure BeforeShow; virtual;
 		procedure Configure; virtual;
 		procedure CheckLocal(var AEvent : TEvent); virtual;		
@@ -79,6 +80,7 @@ type
 		procedure ScreenSaver; virtual;
 		procedure DeleteMenu; virtual;
 		procedure DeleteProgram; virtual;
+		procedure DeleteCache; virtual;
 		procedure SelectMenu(AValue : String); virtual;
 		procedure SelectProg(AValue : String); virtual;		
 	end;   
@@ -866,19 +868,25 @@ var
 	I : integer;
 	O, V : String;
 begin
+	FResumeText := '';
 	for I := 1 to ParamCount do begin
 		V := Trim(ParamStr(I));
+		if FResumeText <> '' then
+			FResumeText := FResumeText + ' ' + V
+		else
 		if (Length(V) > 1) and (V[1] = '/') then begin
 			O := UCase(Trim(PullStr('=', V)));
-			V := uCase(Trim(V));
+			V := Trim(V);
 			if O = '/BAT' then 
 				FBatLoop := True
 			else if O = '/INIT' then 
 				FInitRun := True
 			else if O = '/M' then
-				FReqMenu := V
+				FReqMenu := UCase(V)
 			else if O = '/P' then
-				FReqProg := V			
+				FReqProg := UCase(V)
+			else if O = '/T' then
+				FResumeText := V			
 		end;
 	end;
 	FInSound := True;
@@ -938,7 +946,10 @@ begin
 	if (Not FInitRun) then begin
 		GotoXY(1, WhereY);
 		TextAttr := $0B;
-		Write('Resuming Eternity...');
+		if FResumeText = '' then
+			Write('Resuming Eternity...')
+		else
+			Write(FResumeText);
 		ClrEol; 
 	end;
 	inherited Configure;
@@ -951,6 +962,7 @@ begin
 		ClrEol;
 	end;
 	FConfig.OpenSection(GetPathID);
+	FResumeText := FLanguage.GetValue(GetPathID + '.BOOT.RESUME', 'Resuming Eternity...');
 	PMenuCache(FMenuCache)^.Load;
 	PMenuCache(FMenuCache)^.SetPaths(FConfig.GetValue('PATH.MENU', ''));
 	UpdateMenuCache;
@@ -1142,6 +1154,15 @@ begin
 	FinishDrawing;
 end;
 
+procedure TPGME.DeleteCache;
+var
+	F : File;
+begin
+	Assign(F, GetExePath + 'ETERNITY.DAT');
+	Erase(F);
+	if IOResult <> 0 then exit;
+end;
+
 procedure TPGME.CheckLocal(var AEvent : TEvent); 
 var
 	R : integer;
@@ -1194,6 +1215,11 @@ begin
 				R := PDialog(FDlgPGMCfg)^.ShowModal;
 				if R = mrOK then begin
 					PDlgPGMCfg(FDlgPGMCfg)^.Save;
+					DeleteCache;
+					FLanguage.SetFileName(PDlgPGMCfg(FDlgPGMCfg)^.FLang^.GetCaption);
+					FLanguage.Read;
+					FLanguage.OpenSection('STRINGS');
+					FResumeText := FLanguage.GetValue(GetNameID + '.BOOT.RESUME', 'Resuming Eternality...');
 					Restart;
 				end;
 			end;
@@ -1260,17 +1286,22 @@ begin
 end;
 
 function TPGME.GetReturnStr : String; 
+var
+	S : String;
 begin
-	GetReturnStr := '';
+	S := '';
+	GetReturnStr := S;
 	if not Assigned(FMenuCache) then exit;
 	if Assigned(FPrograms) and Assigned(FPrograms^.FCurrent) then begin
 		with PCacheApp(FPrograms^.FCurrent^.Data)^ do 
-			GetReturnStr := '/M=' + PCacheDir(Parent^.Parent)^.GetNameID + 
+			S := '/M=' + PCacheDir(Parent^.Parent)^.GetNameID + 
 				PCacheMenu(Parent)^.GetNameID + ' /P=' + GetNameID;
 	end else if Assigned(FMenus) and Assigned(FMenus^.FCurrent) then begin
 		with PCacheMenu(FMenus^.FCurrent^.Data)^ do 
-			GetReturnStr := '/M=' + PCacheDir(Parent)^.GetNameID + GetNameID;
+			S := '/M=' + PCacheDir(Parent)^.GetNameID + GetNameID;
 	end;
+	S := S + ' /T=' + FResumeText;
+	GetReturnStr := S;
 end;
 
 procedure TPGME.ExecuteItem(AItem : PListItem); 
@@ -1343,7 +1374,7 @@ begin
 		FRet := GetReturnStr;
 		if FRet = '' then 
 			FRet := '/M=' + FDir + PCacheMenu(Parent)^.GetNameID + 
-			' /P=' + GetNameID;
+			' /P=' + GetNameID + ' /T=' + FResumeText;
 		if FileName <> '' then begin
 			FName := FileExpand(FileName);
 			if not FileExists(FName) then begin
