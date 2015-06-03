@@ -12,6 +12,14 @@ System Requirements:
 	settings it is required).
 	(Color monitor is recommended).
 	
+Language Translations:
+	
+	PGME's native language is US English. However, here are some credits
+	for the included language translations. 
+	
+	Spanish:
+		Google Translate, German Ivani, Andr‚s Miguel Pitcovsky
+	
 Known Issues (That I either can not or will not do anything about):
 	
 	Font's turned into TSRs with QFNT2TSR will not function in DosBox.
