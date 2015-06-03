@@ -96,6 +96,8 @@ begin
 	TextAttr := ColorDrop;
 	FTheme := New(PDropList, Create(@Self, 'THEME.DROP'));
 	with PDropList(FTheme)^ do begin
+		SetHelpText('Use the "Theme File" drop down list to select the theme you wish');
+		AddHelpText('PGME to use.');
 		SetBounds(D);
 		SetCaption('DEFAULT.THM');
 		FindFirst(GetExePath + '*' + ThemeExt, faAnyFile, SRec);
@@ -110,6 +112,8 @@ begin
 	TextAttr := ColorLabel;
 	FDAC := New(PCheckbox, Create(@Self, 'DAC.CHECK'));
 	with PCheckbox(FDAC)^ do begin
+		SetHelpText('Enable the "Custom Colors" checkbox to allow PGME to use custom');
+		AddHelpText('VGA color definitions in theme files.');
 		E.Top := B.Top;
 		SetBounds(E);
 		SetCaption('Custom Colors');
@@ -118,6 +122,8 @@ begin
 	TextAttr := ColorLabel;
 	FFader := New(PCheckbox, Create(@Self, 'FADER.CHECK'));
 	with PCheckbox(FFader)^ do begin
+		SetHelpText('Enable the "Screen Fader" checkbox to allow PGME to perform the fade in and');
+		AddHelpText('out effects. Please note that "Custom Colors" must also be enabled.');
 		E.Top := B.Top;
 		SetBounds(E);
 		SetCaption('Screen Fader');
@@ -133,6 +139,10 @@ begin
 	TextAttr := ColorDrop;
 	FFont := New(PDropList, Create(@Self, 'FONT.DROP'));
 	with PDropList(FFont)^ do begin
+		SetHelpText('Use the "Font File" drop down list to select a custom text font');
+		AddHelpText('for PGME to use. If one is specified, PGME will automatically');
+		AddHelpText('reset to the system default text font when launching programs');
+		AddHelpText('and when exit PGME.');
 		D.Top := B.Top;
 		SetBounds(D);
 		SetCaption('DEFAULT.FNT');
@@ -154,6 +164,11 @@ begin
 	TextAttr := ColorDrop;
 	FSaver := New(PDropList, Create(@Self, 'ESAVER.DROP'));
 	with PDropList(FSaver)^ do begin
+		SetHelpText('Use the "Screen Saver" drop down list to select the desired');
+		AddHelpText('screen saver. If one is not specified, PGME will automatically');
+		AddHelpText('fall back to the "BLANKER.SCR" screen saver. Then if for some');
+		AddHelpText('reason that cannot be found, the built in plain empty screen');
+		AddHelpText('saver will be used. The screen saver cannot be turned off.');
 		D.Top := B.Top;
 		Dec(D.Height,2);
 		if Self.GetShadow = false then Dec(D.Height);
@@ -179,6 +194,9 @@ begin
 	TextAttr := ColorSlide;
 	FSlide := New(PSlider, Create(@Self, 'ESAVER.SLIDE'));
 	with PSlider(FSlide)^ do begin
+		SetHelpText('Use the "Timeout" slider to select the desired');
+		AddHelpText('time that PGME should wait until it automatically launches the');
+		AddHelpText('screen saver.');
 		E.Top := B.Top;
 		SetBounds(E);
 		SetMin(0);
@@ -190,6 +208,8 @@ begin
 	if GetShadow then Dec(B.Left, 2);
 	TextAttr := ColorOK;
 	with PButton(New(PButton, Create(@Self, 'BUTTON.OK')))^ do begin
+		SetHelpText('5;Use the "%0" button to apply any changes and close the');
+		AddHelpText('dialog box.');
 		SetAnchors(abBottom);
 		SetBounds(B);
 		SetCaption('OK');
