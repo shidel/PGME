@@ -11,15 +11,7 @@ System Requirements:
 	(Mouse is highly recommended, and when using default theme and keymap
 	settings it is required).
 	(Color monitor is recommended).
-	
-Language Translations:
-	
-	PGME's native language is US English. However, here are some credits
-	for the included language translations. 
-	
-	Spanish:
-		Google Translate, German Ivani, Andr‚s Miguel Pitcovsky
-	
+		
 Known Issues (That I either can not or will not do anything about):
 	
 	Font's turned into TSRs with QFNT2TSR will not function in DosBox.
@@ -303,4 +295,12 @@ By default all QuickCRT based programs (These maybe changed in a custom KMP file
 		the path of the PGME program will be searched. If it is set, only the
 		specified fixed disk locations will be included. Probably not usefull
 		unless PGME is installed to and run from a readonly filesystem.
+
+** Language Translations and other Credits **
+	
+	PGME's native language is US English. However, here are some credits
+	for the included language translations. 
+	
+	Spanish:
+		Google Translate, German Ivani, Andr‚s Miguel Pitcovsky
 
