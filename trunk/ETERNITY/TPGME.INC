@@ -88,6 +88,10 @@ type
 		procedure SelectProg(AValue : String); virtual;	
 		procedure CheckLanguage(ATheme : String);	
 		procedure CheckTheme(ALanguage : String);	
+		procedure AddMenu; virtual;
+		procedure AddProgram; virtual;
+		procedure ModifyMenu; virtual;
+		procedure ModifyProgram; virtual;
 	end;   
 
 { Some Global Variables }	
@@ -1555,6 +1559,59 @@ begin
 	end;
 end;
 
+procedure TPGME.AddMenu; 
+begin
+end;
+
+procedure TPGME.AddProgram; 
+begin
+end;
+
+procedure TPGME.ModifyMenu; 
+var
+	M : TConfigFile;
+	CMenu, CProg : String;
+begin
+	if not (Assigned(FMenus) and Assigned(FMenus^.FCurrent) and
+	Assigned(FDlgMEdit)) then exit;
+	M.Create('TEMP');
+	CMenu := '';
+	CProg := '';
+	if Assigned(FPrograms) and Assigned(FPrograms^.FCurrent) then 
+		with PCacheApp(FPrograms^.FCurrent^.Data)^ do 
+			CProg := GetNameID;
+	with PCacheMenu(FMenus^.FCurrent^.Data)^ do
+		CMenu := PCacheDir(Parent)^.GetNameID + GetNameID;
+	M.SetFileName(CMenu);
+	M.Read;
+	M.OpenSection('*');
+	M.SetValue('TITLE.' + Application^.FLanguageID, PDlgMEdit(FDlgMEdit)^.FEditShort^.GetCaption );
+	if trim(M.GetValue('TITLE', '')) = '' then 
+		M.SetValue('TITLE', PDlgMEdit(FDlgMEdit)^.FEditShort^.GetCaption );
+	M.SetValue('DESCRIPTION.' + Application^.FLanguageID, PDlgMEdit(FDlgMEdit)^.FEditLong^.GetCaption );
+	if trim(M.GetValue('DESCRIPTION', '')) = '' then 
+		M.SetValue('DESCRIPTION', PDlgMEdit(FDlgMEdit)^.FEditLong^.GetCaption );
+	
+	if Assigned(PDlgMEdit(FDlgMEdit)^.FLockToggle) then
+		if PDlgMEdit(FDlgMEdit)^.FLockToggle^.GetOn then
+			if PDlgMEdit(FDlgMEdit)^.FLockAccept^.GetState = 1 then
+				M.SetValue('WRITABLE', 'NO');
+		
+	M.Write;
+	M.Destroy;
+	StartDrawing;
+	UpdateMenuCache;
+	SelectMenu(CMenu);
+	SelectProg(CProg);
+	FMenus^.Update;
+	FinishDrawing;
+end;
+
+procedure TPGME.ModifyProgram; 
+begin
+end;
+
+
 procedure TPGME.CheckLocal(var AEvent : TEvent); 
 var
 	R : integer;
@@ -1582,16 +1639,14 @@ begin
 				ClearEvent(AEvent);
 				GetEditMenu;
 				R := PWindow(FEditMenu)^.ShowModal;
-				if R = mrOK then begin
-				end;
 			end;
 			cmMenuAdd : begin
 				ClearEvent(AEvent);
 				GetDlgMAdd;
 				PDlgMAdd(FDlgMAdd)^.SetData(nil);
 				R := PDialog(FDlgMAdd)^.ShowModal;
-				if R = mrOK then begin
-				end;
+				if R = mrOK then 
+					AddMenu;
 			end;
 			cmPGMOpts : begin
 				ClearEvent(AEvent);
@@ -1641,8 +1696,8 @@ begin
 				else
 					PDlgMEdit(FDlgMEdit)^.SetData(nil);
 				R := PDialog(FDlgMEdit)^.ShowModal;
-				if R = mrOK then begin
-				end;
+				if R = mrOK then 
+					ModifyMenu;
 			end;
 			cmMenuDel : begin
 				ClearEvent(AEvent);
@@ -1655,15 +1710,15 @@ begin
 				ClearEvent(AEvent);
 				GetDlgPAdd;
 				R := PDialog(FDlgPAdd)^.ShowModal;
-				if R = mrOK then begin
-				end;
+				if R = mrOK then 
+					AddProgram;
 			end;
 			cmProgEdit : begin
 				ClearEvent(AEvent);
 				GetDlgPEdit;
 				R := PDialog(FDlgPEdit)^.ShowModal;
-				if R = mrOK then begin
-				end;
+				if R = mrOK then 
+					ModifyProgram;
 			end;
 			cmProgDel : begin
 				ClearEvent(AEvent);
