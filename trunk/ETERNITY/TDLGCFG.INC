@@ -27,6 +27,7 @@ type
 	public
 		constructor Create(AParent : PControl);
 		destructor Destroy; virtual;
+		function Modified: boolean; virtual;
 	end;   
 
 {$ENDIF}
@@ -129,5 +130,14 @@ begin
 		SetValue('LANGUAGE', FLang^.GetCaption);
 		Write;
 	end;
+end;
+function TDlgPGMCfg.Modified;
+begin
+	Modified := True;
+	with Application^.FConfig do begin
+		OpenSection('*');
+		if GetValue('LANGUAGE', FLang^.GetCaption) <> Trim(FLang^.GetCaption) then exit;
+	end;
+	Modified := False;
 end;
 {$ENDIF}
