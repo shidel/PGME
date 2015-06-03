@@ -23,6 +23,7 @@ type
     	FLabelFile : PLabel;
     	FLockToggle : PToggle;
     	FLockAccept : PCheckBox;
+    	FOK : PButton;
 		procedure CheckLocal(var AEvent : TEvent); virtual;
 		procedure BeforeShow; virtual;
 	public
@@ -75,6 +76,8 @@ begin
 	TextAttr := ColorEdit;
 	FEditLong := New(PEdit, Create(@Self, 'LONG.EDIT'));
 	with PEdit(FEditLong)^ do begin
+		SetHelpText('Use the "Long menu title description" to enter the full title of');
+		AddHelpText('the menu.');
 		SetBounds(B);
 		SetAnchors(abLeft or abRight or abTop);
 		SetCaption('');
@@ -91,6 +94,8 @@ begin
 	TextAttr := ColorEdit;
 	FEditShort := New(PEdit, Create(@Self, 'SHORT.EDIT'));
 	with PEdit(FEditShort)^ do begin
+		SetHelpText('Use the "Short menu name" to enter the short version of the title for');
+		AddHelpText('the menu.');
 		SetBounds(B);
 		SetAnchors(abLeft or abRight or abTop);
 		SetCaption('');
@@ -108,6 +113,8 @@ begin
 		TextAttr := ColorFile;
 		FLabelFile := New(PLabel, Create(@Self, 'FILE.NAME'));
 		with PLabel(FLabelFile)^ do begin
+			SetHelpText('The "Menu filename" is readonly and displays the path and filename');
+			AddHelpText('of the new menu that PGME will create.');
 			SetBounds(B);
 			SetAnchors(abLeft or abRight or abTop);
 			FHAlign := AlignLeft;
@@ -129,6 +136,13 @@ begin
 		TextAttr := ColorToggle;
 		FLockToggle := New(PToggle, Create(@Self, 'LOCK.TOGGLE'));
 		with FLockToggle^ do begin 
+			SetHelpText('The "Lock Menu" toggle will change the selected menu to readonly by');
+			AddHelpText('set its writable flag to false. When this flag is set, you will');
+			AddHelpText('not be able to add or remove programs on the menu or delete the menu');
+			AddHelpText('from within PGME. You will not even be able to turn the flag back');
+			AddHelpText('off or even open this dialog box for the menu. The only way to make');
+			AddHelpText('the menu writable again is to manually edit the menu file and');
+			AddHelpText('enable its writable flag using a text editor.');
 			T.Left := T.Left + T.Width;
 			T.Width := B.Width - T.Width;
 			SetBounds(T);
@@ -138,6 +152,8 @@ begin
 		TextAttr := ColorAccept;
 		FLockAccept := New(PCheckBox, Create(@Self, 'LOCK.ACCEPT'));
 		with FLockAccept^ do begin 
+			SetHelpText('You must also check the "Lock Accept" check box to make the');
+			AddHelpText('menu readonly.');
 			T := B;
 			{Inc(T.Left, 4);
 			Dec(T.Width, T.Left - B.Left);}
@@ -149,7 +165,8 @@ begin
 	end;
 	TextAttr := ColorOK;
 	Inc(B.Top, 2);
-	with PButton(New(PButton, Create(@Self, 'BUTTON.OK')))^ do begin
+	FOK := New(PButton, Create(@Self, 'BUTTON.OK'));
+	with PButton(FOK)^ do begin
 		B.Left := B.Left + B.Width div 2 - 7;
 		B.Width := 14;
 		SetBounds(B);

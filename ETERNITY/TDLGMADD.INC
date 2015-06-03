@@ -42,9 +42,15 @@ var
 	B : TBounds;
 begin	
 	inherited Create(AParent, 'DIALOG.MENU.ADD', True);
-	SetTitle('New Menu');
-	SetHelpText('');
+	SetTitle('Create New Menu');
+	SetHelpText('The "Create New Menu" dialog box.');
 	AddHelpText('');
+	AddHelpText('This is where you can create a new menu and set its title');
+	AddHelpText('and other settings.');
+	with PButton(FOK)^ do begin
+		SetHelpText('5;Use the "%0" button to create the new menu, apply these settings');
+		AddHelpText('and close the dialog box.');
+	end;
 end;
 
 destructor TDlgMAdd.Destroy;

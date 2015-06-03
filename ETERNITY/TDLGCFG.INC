@@ -56,7 +56,8 @@ begin
 	Bounds(1,1,56,8, B);
 	SetBounds(B);					
 	SetTitle('Eternity Config Settings');
-	SetHelpText('The Program Manager Eternity program config settings dialog box.');
+	SetHelpText('The Program Manager Eternity program configuration settings dialog box.');
+	AddHelpText('');
 	AddHelpText('This is where you can change the language and other');
 	AddHelpText('settings of PGME.');
 	TextAttr := ColorLabel;
@@ -72,6 +73,10 @@ begin
 	TextAttr := ColorDrop;
 	FLang := New(PDropList, Create(@Self, 'LANGUAGE.DROP'));
 	with PDropList(FLang)^ do begin
+		SetHelpText('Use the "Language File" field to select the desired language');
+		AddHelpText('for PGME to use. Please note that the program will always');
+		AddHelpText('fallback to English for itself and menus when the requested');
+		AddHelpText('language is not available.');
 		SetBounds(E);
 		SetCaption('DEFAULT.LNG');
 		FindFirst(GetExePath + '*' + LanguageExt, faAnyFile, SRec);
@@ -86,7 +91,9 @@ begin
 	B.Left := Width div 2 - B.Width div 2 + 2;
 	if GetShadow then Dec(B.Left, 2);
 	TextAttr := ColorOK;
-	with PButton(New(PButton, Create(@Self, 'BUTTON.OK')))^ do begin
+	with PButton(New(PButton, Create(@Self, 'BUTTON.OK')))^ do begin		
+		SetHelpText('5;Use the "%0" button to apply any changes and close the');
+		AddHelpText('dialog box.');
 		SetAnchors(abBottom);
 		SetBounds(B);
 		SetCaption('OK');
