@@ -1643,7 +1643,6 @@ procedure TPGME.ModifyProgram;
 begin
 end;
 
-
 procedure TPGME.CheckLocal(var AEvent : TEvent); 
 var
 	R : integer;
