@@ -1560,11 +1560,39 @@ begin
 end;
 
 procedure TPGME.AddMenu; 
+var
+	M : TConfigFile;
+	CMenu, S : String;
 begin
-end;
-
-procedure TPGME.AddProgram; 
-begin
+	if not (Assigned(FMenus) and Assigned(FMenus^.FCurrent) and
+	Assigned(FDlgMAdd) and Assigned(PDlgMAdd(FDlgMAdd)^.FLabelFile)) then exit;
+	M.Create('TEMP');
+	CMenu := PDlgMAdd(FDlgMAdd)^.FLabelFile^.GetCaption;
+	M.SetFileName(CMenu);
+	M.OpenSection('*');
+	M.SetValue('TITLE.' + Application^.FLanguageID, PDlgMAdd(FDlgMAdd)^.FEditShort^.GetCaption );
+	if trim(M.GetValue('TITLE', '')) = '' then 
+		M.SetValue('TITLE', PDlgMAdd(FDlgMAdd)^.FEditShort^.GetCaption );
+	M.SetValue('DESCRIPTION.' + Application^.FLanguageID, PDlgMAdd(FDlgMAdd)^.FEditLong^.GetCaption );
+	if Trim(M.GetValue('DESCRIPTION', '')) = '' then 
+		M.SetValue('DESCRIPTION', PDlgMAdd(FDlgMAdd)^.FEditLong^.GetCaption );
+	
+	S := CMenu;
+	Delete(S, 1, LastPos('\', S));
+	S := Copy(S, 1, Pos('.', S) - 1);
+	
+	M.SetValue('ID', S);
+	M.SetValue('WRITABLE', 'yes');
+	M.SetValue('TYPE', 'MENU');
+	M.SetValue('MERGE', '');
+		
+	M.Write;
+	M.Destroy;
+	StartDrawing;
+	UpdateMenuCache;
+	SelectMenu(CMenu);
+	FMenus^.Update;
+	FinishDrawing;
 end;
 
 procedure TPGME.ModifyMenu; 
@@ -1605,6 +1633,10 @@ begin
 	SelectProg(CProg);
 	FMenus^.Update;
 	FinishDrawing;
+end;
+
+procedure TPGME.AddProgram; 
+begin
 end;
 
 procedure TPGME.ModifyProgram; 
