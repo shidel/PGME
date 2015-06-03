@@ -174,7 +174,7 @@
 	PGM.DIALOG.PROG.DELETE.BUTTON.NO=5;Bot¢n "%0" se cerrar  el cuadro de di logo 
 		+=y dejar el programa en el men£ actual.
 		
-	PGM.DIALOG.PROG.DELETE.BUTTON.OK=5;Bot¢n "0%" har  que el programa seleccionado actual a ser
+	PGM.DIALOG.PROG.DELETE.BUTTON.OK=5;Bot¢n "%0" har  que el programa seleccionado actual a ser
 
 		+=eliminar en el men£ actual. No va a sacarlo de otra
 		+=men£s o eliminar el programa desde el ordenador o en la unidad. S¢lo
