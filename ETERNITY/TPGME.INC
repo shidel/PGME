@@ -1214,13 +1214,16 @@ begin
 				GetDlgPGMCfg;
 				R := PDialog(FDlgPGMCfg)^.ShowModal;
 				if R = mrOK then begin
-					PDlgPGMCfg(FDlgPGMCfg)^.Save;
-					DeleteCache;
-					FLanguage.SetFileName(PDlgPGMCfg(FDlgPGMCfg)^.FLang^.GetCaption);
-					FLanguage.Read;
-					FLanguage.OpenSection('STRINGS');
-					FResumeText := FLanguage.GetValue(GetNameID + '.BOOT.RESUME', 'Resuming Eternality...');
-					Restart;
+					if Application^.FConfig.GetValue('LANGUAGE', '') <> 
+					UCase(Trim(PDlgPGMCfg(FDlgPGMCfg)^.FLang^.GetCaption)) then begin
+						PDlgPGMCfg(FDlgPGMCfg)^.Save;
+						DeleteCache;
+						FLanguage.SetFileName(UCase(Trim(PDlgPGMCfg(FDlgPGMCfg)^.FLang^.GetCaption)));
+						FLanguage.Read;
+						FLanguage.OpenSection('STRINGS');
+						FResumeText := FLanguage.GetValue(GetNameID + '.BOOT.RESUME', 'Resuming Eternity...');
+						Restart;
+					end;
 				end;
 			end;
 		end; 
