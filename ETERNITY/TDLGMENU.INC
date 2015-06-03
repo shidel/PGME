@@ -17,6 +17,7 @@ type
 	PDlgMenu = ^TDlgMenu;
 	TDlgMenu = object (TDIALOG)
     public { protected }
+			FPath : String;
 		function  ObjectClass ( AName : String ) : String; virtual;
     public { protected }
     	FEditLong, FEditShort : PEdit;
@@ -196,12 +197,21 @@ begin
 				if not FLockToggle^.GetOn then
 					FLockAccept^.SetState(0);
 			end;
+		else
+			UpdateFileName;
 		end;
 end;
 
 procedure TDlgMenu.BeforeShow;
 begin
 	inherited BeforeShow;
+	FPath := '';
+	Application^.FConfig.OpenSection(GetPathID);
+	FPath := Application^.FConfig.GetValue('PATH.MENU', '');
+	FPath := PullStr(';', FPath);
+	if FPath = '' then 
+		FPath := GetExePath;
+	UpdateFileName;
 end;
 
 procedure TDlgMenu.SetData(AItem : PListItem);
@@ -227,10 +237,68 @@ begin
 end;
 
 procedure TDlgMenu.UpdateFileName;
+const
+	Vowels : String = 'yuoiea';
 var
-	S : String;
+	I : Integer;
+	K : LongInt;
+	S, T : String;
+	F, P : boolean;
 begin
 	if Not Assigned(FLabelFile) then exit;
+	S := FilterChar(WCase(FEditLong^.GetCaption), ' ');
+	I := 0;
+	{Strip Vowels on at a time}
+	while (Length(S) > 8) and (I < Length(Vowels)) do begin
+		Inc(I);
+		S := FilterChar(S, Vowels[I]);
+	end;
+	{ remove special chars }
+	I := 1;
+	while I <= Length(S) do begin
+		if (S[I] > #$81) or (S[I] < #$20) then 
+			Delete(S, I, 1)
+		else
+			Inc(I);
+	end;
+	{ remove duplicating letters }
+	I := Length(S);
+	while (Length(S) > 8) and (I > 1) do begin
+		Dec(I);
+		if UCase(S[I]) = UCase(S[I + 1]) then
+			Delete(S, I, 1);
+	end;
+	{ remove lowercase letters fro words one at a time }
+	F := True;
+	while (Length(S) > 8) and F do begin
+		F := False;
+		I := Length(S);
+		P := True;
+		while  I > 1 do begin
+			Dec(I);
+			if S[I] = UCase(S[I]) then
+				P := True
+			else if P then begin
+				P := False;
+				F := True;
+				Delete(S, 1, 1);
+			end;
+		end;			
+	end;
+	if S = '' then S := '00000000';
 	
+	S := Copy(UCase(S), 1, 8);
+	if FileExists(FPath + S + EMenuExt) then begin
+		K := 0;
+		repeat
+			T := '-' + HexStr(K);
+			T := Copy(S, 1, 8 - Length(T)) + T;
+			Inc(K);
+		until not FileExists(FPath + T + EMenuExt);
+		S := T;
+	end;
+	
+	if FLabelFile^.GetCaption <> FPath + S + EMenuExt then 
+		FLabelFile^.SetCaption(FPath + S + EMenuExt);
 end;
 {$ENDIF}
