@@ -111,7 +111,7 @@ begin
 	inherited BeforeShow;
 	with Application^.FConfig do begin
 		OpenSection('*');
-		FLang^.SetCaption(GetValue('LANGUAGE', 'DEFAULT.LNG'));
+		FLang^.SetCaption(Trim(GetValue('LANGUAGE', 'DEFAULT.LNG')));
 	end;
 end;
 
