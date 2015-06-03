@@ -8,7 +8,7 @@
 
 [*]
 	FILE.DATE=0[X3.2],1[L2],2[Z2];%0.%1.%2
-	FILE.TIME=0[Z2],1[L2],2[Z2],3[Z2],4{a,p};%1:%2%4
+	FILE.TIME=0[Z2],1[L2],2[Z2],3[Z2],4{a,p};%0:%2
 	ID=Spanish
 	NAME=Spanish
 	TYPE=LANGUAGE
@@ -40,81 +40,82 @@
 	PGM.DIALOG.CONFIG.LANGUAGE.DROP.LIST.FRAME.TITLE=
 	PGM.DIALOG.CONFIG.LANGUAGE.DROP.LIST.LIST.COLUMN.NONE= 
 	PGM.DIALOG.CONFIG.LANGUAGE.LABEL=Idioma:
-	PGM.DIALOG.EXECMISSING.FRAME.TITLE= Oh, NO! Me so sorry! :( 
+	PGM.DIALOG.EXECMISSING.FRAME.TITLE= Oh NO! Me lo siento! :( 
 	PGM.DIALOG.EXECMISSING.MESSAGE= 
 
-		+=PGME was unable to locate a required executable item and
-		+=can not run that menu entry at this time.
+		+=PGME no pudo localizar un objeto ejecutable necesario y
+		+=no se puede ejecutar esa entrada de men£ en este momento.
 		+= 
-		+=Maybe, verify that the program has not been relocated.
+		+=Verifique que el programa no se ha vuelto a poner.
 
-	PGM.DIALOG.GORNERROR.FRAME.TITLE= Oh, NO! Me so sorry! :( 
+	PGM.DIALOG.GORNERROR.FRAME.TITLE= Oh NO! Me lo siento! :( 
 	PGM.DIALOG.GORNERROR.MESSAGE= 
 
-		+=An error occurred when trying to write to the PGMEGORN.BAT
-		+=temporary file. The file may be locked, readonly or just
-		+=unaccessible at this time.
+		+=Se produjo un error al intentar escribir en el archivo 
+		+=temporal PGMEGORN.BAT. El archivo puede ser bloqueado, 
+		+=de solo lectura o simplemente inaccesible en este momento.
 		+= 
-		+=Maybe, if you delete the file manually it will fix it.
+		+=Si elimina el archivo manualmente puede arreglarlo.
 
-	PGM.DIALOG.MENU.ADD.FRAME.TITLE= New Menu 
-	PGM.DIALOG.MENU.DELETE.BUTTON.NO=Cancel
-	PGM.DIALOG.MENU.DELETE.BUTTON.OK=Delete
-	PGM.DIALOG.MENU.DELETE.FRAME.TITLE= Delete Menu 
+	PGM.DIALOG.MENU.ADD.FRAME.TITLE= Crear Nuevo Men£ 
+	PGM.DIALOG.MENU.DELETE.BUTTON.NO=Cancelar
+	PGM.DIALOG.MENU.DELETE.BUTTON.OK=Borrar
+	PGM.DIALOG.MENU.DELETE.FRAME.TITLE= Eliminar el men£ 
 	PGM.DIALOG.MENU.DELETE.MESSAGE= 
 
-		+=Are you sure you want to delete this
-		+=menu from the computer?
+		+=¨Seguro que quieres borrar este men£
+		+=desde el ordenador?
 
-	PGM.DIALOG.MENU.EDIT.FRAME.TITLE= Menu Options 
-	PGM.DIALOG.NOBATCH.FRAME.TITLE= Oh, NO! Me so sorry! :( 
+	PGM.DIALOG.MENU.EDIT.FRAME.TITLE= Opciones del men£ 
+	PGM.DIALOG.NOBATCH.FRAME.TITLE= Oh NO! Me lo siento! :( 
 	PGM.DIALOG.NOBATCH.MESSAGE= 
 
-		+=Unfortunately, you did not use the launcher batch file
-		+=PGM.BAT and PGME can only perform simple launching at
-		+=this time.
+		+=Por desgracia, no ha utilizado la PGM.BAT archivo por lotes 
+		+=lanzador y PGME S¢lo puede realizar sencilla puesta en 
+		+=marcha en este momento.
 		+= 
-		+=Maybe, next time start PGME using the PGM.BAT launcher.
+		+=La pr¢xima vez iniciar PGME utilizando el lanzador PGM.BAT.
 
-	PGM.DIALOG.NOTEMPDIR.FRAME.TITLE= Oh, NO! Me so sorry! :( 
+	PGM.DIALOG.NOTEMPDIR.FRAME.TITLE= Oh NO! Me lo siento! :( 
 	PGM.DIALOG.NOTEMPDIR.MESSAGE= 
 
-		+=Unfortunately, the system has no TEMP directory defined.
-		+=So, I am unable to execute that program at this time.
+		+=El sistema no tiene directorio TEMP definido.
+		+=No soy capaz de ejecutar ese programa en este momento.
 		+= 
-		+=Maybe, try adding SET TEMP=C:\TEMP to the AUTOEXEC.BAT file.
-		+=(That assumes you have a directory called C:\TEMP somewhere)
+		+=Trate de a¤adir SET TEMP=C:\TEMP en el archivo AUTOEXEC.BAT.
+		+=(Eso supone que tiene un directorio llamado C:\TEMP alguna parte)
 
-	PGM.DIALOG.OPTIONS.BUTTON.OK=OK
-	PGM.DIALOG.OPTIONS.DAC.CHECK=Custom Colors
+	PGM.DIALOG.OPTIONS.BUTTON.OK=Bueno
+	PGM.DIALOG.OPTIONS.DAC.CHECK=Colores personalizados
 	PGM.DIALOG.OPTIONS.ESAVER.DROP.LIST.FRAME.TITLE=
 	PGM.DIALOG.OPTIONS.ESAVER.DROP.LIST.LIST.COLUMN.NONE= 
-	PGM.DIALOG.OPTIONS.ESAVER.LABEL=Screen Saver:
-	PGM.DIALOG.OPTIONS.FADER.CHECK=Screen Fader
+	PGM.DIALOG.OPTIONS.ESAVER.LABEL=Salvapantallas:
+	PGM.DIALOG.OPTIONS.ESAVER.DELAY=0,1{seg,min};Retrasar %0 %1:
+	PGM.DIALOG.OPTIONS.FADER.CHECK=Fader pantalla
 	PGM.DIALOG.OPTIONS.FONT.DROP.LIST.FRAME.TITLE=
 	PGM.DIALOG.OPTIONS.FONT.DROP.LIST.LIST.COLUMN.NONE= 
-	PGM.DIALOG.OPTIONS.FONT.LABEL=Font File:
-	PGM.DIALOG.OPTIONS.FRAME.TITLE= Eternity Display Options 
+	PGM.DIALOG.OPTIONS.FONT.LABEL=Archivo de fuente:
+	PGM.DIALOG.OPTIONS.FRAME.TITLE= Opciones de visualizaci¢n de la eternidad 
 	PGM.DIALOG.OPTIONS.THEME.DROP.LIST.FRAME.TITLE=
 	PGM.DIALOG.OPTIONS.THEME.DROP.LIST.LIST.COLUMN.NONE= 
-	PGM.DIALOG.OPTIONS.THEME.LABEL=Theme File:
-	PGM.DIALOG.PROG.ADD.FRAME.TITLE= New Program 
-	PGM.DIALOG.PROG.DELETE.BUTTON.NO=Cancel
-	PGM.DIALOG.PROG.DELETE.BUTTON.OK=Delete
-	PGM.DIALOG.PROG.DELETE.FRAME.TITLE= Remove Program 
+	PGM.DIALOG.OPTIONS.THEME.LABEL=Archivo tem tico:
+	PGM.DIALOG.PROG.ADD.FRAME.TITLE= A¤adir nuevo programa 
+	PGM.DIALOG.PROG.DELETE.BUTTON.NO=Cancelar
+	PGM.DIALOG.PROG.DELETE.BUTTON.OK=Borrar
+	PGM.DIALOG.PROG.DELETE.FRAME.TITLE= Quitar Programas 
 	PGM.DIALOG.PROG.DELETE.MESSAGE= 
 
-		+=Are you sure you want to remove this
-		+=program from the menu?
+		+=¨Seguro que desea eliminar este programa
+		+=desde el men£?
 
-	PGM.DIALOG.PROG.EDIT.FRAME.TITLE= Edit Program 
-	PGM.HELP.FRAME.TITLE=0; Help on "%0" 
+	PGM.DIALOG.PROG.EDIT.FRAME.TITLE= Edici¢n de programa 
+	PGM.HELP.FRAME.TITLE=0; Ayuda sobre "%0" 
 	PGM.MENU.TEXT.EMPTY=
-	PGM.MENU.TEXT.UNDESCRIBED=Untitled Menu
-	PGM.MENU.TEXT.UNNAMED=no name
-	PGM.MENU.TEXT.UNTITLED=Untitled Menu
+	PGM.MENU.TEXT.UNDESCRIBED=Untitled Men£
+	PGM.MENU.TEXT.UNNAMED=sin nombre
+	PGM.MENU.TEXT.UNTITLED=Untitled Men£
 	PGM.MENUS.CLOCK.DATE=0[Z4],1{Null,Enero,Febrero,Marzo,Abril,Mayo,Junio,Julio,Agosto,Septiembre,Octubre,Noviembre,Diciembre},2,3{Domingo,Lunes,Martes,Mi‚rcoles,Jueves,Viernes,S bado};%3 %1 %2, %0
-	PGM.MENUS.CLOCK.TIME=0[Z2],1[L2],2[Z2],3[Z2],4{am,pm};%1:%2:%3 %4
+	PGM.MENUS.CLOCK.TIME=0[Z2],1[L2],2[Z2],3[Z2],4{am,pm};%0:%2:%3
 	PGM.MENUS.LABEL=Disponible Men£s:
 	PGM.MENUS.MENUS.COLUMN.NONE= 
 	PGM.MENUS.SEARCH.LABEL= Encontrar>
