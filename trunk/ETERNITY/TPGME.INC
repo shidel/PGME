@@ -1215,7 +1215,10 @@ begin
 				R := PDialog(FDlgPGMCfg)^.ShowModal;
 				if (R = mrOK) and (PDlgPGMCfg(FDlgPGMCfg)^.Modified) then begin
 					PDlgPGMCfg(FDlgPGMCfg)^.Save;
-					DeleteCache;
+					{ need PGME to reset titles in cache to new language }
+					DeleteCache; 
+					{ needed to update the "Resuming Eternity" message at restart to
+					  the new language on very first restart. }
 					FLanguage.SetFileName(UCase(Trim(PDlgPGMCfg(FDlgPGMCfg)^.FLang^.GetCaption)));
 					FLanguage.Read;
 					Restart;
