@@ -29,6 +29,7 @@ type
 	public
 		constructor Create(AParent : PControl);
 		destructor Destroy; virtual;
+		function Modified : boolean; virtual;
 	end;   
 
 {$ENDIF}
@@ -285,4 +286,25 @@ begin
 		Write;
 	end;
 end;
+
+function TDlgPGMOpt.Modified;
+var
+	I : integer;
+begin
+	Modified := True;
+	with Application^.FConfig do begin
+		OpenSection('*');
+		if GetValue('THEME', FTheme^.GetCaption) <> Trim(FTheme^.GetCaption) then exit;
+		if GetValue('FONT', FFont^.GetCaption) <> Trim(FFont^.GetCaption) then exit;
+		OpenSection(Application^.GetNameID);
+		if GetValue('SCREEN_SAVER', FSaver^.GetCaption) <> Trim(FSaver^.GetCaption) then exit;
+		I := FSlide^.GetValue;
+		GetInts('SCREEN_TIMEOUT', I, 1);
+		if I <> FSlide^.GetValue then exit;
+		if StrBool(GetValue('USE_DAC', BoolStr(FDAC^.Checked))) <> FDAC^.Checked then exit;
+		if StrBool(GetValue('USE_FADER', BoolStr(FFader^.Checked))) <> FFader^.Checked then exit;
+	end;
+	Modified := False;
+end;
+
 {$ENDIF}

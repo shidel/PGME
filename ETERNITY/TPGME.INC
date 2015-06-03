@@ -1204,7 +1204,7 @@ begin
 				ClearEvent(AEvent);
 				GetDlgPGMOpt;
 				R := PDialog(FDlgPGMOpt)^.ShowModal;
-				if R = mrOK then begin
+				if (R = mrOK) and (PDlgPGMOpt(FDlgPGMOpt)^.Modified) then begin
 					PDlgPGMOpt(FDlgPGMOpt)^.Save;
 					Restart;							
 				end;
@@ -1213,15 +1213,12 @@ begin
 				ClearEvent(AEvent);
 				GetDlgPGMCfg;
 				R := PDialog(FDlgPGMCfg)^.ShowModal;
-				if R = mrOK then begin
-					if Application^.FConfig.GetValue('LANGUAGE', '') <> 
-					UCase(Trim(PDlgPGMCfg(FDlgPGMCfg)^.FLang^.GetCaption)) then begin
-						PDlgPGMCfg(FDlgPGMCfg)^.Save;
-						DeleteCache;
-						FLanguage.SetFileName(UCase(Trim(PDlgPGMCfg(FDlgPGMCfg)^.FLang^.GetCaption)));
-						FLanguage.Read;
-						Restart;
-					end;
+				if (R = mrOK) and (PDlgPGMCfg(FDlgPGMCfg)^.Modified) then begin
+					PDlgPGMCfg(FDlgPGMCfg)^.Save;
+					DeleteCache;
+					FLanguage.SetFileName(UCase(Trim(PDlgPGMCfg(FDlgPGMCfg)^.FLang^.GetCaption)));
+					FLanguage.Read;
+					Restart;
 				end;
 			end;
 		end; 
