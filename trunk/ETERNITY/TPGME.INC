@@ -35,7 +35,8 @@ type
 			FExecMissing : PDialog;
 			FDlgPAdd, FDlgPEdit, FDlgPDel,
 			FDlgMAdd, FDlgMEdit, FDlgMDel,
-			FDlgPGMOpt, FDlgPGMCfg : PDialog;			
+			FDlgPGMOpt, FDlgPGMCfg,
+			FDlgChangeLang, FDlgChangeTheme : PDialog;			
 			FFind : record
 				FLabel : PLabel;
 				FEdit : PEdit;
@@ -61,6 +62,8 @@ type
 		procedure ApplyTheme( AConfig : PConfigFile ); virtual;
 		procedure Idle; virtual;
 		procedure ExecuteItem(AItem : PListItem); virtual;
+		function GetChangeLang(ATheme, ALang: String) : PDialog; virtual;
+		function GetChangeTheme(ATheme, ALang: String) : PDialog; virtual;
 		function GetNoTempDir : PDialog; virtual;
 		function GetNoBatchLoop : PDialog; virtual;
 		function GetGornError : PDialog; virtual;
@@ -82,7 +85,9 @@ type
 		procedure DeleteProgram; virtual;
 		procedure DeleteCache; virtual;
 		procedure SelectMenu(AValue : String); virtual;
-		procedure SelectProg(AValue : String); virtual;		
+		procedure SelectProg(AValue : String); virtual;	
+		procedure CheckLanguage(ATheme : String);	
+		procedure CheckTheme(ALanguage : String);	
 	end;   
 
 { Some Global Variables }	
@@ -196,6 +201,8 @@ begin
 	FDlgMDel := nil;
 	FDlgPGMOpt := nil;
 	FDlgPGMCfg := nil;
+	FDlgChangeLang := nil;
+	FDlgChangeTheme := nil;
 	FTimeOut := 0;
 	OldIdleProc := QCrt.IdleProc;
 	QCrt.IdleProc := PGMIdleProc;
@@ -746,8 +753,6 @@ begin
 end;
 
 function TPGME.GetDlgPAdd : PControl;
-var
-	B : TBounds;
 begin
 	if Not Assigned(FDlgPAdd) then begin
 		FDlgPAdd := New(PDlgPAdd, Create(@Self));
@@ -757,8 +762,6 @@ begin
 end;
 
 function TPGME.GetDlgPEdit : PControl; 
-var
-	B : TBounds;
 begin
 	if Not Assigned(FDlgPEdit) then begin
 		FDlgPEdit := New(PDlgPEdit, Create(@Self));
@@ -768,8 +771,6 @@ begin
 end;
 
 function TPGME.GetDlgPDelete : PControl;
-var
-	B : TBounds;
 begin
 	if Not Assigned(FDlgPDel) then begin
 		FDlgPDel := New(PDlgPDel, Create(@Self));
@@ -779,8 +780,6 @@ begin
 end;
 
 function TPGME.GetDlgMAdd : PControl; 
-var
-	B : TBounds;
 begin
 	if Not Assigned(FDlgMAdd) then begin
 		FDlgMAdd := New(PDlgMAdd, Create(@Self));
@@ -790,8 +789,6 @@ begin
 end;
 
 function TPGME.GetDlgMEdit : PControl;
-var
-	B : TBounds;
 begin
 	if Not Assigned(FDlgMEdit) then begin
 		FDlgMEdit := New(PDlgMEdit, Create(@Self));
@@ -801,8 +798,6 @@ begin
 end;
 
 function TPGME.GetDlgMDelete : PControl; 
-var
-	B : TBounds;
 begin
 	if Not Assigned(FDlgMDel) then begin
 		FDlgMDel := New(PDlgMDel, Create(@Self));
@@ -812,8 +807,6 @@ begin
 end;
 
 function TPGME.GetDlgPGMOpt : PControl;
-var
-	B : TBounds;
 begin
 	if Not Assigned(FDlgPGMOpt) then begin
 		FDlgPGMOpt := New(PDlgPGMOpt, Create(@Self));
@@ -823,14 +816,120 @@ begin
 end;
 
 function TPGME.GetDlgPGMCfg : PControl;
-var
-	B : TBounds;
 begin
 	if Not Assigned(FDlgPGMCfg) then begin
 		FDlgPGMCfg := New(PDlgPGMCfg, Create(@Self));
 		ApplySettings(FDlgPGMCfg);
 	end;
 	GetDlgPGMCfg := FDlgPGMCfg;
+end;
+
+function TPGME.GetChangeLang;
+var
+	B : TBounds;
+	FD : array[0..1] of TFormatData;
+begin
+	FillChar(FD, Sizeof(FD), 0);
+	FD[0].ID := FmtString;
+	FD[0].StringValue := ATheme;
+	FD[1].ID := FmtString;	
+	FD[1].StringValue := ALang;
+	if Not Assigned(FDlgChangeLang) then begin
+		TextAttr := $1F;
+		FDlgChangeLang := New(PMessageBox, Create(@Self, 'DIALOG.LANGTOO'));
+		with PMessageBox(FDlgChangeLang)^ do begin
+			SetBackground(1);
+			SetTextAttr($1F);
+			Bounds(1,1,68,11, B);
+			SetBounds(B);
+			FAutoEndModal := True;
+			SetTitle('Hmmm. One more thing?');
+			SetMessage(' ');
+			AppendMessage('');
+			AppendMessage('Hey, about that theme you want to apply. It would really');
+			AppendMessage('appreciate a different language file.');
+			AppendMessage(' ');
+			AppendMessage('1;So, do you want to switch to the %0 language?'); 
+			SetHelpText('The change language too "One more thing" question dialog box.');
+			AddHelpText('');
+			AddHelpText('The requested theme that is going to be applied highly suggests');
+			AddHelpText('using a different language than the one you are currently using.');
+			Bounds(B.Width div 2 - 14, 7, 11, 1, B);
+			TextAttr := $4E;
+			with PButton(New(PButton, Create(FDlgChangeLang, 'BUTTON.NO')))^ do begin
+				SetBounds(B);
+				SetAnchors(abRight or abBottom);
+				SetCaption('Nope!');
+				SetCommand(cmCancel);
+			end;
+			Inc(B.Left, 14);
+			TextAttr := $2E;
+			with PButton(New(PButton, Create(FDlgChangeLang, 'BUTTON.YES')))^ do begin
+				SetBounds(B);
+				SetAnchors(abLeft or abBottom);
+				SetCaption('Yes');
+				SetCommand(cmOK);
+			end;
+		end;
+		ApplySettings(FDlgChangeLang);
+	end;
+	if Assigned(FDlgChangeLang) then
+		PMessageBox(FDlgChangeLang)^.SetFormatData(FD, 2);
+	GetChangeLang := FDlgChangeLang;
+end;
+
+function TPGME.GetChangeTheme;
+var
+	B : TBounds;
+	FD : array[0..1] of TFormatData;
+begin
+	FillChar(FD, Sizeof(FD), 0);
+	FD[0].ID := FmtString;
+	FD[0].StringValue := ATheme;
+	FD[1].ID := FmtString;	
+	FD[1].StringValue := ALang;
+	if Not Assigned(FDlgChangeTheme) then begin
+		TextAttr := $1F;
+		FDlgChangeTheme := New(PMessageBox, Create(@Self, 'DIALOG.THEMETOO'));
+		with PMessageBox(FDlgChangeTheme)^ do begin
+			SetBackground(1);
+			SetTextAttr($1F);
+			Bounds(1,1,68,11, B);
+			SetBounds(B);
+			FAutoEndModal := True;
+			SetTitle('Hmmm. One more thing?');
+			SetMessage(' ');
+			AppendMessage('');
+			AppendMessage('Hey, about that language you want to apply. It really');
+			AppendMessage('wants to use a different theme file.');
+			AppendMessage(' ');
+			AppendMessage('0;So, do you want to switch to the %0 theme?'); 
+			SetHelpText('The change theme too "One more thing" question dialog box.');
+			AddHelpText('');
+			AddHelpText('The requested language that is going to be applied highly suggests');
+			AddHelpText('using a different theme than the one you are currently using.');
+			Bounds(B.Width div 2 - 14, 7, 11, 1, B);
+			TextAttr := $4E;
+			with PButton(New(PButton, Create(FDlgChangeTheme, 'BUTTON.NO')))^ do begin
+				SetBounds(B);
+				SetAnchors(abRight or abBottom);
+				SetCaption('Nope!');
+				SetCommand(cmCancel);
+			end;
+			Inc(B.Left, 14);
+			TextAttr := $2E;
+			with PButton(New(PButton, Create(FDlgChangeTheme, 'BUTTON.YES')))^ do begin
+				SetBounds(B);
+				SetAnchors(abLeft or abBottom);
+				SetCaption('Yes');
+				SetCommand(cmOK);
+			end;
+		end;
+		ApplySettings(FDlgChangeTheme);
+	end;
+	if Assigned(FDlgChangeTheme) then
+		PMessageBox(FDlgChangeTheme)^.SetFormatData(FD, 2);
+	GetChangeTheme := FDlgChangeTheme;
 end;
 
 procedure TPGME.CreateAllDialogs;
@@ -861,6 +960,10 @@ begin
 	if ConserveMemory then FreeDialog(PDialog(FDlgPGMOpt));
 	GetDlgPGMCfg;
 	if ConserveMemory then FreeDialog(PDialog(FDlgPGMCfg));
+	GetChangeLang('','');
+	if ConserveMemory then FreeDialog(PDialog(FDlgChangeLang));
+	GetChangeTheme('','');
+	if ConserveMemory then FreeDialog(PDialog(FDlgChangeTheme));
 end;
 
 procedure TPGME.ParseCommandLine;
@@ -1166,6 +1269,7 @@ end;
 procedure TPGME.CheckLocal(var AEvent : TEvent); 
 var
 	R : integer;
+	S : String;
 begin
 	if AEvent.What = evCommand then
 		case AEvent.Command of
@@ -1205,15 +1309,27 @@ begin
 				GetDlgPGMOpt;
 				R := PDialog(FDlgPGMOpt)^.ShowModal;
 				if (R = mrOK) and (PDlgPGMOpt(FDlgPGMOpt)^.Modified) then begin
-					PDlgPGMOpt(FDlgPGMOpt)^.Save;
-					Restart;							
-				end;
+					with Application^.FConfig do begin
+						OpenSection('*');
+						S := Trim(PDlgPGMOpt(FDlgPGMOpt)^.FTheme^.GetCaption);
+						if GetValue('THEME', S) <> S then
+							CheckLanguage(S);
+						end;
+						PDlgPGMOpt(FDlgPGMOpt)^.Save;
+						Restart;							
+					end;
 			end;
 			cmPGMCfg : begin
 				ClearEvent(AEvent);
 				GetDlgPGMCfg;
 				R := PDialog(FDlgPGMCfg)^.ShowModal;
 				if (R = mrOK) and (PDlgPGMCfg(FDlgPGMCfg)^.Modified) then begin
+					with Application^.FConfig do begin
+						OpenSection('*');
+						S := Trim(PDlgPGMCfg(FDlgPGMCfg)^.FLang^.GetCaption);
+						if GetValue('LANGUAGE', S) <> S then
+							CheckTheme(S);
+						end;
 					PDlgPGMCfg(FDlgPGMCfg)^.Save;
 					{ need PGME to reset titles in cache to new language }
 					DeleteCache; 
@@ -1522,5 +1638,54 @@ begin
 	end;
 	if FInitRun = false then
 		FStartTone := AConfig^.GetValue('TONE.RETURN', FStartTone);
+end;
+
+procedure TPGME.CheckLanguage;
+var
+	C : TConfigFile;
+	L, S : String;
+begin
+	C.Create('TEMP');
+	C.SetFileName(ATheme);
+	C.Read;
+	C.OpenSection('*');
+	S := UCase(Trim(C.GetValue('LANGUAGE', '')));
+	C.Destroy;
+	FConfig.OpenSection('*');
+	L := UCase(Trim(FConfig.GetValue('LANGUAGE', '')));
+	if (S <> '') and (S <> L) and (FileExists(S)) then begin
+		GetChangeLang(ATheme, S);
+		if FDlgChangeLang^.ShowModal = mrOK then begin
+			FConfig.OpenSection('*');
+			FConfig.SetValue('LANGUAGE', S);
+			DeleteCache; 
+			{ needed to update the "Resuming Eternity" message at restart to
+			  the new language on very first restart. }
+			FLanguage.SetFileName(S);
+			FLanguage.Read;
+		end;
+	end;
+end;
+
+procedure TPGME.CheckTheme;
+var
+	C : TConfigFile;
+	L, S : String;
+begin
+	C.Create('TEMP');
+	C.SetFileName(ALanguage);
+	C.Read;
+	C.OpenSection('*');
+	S := UCase(Trim(C.GetValue('THEME', '')));
+	C.Destroy;
+	FConfig.OpenSection('*');
+	L := UCase(Trim(FConfig.GetValue('THEME', '')));
+	if (S <> '') and (S <> L) and (FileExists(S)) then begin
+		GetChangeTheme(S, ALanguage);
+		if FDlgChangeTheme^.ShowModal = mrOK then begin
+			FConfig.OpenSection('*');
+			FConfig.SetValue('THEME', S);
+		end;
+	end;
 end;
 {$ENDIF}
