@@ -185,7 +185,7 @@ begin
 	Inc(B.Top);	
 	Inc(B.Top);	
 	TextAttr := ColorLabel;
-	FTimeout := New(PLabel, Create(@Self, 'ESAVER.LABEL'));
+	FTimeout := New(PLabel, Create(@Self, 'ESAVER.DELAY'));
 	with PLabel(FTimeout)^ do begin
 		SetBounds(B);
 		OnFormat := FormatTimeOut;
