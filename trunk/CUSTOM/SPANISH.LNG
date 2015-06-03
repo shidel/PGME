@@ -17,6 +17,7 @@
 [HELP]
 	PGM=Eternidad Programa Manager Edition Sistema de ayuda
 
+		+=
 		+=El sistema de ayuda es sensible al contexto basado en la ventana activa.
 		+=Puede cerrar la ventana de ayuda haciendo clic en el bot¢n de cierre
 		+=o fuera de la ventana con el rat¢n. Tambi‚n, usando el teclado
