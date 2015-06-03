@@ -1268,142 +1268,6 @@ begin
 	if IOResult <> 0 then exit;
 end;
 
-procedure TPGME.CheckLocal(var AEvent : TEvent); 
-var
-	R : integer;
-	S : String;
-begin
-	if AEvent.What = evCommand then
-		case AEvent.Command of
-			cmListViewDouble : if AEvent.InfoPtr = FPrograms then begin
-				ClearEvent(AEvent);
-				PutCommand(cmExecute, @Self);
-			end;
-			cmNextMenu : begin
-				ClearEvent(AEvent);
-				FMenus^.Down(True);
-			end;
-			cmPrevMenu : begin
-				ClearEvent(AEvent);
-				FMenus^.Up(True);
-			end;
-		end; 
-	
-	if (AEvent.What = evCommand) and (not FReadOnly) then
-		case AEvent.Command of
-			cmEditFile : begin
-				ClearEvent(AEvent);
-				GetEditMenu;
-				R := PWindow(FEditMenu)^.ShowModal;
-				if R = mrOK then begin
-				end;
-			end;
-			cmMenuAdd : begin
-				ClearEvent(AEvent);
-				GetDlgMAdd;
-				PDlgMAdd(FDlgMAdd)^.SetData(nil);
-				R := PDialog(FDlgMAdd)^.ShowModal;
-				if R = mrOK then begin
-				end;
-			end;
-			cmPGMOpts : begin
-				ClearEvent(AEvent);
-				GetDlgPGMOpt;
-				R := PDialog(FDlgPGMOpt)^.ShowModal;
-				if (R = mrOK) and (PDlgPGMOpt(FDlgPGMOpt)^.Modified) then begin
-					with Application^.FConfig do begin
-						OpenSection('*');
-						S := Trim(PDlgPGMOpt(FDlgPGMOpt)^.FTheme^.GetCaption);
-						if GetValue('THEME', S) <> S then
-							CheckLanguage(S);
-						end;
-						PDlgPGMOpt(FDlgPGMOpt)^.Save;
-						Restart;							
-					end;
-			end;
-			cmPGMCfg : begin
-				ClearEvent(AEvent);
-				GetDlgPGMCfg;
-				R := PDialog(FDlgPGMCfg)^.ShowModal;
-				if (R = mrOK) and (PDlgPGMCfg(FDlgPGMCfg)^.Modified) then begin
-					with Application^.FConfig do begin
-						OpenSection('*');
-						S := Trim(PDlgPGMCfg(FDlgPGMCfg)^.FLang^.GetCaption);
-						if GetValue('LANGUAGE', S) <> S then
-							CheckTheme(S);
-						end;
-					PDlgPGMCfg(FDlgPGMCfg)^.Save;
-					{ need PGME to reset titles in cache to new language }
-					DeleteCache; 
-					{ needed to update the "Resuming Eternity" message at restart to
-					  the new language on very first restart. }
-					FLanguage.SetFileName(UCase(Trim(PDlgPGMCfg(FDlgPGMCfg)^.FLang^.GetCaption)));
-					FLanguage.Read;
-					Restart;
-				end;
-			end;
-		end; 
-
-	if (AEvent.What = evCommand) and (not FReadOnly) and FWritable then
-		case AEvent.Command of
-			cmMenuEdit : begin
-				ClearEvent(AEvent);
-				GetDlgMEdit;
-				if Assigned(FMenus) and Assigned(FMenus^.FCurrent) then 
-					PDlgMEdit(FDlgMEdit)^.SetData(FMenus^.FCurrent)
-				else
-					PDlgMEdit(FDlgMEdit)^.SetData(nil);
-				R := PDialog(FDlgMEdit)^.ShowModal;
-				if R = mrOK then begin
-				end;
-			end;
-			cmMenuDel : begin
-				ClearEvent(AEvent);
-				GetDlgMDelete;
-				R := PDialog(FDlgMDel)^.ShowModal;
-				if R = mrOK then 
-					DeleteMenu;
-			end;
-			cmProgAdd : begin
-				ClearEvent(AEvent);
-				GetDlgPAdd;
-				R := PDialog(FDlgPAdd)^.ShowModal;
-				if R = mrOK then begin
-				end;
-			end;
-			cmProgEdit : begin
-				ClearEvent(AEvent);
-				GetDlgPEdit;
-				R := PDialog(FDlgPEdit)^.ShowModal;
-				if R = mrOK then begin
-				end;
-			end;
-			cmProgDel : begin
-				ClearEvent(AEvent);
-				GetDlgPDelete;
-				R := PDialog(FDlgPDel)^.ShowModal;
-				if R = mrOK then 
-					DeleteProgram;
-			end;
-		end; 
-
-	inherited CheckLocal(AEvent);
-	if FLastMenu <> FMenus^.FCurrent then begin
-		OpenCurrentMenu;
-	end else if (FLastProgram <> FPrograms^.FCurrent) then
-		UpdateButtons;
-	FLastMenu := FMenus^.FCurrent;
-	FLastProgram := FPrograms^.FCurrent;
-
-	if AEvent.What = evCommand then
-		case AEvent.Command of
-			cmExecute : begin
-				ClearEvent(AEvent);
-				ExecuteItem(FLastProgram)
-			end;
-		end; 
-end;
-
 function TPGME.GetReturnStr : String; 
 var
 	S : String;
@@ -1690,4 +1554,142 @@ begin
 		end;
 	end;
 end;
+
+procedure TPGME.CheckLocal(var AEvent : TEvent); 
+var
+	R : integer;
+	S : String;
+begin
+	if AEvent.What = evCommand then
+		case AEvent.Command of
+			cmListViewDouble : if AEvent.InfoPtr = FPrograms then begin
+				ClearEvent(AEvent);
+				PutCommand(cmExecute, @Self);
+			end;
+			cmNextMenu : begin
+				ClearEvent(AEvent);
+				FMenus^.Down(True);
+			end;
+			cmPrevMenu : begin
+				ClearEvent(AEvent);
+				FMenus^.Up(True);
+			end;
+		end; 
+	
+	if (AEvent.What = evCommand) and (not FReadOnly) then
+		case AEvent.Command of
+			cmEditFile : begin
+				ClearEvent(AEvent);
+				GetEditMenu;
+				R := PWindow(FEditMenu)^.ShowModal;
+				if R = mrOK then begin
+				end;
+			end;
+			cmMenuAdd : begin
+				ClearEvent(AEvent);
+				GetDlgMAdd;
+				PDlgMAdd(FDlgMAdd)^.SetData(nil);
+				R := PDialog(FDlgMAdd)^.ShowModal;
+				if R = mrOK then begin
+				end;
+			end;
+			cmPGMOpts : begin
+				ClearEvent(AEvent);
+				GetDlgPGMOpt;
+				R := PDialog(FDlgPGMOpt)^.ShowModal;
+				if (R = mrOK) and (PDlgPGMOpt(FDlgPGMOpt)^.Modified) then begin
+					with Application^.FConfig do begin
+						OpenSection('*');
+						S := Trim(PDlgPGMOpt(FDlgPGMOpt)^.FTheme^.GetCaption);
+						if GetValue('THEME', S) <> S then
+							CheckLanguage(S);
+						end;
+						PDlgPGMOpt(FDlgPGMOpt)^.Save;
+						Restart;							
+					end;
+			end;
+			cmPGMCfg : begin
+				ClearEvent(AEvent);
+				GetDlgPGMCfg;
+				R := PDialog(FDlgPGMCfg)^.ShowModal;
+				if (R = mrOK) and (PDlgPGMCfg(FDlgPGMCfg)^.Modified) then begin
+					with Application^.FConfig do begin
+						OpenSection('*');
+						S := Trim(PDlgPGMCfg(FDlgPGMCfg)^.FLang^.GetCaption);
+						if GetValue('LANGUAGE', S) <> S then
+							CheckTheme(S);
+						end;
+					PDlgPGMCfg(FDlgPGMCfg)^.Save;
+					{ need PGME to reset titles in cache to new language }
+					DeleteCache; 
+					{ needed to update the "Resuming Eternity" message at restart to
+					  the new language on very first restart. }
+					FLanguage.SetFileName(UCase(Trim(PDlgPGMCfg(FDlgPGMCfg)^.FLang^.GetCaption)));
+					FLanguage.Read;
+					Restart;
+				end;
+			end;
+		end; 
+
+	if (AEvent.What = evCommand) and (not FReadOnly) and FWritable then
+		case AEvent.Command of
+			cmMenuEdit : begin
+				ClearEvent(AEvent);
+				GetDlgMEdit;
+				if Assigned(FMenus) and Assigned(FMenus^.FCurrent) then 
+					PDlgMEdit(FDlgMEdit)^.SetData(FMenus^.FCurrent)
+				else
+					PDlgMEdit(FDlgMEdit)^.SetData(nil);
+				R := PDialog(FDlgMEdit)^.ShowModal;
+				if R = mrOK then begin
+				end;
+			end;
+			cmMenuDel : begin
+				ClearEvent(AEvent);
+				GetDlgMDelete;
+				R := PDialog(FDlgMDel)^.ShowModal;
+				if R = mrOK then 
+					DeleteMenu;
+			end;
+			cmProgAdd : begin
+				ClearEvent(AEvent);
+				GetDlgPAdd;
+				R := PDialog(FDlgPAdd)^.ShowModal;
+				if R = mrOK then begin
+				end;
+			end;
+			cmProgEdit : begin
+				ClearEvent(AEvent);
+				GetDlgPEdit;
+				R := PDialog(FDlgPEdit)^.ShowModal;
+				if R = mrOK then begin
+				end;
+			end;
+			cmProgDel : begin
+				ClearEvent(AEvent);
+				GetDlgPDelete;
+				R := PDialog(FDlgPDel)^.ShowModal;
+				if R = mrOK then 
+					DeleteProgram;
+			end;
+		end; 
+
+	inherited CheckLocal(AEvent);
+	if FLastMenu <> FMenus^.FCurrent then begin
+		OpenCurrentMenu;
+	end else if (FLastProgram <> FPrograms^.FCurrent) then
+		UpdateButtons;
+	FLastMenu := FMenus^.FCurrent;
+	FLastProgram := FPrograms^.FCurrent;
+
+	if AEvent.What = evCommand then
+		case AEvent.Command of
+			cmExecute : begin
+				ClearEvent(AEvent);
+				ExecuteItem(FLastProgram)
+			end;
+		end; 
+end;
+
+
 {$ENDIF}
