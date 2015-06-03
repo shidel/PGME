@@ -1220,8 +1220,6 @@ begin
 						DeleteCache;
 						FLanguage.SetFileName(UCase(Trim(PDlgPGMCfg(FDlgPGMCfg)^.FLang^.GetCaption)));
 						FLanguage.Read;
-						FLanguage.OpenSection('STRINGS');
-						FResumeText := FLanguage.GetValue(GetNameID + '.BOOT.RESUME', 'Resuming Eternity...');
 						Restart;
 					end;
 				end;
@@ -1303,6 +1301,8 @@ begin
 		with PCacheMenu(FMenus^.FCurrent^.Data)^ do 
 			S := '/M=' + PCacheDir(Parent)^.GetNameID + GetNameID;
 	end;
+	FLanguage.OpenSection('STRINGS');
+	FResumeText := FLanguage.GetValue(GetNameID + '.BOOT.RESUME', 'Resuming Eternity...');
 	S := S + ' /T=' + FResumeText;
 	GetReturnStr := S;
 end;

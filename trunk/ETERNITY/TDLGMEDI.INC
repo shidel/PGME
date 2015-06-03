@@ -43,8 +43,14 @@ var
 begin	
 	inherited Create(AParent, 'DIALOG.MENU.EDIT', False);
 	SetTitle('Menu Options');
-	SetHelpText('');
+	SetHelpText('The "Menu Options" dialog box.');
 	AddHelpText('');
+	AddHelpText('This is where you can make changes to the current menu title');
+	AddHelpText('and other settings.');
+	with PButton(FOK)^ do begin
+		SetHelpText('5;Use the "%0" button to apply the new settings to the current menu');
+		AddHelpText('and close the dialog box.');
+	end;
 end;
 
 destructor TDlgMEdit.Destroy;
