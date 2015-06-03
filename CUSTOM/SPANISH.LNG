@@ -12,6 +12,7 @@
 	ID=Spanish
 	NAME=Spanish
 	TYPE=LANGUAGE
+	THEME=SPANISH.THM
 
 [HELP]
 	PGM=Eternidad Programa Manager Edition Sistema de ayuda
