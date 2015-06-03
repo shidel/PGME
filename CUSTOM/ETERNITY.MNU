@@ -3,8 +3,10 @@
 	TYPE=MENU
 	TITLE=Eternal Menu
 	TITLE.SPANISH=Men£ Eterna
+	TITLE.KLINGON=Suto'vo'qor
 	DESCRIPTION=The Eternal Menu
 	DESCRIPTION.SPANISH=El Men£ Eterna
+	DESCRIPTION.TITLE.KLINGON=Suto'vo'qor ghun
 	WRITABLE=no
 
 [README]
