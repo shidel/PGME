@@ -23,7 +23,7 @@
 		+=o fuera de la ventana con el rat¢n. Tambi‚n, usando el teclado
 		+=para generar un cierre de ventana o el comando escape (por defecto Alt + W o Esc).
 		+=Ejecuntando el comando de programa Salir (Alt + Q) cerrar  la ventana de ayuda y 
-		+=cerrar  el programa. Esto supone que la opci½n de configuraci¢n para CANCLOSE
+		+=cerrar  el programa. Esto supone que la opci¢n de configuraci¢n para CANCLOSE
 		+=no se ha establecido en FALSE.
 
 	PGM.DIALOG.CONFIG=El cuadro de di logo de opciones de configuraci¢n del programa Eternidad Administrador de programas.
