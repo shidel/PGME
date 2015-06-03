@@ -30,6 +30,7 @@ type
 		constructor Create(AParent : PControl; AName : String; ANewMenu : boolean);
 		destructor Destroy; virtual;
 		procedure SetData(AItem : PListItem); virtual;
+		procedure UpdateFileName; virtual;
 	end;   
 
 {$ENDIF}
@@ -206,18 +207,30 @@ end;
 procedure TDlgMenu.SetData(AItem : PListItem);
 begin
 	if Not Assigned(AItem) then begin
-		FEditLong^.SetCaption('');
-		FEditShort^.SetCaption('');
-		if Assigned(FLabelFile) then 
-			FLabelFile^.SetCaption('');
+		if assigned(PGME.FMenuCache) then begin
+			FEditLong^.SetCaption(PMenuCache(PGME.FMenuCache)^.FNoDescStr);
+			FEditShort^.SetCaption(PMenuCache(PGME.FMenuCache)^.FNoTitleStr);
+		end else begin
+			FEditLong^.SetCaption('');
+			FEditShort^.SetCaption('');
+		end;
 	end else with PCacheMenu(AItem^.Data)^ do begin
 		FEditLong^.SetCaption(LongTitle);
 		FEditShort^.SetCaption(ShortTitle);
 		if Assigned(FLabelFile) then 
 			FLabelFile^.SetCaption(PCacheDir(Parent)^.GetNameID + GetNameID);	
 	end;
+	UpdateFileName;
 	if Assigned(FLockToggle) then FLockToggle^.SetOn(False);
 	if Assigned(FLockAccept) then FLockAccept^.SetState(0);
 	if Assigned(FLockAccept) then FLockAccept^.SetEnabled(False);
+end;
+
+procedure TDlgMenu.UpdateFileName;
+var
+	S : String;
+begin
+	if Not Assigned(FLabelFile) then exit;
+	
 end;
 {$ENDIF}
