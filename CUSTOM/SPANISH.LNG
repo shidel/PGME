@@ -13,18 +13,17 @@
 	NAME=Spanish
 	TYPE=LANGUAGE
 	THEME=SPANISH.THM
-
+	
 [HELP]
 	PGM=Eternidad Programa Manager Edition Sistema de ayuda
 
-		+=
-		+=El sistema de ayuda es sensible al contexto basado en la corriente activa
-		+=ventana. Puede cerrar la ventana de ayuda haciendo clic en el bot¢n de cierre
+		+=El sistema de ayuda es sensible al contexto basado en la ventana activa.
+		+=Puede cerrar la ventana de ayuda haciendo clic en el bot¢n de cierre
 		+=o fuera de la ventana con el rat¢n. Tambi‚n, usando el teclado
-		+=para generar un CloseWindow o el comando (por defecto Alt + W o Esc) Escapar.
-		+=Generaci¢n de un comando de programa Salir (Alt + Q) cerrar  ayuda y sale
-		+=el programa. Esto supone que la opci¢n de configuraci¢n para CANCLOSE
-		+=no se establece en false.
+		+=para generar un cierre de ventana o el comando escape (por defecto Alt + W o Esc).
+		+=Ejecuntando el comando de programa Salir (Alt + Q) cerrar  la ventana de ayuda y 
+		+=cerrar  el programa. Esto supone que la opci½n de configuraci¢n para CANCLOSE
+		+=no se ha establecido en FALSE.
 
 	PGM.DIALOG.CONFIG=El cuadro de di logo de opciones de configuraci¢n del programa Eternidad Administrador de programas.
 
@@ -453,7 +452,7 @@
 	PGM.MENUS.SEARCH.LABEL= Encontrar>
 	PGM.PROGRAMS.BUTTON.EDIT=Editar
 	PGM.PROGRAMS.BUTTON.HELP=Ayuda
-	PGM.PROGRAMS.BUTTON.QUIT=Dejar
+	PGM.PROGRAMS.BUTTON.QUIT=Salir
 	PGM.PROGRAMS.BUTTON.RUN=Ejecutar
 	PGM.PROGRAMS.BUTTON.SEARCH=B£squeda
 	PGM.PROGRAMS.FRAME.TITLE= Eternidad Program Manager 

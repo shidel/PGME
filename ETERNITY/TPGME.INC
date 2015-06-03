@@ -1139,6 +1139,8 @@ begin
 	if Assigned(FDlgMDel) and FDlgMDel^.GetVisible then Exit;
 	if Assigned(FDlgPGMOpt) and FDlgPGMOpt^.GetVisible then Exit;
 	if Assigned(FDlgPGMCfg) and FDlgPGMCfg^.GetVisible then Exit;
+	if Assigned(FDlgChangeLang) and FDlgChangeLang^.GetVisible then Exit;
+	if Assigned(FDlgChangeTheme) and FDlgChangeTheme^.GetVisible then Exit;
 	
 	if S <> Sec then begin
 		S := Sec;
