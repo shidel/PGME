@@ -245,8 +245,19 @@ var
 	S, T : String;
 	F, P : boolean;
 begin
+	if FEditLong^.GetCaption <> PMenuCache(PGME.FMenuCache)^.FNoDescStr then
+		if FEditShort^.GetCaption = PMenuCache(PGME.FMenuCache)^.FNoTitleStr then begin
+			S := FEditLong^.GetCaption;
+			if Pos(' ', S) < 5 then
+				Delete(S, 1, Pos(' ', S));
+			S := WCase(Trim(S));
+			if S <> '' then
+				FEditShort^.SetCaption(S);
+		end;
 	if Not Assigned(FLabelFile) then exit;
-	S := FilterChar(WCase(FEditLong^.GetCaption), ' ');
+	S := FilterChar(WCase(FEditShort^.GetCaption), ' ');
+	if S = '' then 
+		FilterChar(WCase(FEditLong^.GetCaption), ' ');
 	I := 0;
 	{Strip Vowels on at a time}
 	while (Length(S) > 8) and (I < Length(Vowels)) do begin
