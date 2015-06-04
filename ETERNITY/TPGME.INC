@@ -1012,7 +1012,7 @@ begin
 		S := UCase(PCacheDir(PCacheMenu(P^.Data)^.Parent)^.GetNameID + 
 			PCacheMenu(P^.Data)^.GetNameID);
 		if S = AValue then begin
-			FMenus^.FCurrent := P;
+			FMenus^.SetIndex(P^.GetIndex);
 			OpenCurrentMenu;
 			P := nil;
 		end else
@@ -1030,7 +1030,7 @@ begin
 	while Assigned(P) do begin
 		S := PCacheApp(P^.Data)^.GetNameID;
 		if S = AValue then begin
-			FPrograms^.FCurrent := P;
+			FPrograms^.SetIndex(P^.GetIndex);
 			P := nil;
 		end else
 			P := P^.Next;
