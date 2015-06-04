@@ -258,44 +258,9 @@ begin
 	S := FilterChar(WCase(FEditShort^.GetCaption), ' ');
 	if S = '' then 
 		FilterChar(WCase(FEditLong^.GetCaption), ' ');
-	I := 0;
-	{Strip Vowels on at a time}
-	while (Length(S) > 8) and (I < Length(Vowels)) do begin
-		Inc(I);
-		S := FilterChar(S, Vowels[I]);
-	end;
-	{ remove special chars }
-	I := 1;
-	while I <= Length(S) do begin
-		if (S[I] > #$81) or (S[I] < #$20) then 
-			Delete(S, I, 1)
-		else
-			Inc(I);
-	end;
-	{ remove duplicating letters }
-	I := Length(S);
-	while (Length(S) > 8) and (I > 1) do begin
-		Dec(I);
-		if UCase(S[I]) = UCase(S[I + 1]) then
-			Delete(S, I, 1);
-	end;
-	{ remove lowercase letters fro words one at a time }
-	F := True;
-	while (Length(S) > 8) and F do begin
-		F := False;
-		I := Length(S);
-		P := True;
-		while  I > 1 do begin
-			Dec(I);
-			if S[I] = UCase(S[I]) then
-				P := True
-			else if P then begin
-				P := False;
-				F := True;
-				Delete(S, 1, 1);
-			end;
-		end;			
-	end;
+
+	S := ReduceStr(S, 8);
+
 	if S = '' then S := '00000000';
 	
 	S := Copy(UCase(S), 1, 8);

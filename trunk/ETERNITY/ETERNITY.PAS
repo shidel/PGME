@@ -77,9 +77,9 @@ const
 {$UNDEF IMPLEMENTATION}
 
 begin
-{	ErrorsOnExit := True; }
+	ErrorsOnExit := True; 
 	PGME.Create;
 	PGME.Execute;
 	PGME.Destroy;  
-	GotoXY(1, WhereY);
+	GotoXY(1, WhereY); 
 end.
