@@ -131,6 +131,8 @@ clean: do_clean
 distclean: do_clean
 
 do_clean:
+	if exist $(BINDIR)\DEFAULTS del $(BINDIR)\DEFAULTS\*.*
+	if exist $(BINDIR)\DEFAULTS rmdir $(BINDIR)\DEFAULTS
 	if exist $(BINDIR)\TEMPLATES del $(BINDIR)\TEMPLATES\*.*
 	if exist $(BINDIR)\TEMPLATES rmdir $(BINDIR)\TEMPLATES
 	if exist $(BINDIR) del $(BINDIR)\*.*
