@@ -4,7 +4,7 @@ echo Creating Program Manager Eternity Installer from source.
 
 call make -S clean templates themes 
 
-rem internalize themefiles for mor memory
+rem internalize themefiles for more memory
 cd bin
 
 mkdir DEFAULTS
