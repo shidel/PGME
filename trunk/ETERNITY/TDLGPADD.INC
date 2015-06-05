@@ -41,7 +41,7 @@ constructor TDlgPAdd.Create;
 var
 	B : TBounds;
 begin	
-	inherited Create(AParent, 'DIALOG.PROG.ADD');
+	inherited Create(AParent, 'DIALOG.PROG.ADD', True);
 	SetTitle('New Program');
 	SetHelpText('');
 	AddHelpText('');
