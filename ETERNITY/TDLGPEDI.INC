@@ -41,7 +41,7 @@ constructor TDlgPEdit.Create;
 var
 	B : TBounds;
 begin	
-	inherited Create(AParent, 'DIALOG.PROG.EDIT');
+	inherited Create(AParent, 'DIALOG.PROG.EDIT', False);
 	SetTitle('Edit Program');
 	SetHelpText('');
 	AddHelpText('');

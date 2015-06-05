@@ -16,14 +16,18 @@ const
 type 
 	PDlgProg = ^TDlgProg;
 	TDlgProg = object (TDIALOG)
-    public { protected }
+    public { protected }	
+    		FEditTitle : PEdit;
+    		FMaxAvail, FReturn : PToggle;
+    		FOK : PButton;
 		function  ObjectClass ( AName : String ) : String; virtual;
     public { protected }
 		procedure CheckLocal(var AEvent : TEvent); virtual;
 		procedure BeforeShow; virtual;
 	public
-		constructor Create(AParent : PControl; AName : String);
+		constructor Create(AParent : PControl; AName : String; ANewProg : boolean);
 		destructor Destroy; virtual;
+		procedure SetData(AItem : PListItem); virtual;
 	end;   
 
 {$ENDIF}
@@ -38,13 +42,92 @@ begin
 end;
 
 constructor TDlgProg.Create;
+const
+	ColorLabel = $70;
+	ColorEdit = $1E;
+	ColorFile = $71;
+	ColorOK = $2E;
+	ColorToggle = $0F;
+	ColorAccept = $74;
 var
-	B : TBounds;
+	B, T : TBounds;
 begin	
 	inherited Create(AParent, AName);
 	Bounds(1,1,55,15, B);
 	SetBounds(B);					
 	FAutoEndModal := True;
+	SetBounds(B);
+	Bounds(3,2,47,1, B);		
+	TextAttr := ColorLabel;
+	with PLabel(New(PLabel, Create(@Self, 'TITLE.LABEL')))^ do begin
+		SetBounds(B);
+		SetAnchors(abLeft or abRight or abTop);
+		FHAlign := AlignLeft;
+		SetCaption('Program Title:');
+	end;
+	Inc(B.Top);
+	TextAttr := ColorEdit;
+	FEditTitle := New(PEdit, Create(@Self, 'TITLE.EDIT'));
+	with PEdit(FEditTitle)^ do begin
+		SetHelpText('Use the "Program Title" to enter the full title of');
+		AddHelpText('the menu item.');
+		SetBounds(B);
+		SetAnchors(abLeft or abRight or abTop);
+		SetCaption('');
+	end;
+	Inc(B.Top, 2);
+	TextAttr := ColorLabel;
+	with PLabel(New(PLabel, Create(@Self, 'FREE.LABEL')))^ do begin
+		T := B;
+		T.Width := T.Width - 12;
+		SetBounds(T);
+		SetAnchors(abLeft or abRight or abTop);
+		FHAlign := AlignLeft;
+		SetCaption('Free all memory:');
+	end;
+	TextAttr := ColorToggle;
+	FMaxAvail := New(PToggle, Create(@Self, 'FREE.TOGGLE'));
+	with PToggle(FMaxAvail)^ do begin
+		T.Left := T.Left + T.Width;
+		T.Width := 12;
+		SetBounds(T);
+		SetAnchors(abRight or abTop);
+	end;
+	Inc(B.Top, 2);
+	TextAttr := ColorLabel;
+	with PLabel(New(PLabel, Create(@Self, 'RETURN.LABEL')))^ do begin
+		T := B;
+		T.Width := T.Width - 12;
+		SetBounds(T);
+		SetAnchors(abLeft or abRight or abTop);
+		FHAlign := AlignLeft;
+		SetCaption('Return to PGM Eternity:');
+	end;
+	TextAttr := ColorToggle;
+	FReturn := New(PToggle, Create(@Self, 'RETURN.TOGGLE'));
+	with PToggle(FReturn)^ do begin
+		T.Left := T.Left + T.Width;
+		T.Width := B.Width + B.Left - T.Left;
+		SetBounds(T);
+		SetAnchors(abRight or abTop);
+		SetOn(True);
+	end;
+
+	TextAttr := ColorOK;
+	Inc(B.Top, 2);
+	FOK := New(PButton, Create(@Self, 'BUTTON.OK'));
+	with PButton(FOK)^ do begin
+		B.Left := B.Left + B.Width div 2 - 7;
+		B.Width := 14;
+		SetBounds(B);
+		SetAnchors(abLeft or abRight or abTop);
+		if ANewProg then 
+			SetCaption('Create')
+		else
+			SetCaption('Update');
+		SetCommand(cmOK);
+		
+	end;
 end;
 
 destructor TDlgProg.Destroy;
@@ -61,4 +144,12 @@ procedure TDlgProg.BeforeShow;
 begin
 	inherited BeforeShow;
 end;
+
+procedure TDlgProg.SetData(AItem : PListItem);
+begin
+	FEditTitle^.SetCaption('');
+	FMaxAvail^.SetOn(False);
+	FReturn^.SetOn(True);
+end;
+
 {$ENDIF}
