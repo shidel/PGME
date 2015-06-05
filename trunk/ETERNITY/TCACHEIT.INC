@@ -7,6 +7,7 @@
 	
 *)
 
+{$IFDEF INTERFACE}
 type
 	PCacheItem = ^TCacheItem;
 	TCacheItem = object (TListItem)
@@ -76,6 +77,9 @@ type
 		function	NewChild(AID : String) : PListItem; virtual;
 	end;
 
+{$ENDIF}
+
+{$IFDEF IMPLEMENTATION}
 constructor TCacheItem.Create(AName : String);
 begin
 	inherited Create(AName);
@@ -463,4 +467,5 @@ begin
 	NewChild := New(PCacheProc, Create(AID));
 end;
 
+{$ENDIF}
 

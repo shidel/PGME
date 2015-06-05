@@ -11,37 +11,10 @@
 {$I ETERNITY.DEF}
 program Program_Manager_Eternity_Main_Application; { X Series }
 
-uses QCrt, QErrors, QStrings, QDos, QFiles, QClass, QObjects, QControls, QFmtStr, PGM_Call;
-
-{$I LICENSE.INC}
-{$I ../VERSION.INC}
-
-const
-	cmExecute 	= cmExecuteFile;
-	cmNextMenu  = cmAfter;
-	cmPrevMenu  = cmBefore;
-	
-	cmProgAdd 	= $1100;
-	cmProgEdit	= cmProgAdd + 1;
-	cmProgDel	= cmProgEdit + 1;
-	
-	cmMenuAdd 	= cmProgDel + 1;
-	cmMenuEdit	= cmMenuAdd + 1;
-	cmMenuDel	= cmMenuEdit + 1;
-	
-	cmPGMOpts   = cmMenuDel + 1;
-	cmPGMCfg	= cmPGMOpts + 1;
-	
-	cmBrowseTheme = cmPGMCfg + 1;
-	cmBrowseFont = cmBrowseTheme + 1;
-	cmBrowseESaver = cmBrowseFont + 1;
-	cmBrowseLang = cmBrowseESaver + 1;
-		
-	ftMenu	= 'MENU';
+uses QCrt, QErrors, QStrings, QDos, QFiles, QClass, QObjects, QControls, QFmtStr, PGM_Call,
+	EConst, ECache;
 
 {$DEFINE INTERFACE}
-
-{$I TCacheItems.inc}
 
 {$I TDLGOpts.inc}
 {$I TDLGCfg.inc}
@@ -55,7 +28,6 @@ const
 {$I TDLGMDelete.inc}
 
 {$I TPGME.inc}
-{$I TMenuCache.inc}
 
 {$UNDEF INTERFACE}
 {$DEFINE IMPLEMENTATION}
@@ -72,9 +44,7 @@ const
 {$I TDLGMDelete.inc}
 
 {$I TPGME.inc}
-{$I TMenuCache.inc}
 
-{$UNDEF IMPLEMENTATION}
 
 begin
 	ErrorsOnExit := True; 
