@@ -1742,6 +1742,7 @@ begin
 			cmProgAdd : begin
 				ClearEvent(AEvent);
 				GetDlgPAdd;
+				PDlgPAdd(FDlgPAdd)^.SetData(nil);
 				R := PDialog(FDlgPAdd)^.ShowModal;
 				if R = mrOK then 
 					AddProgram;
@@ -1749,6 +1750,10 @@ begin
 			cmProgEdit : begin
 				ClearEvent(AEvent);
 				GetDlgPEdit;
+				if Assigned(FPrograms) and Assigned(FPrograms^.FCurrent) then 
+					PDlgPEdit(FDlgPEdit)^.SetData(FPrograms^.FCurrent)
+				else
+					PDlgPEdit(FDlgPEdit)^.SetData(nil);
 				R := PDialog(FDlgPEdit)^.ShowModal;
 				if R = mrOK then 
 					ModifyProgram;
