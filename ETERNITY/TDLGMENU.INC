@@ -216,13 +216,12 @@ end;
 
 procedure TDlgMenu.SetData(AItem : PListItem);
 begin
+	FEditLong^.SetCaption('');
+	FEditShort^.SetCaption('');
 	if Not Assigned(AItem) then begin
-		if assigned(PGME.FMenuCache) then begin
+		if Assigned(PGME.FMenuCache) then begin
 			FEditLong^.SetCaption(PMenuCache(PGME.FMenuCache)^.FNoDescStr);
 			FEditShort^.SetCaption(PMenuCache(PGME.FMenuCache)^.FNoTitleStr);
-		end else begin
-			FEditLong^.SetCaption('');
-			FEditShort^.SetCaption('');
 		end;
 	end else with PCacheMenu(AItem^.Data)^ do begin
 		FEditLong^.SetCaption(LongTitle);

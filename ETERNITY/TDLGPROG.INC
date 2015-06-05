@@ -70,7 +70,7 @@ begin
 	FEditTitle := New(PEdit, Create(@Self, 'TITLE.EDIT'));
 	with PEdit(FEditTitle)^ do begin
 		SetHelpText('Use the "Program Title" to enter the full title of');
-		AddHelpText('the menu item.');
+		AddHelpText('the programs menu title.');
 		SetBounds(B);
 		SetAnchors(abLeft or abRight or abTop);
 		SetCaption('');
@@ -88,6 +88,12 @@ begin
 	TextAttr := ColorToggle;
 	FMaxAvail := New(PToggle, Create(@Self, 'FREE.TOGGLE'));
 	with PToggle(FMaxAvail)^ do begin
+		SetHelpText('The "Free all memory" toggle will inform PGME to free as much memory');
+		AddHelpText('as possible before launching this menu item. This will free up about');
+		AddHelpText('10k more of ram for the program. It is probably never really needed,');
+		AddHelpText('but is provided anyway. Please note, that this happens automatically');
+		AddHelpText('for programs that multiple programs in its execution process. It');
+		AddHelpText('will also occur for any menu entry that includes custom DOS commands.');
 		T.Left := T.Left + T.Width;
 		T.Width := 12;
 		SetBounds(T);
@@ -106,6 +112,10 @@ begin
 	TextAttr := ColorToggle;
 	FReturn := New(PToggle, Create(@Self, 'RETURN.TOGGLE'));
 	with PToggle(FReturn)^ do begin
+		SetHelpText('The "Return to PGM Eternity" toggle is rather straight forward.');
+		AddHelpText('After the menu entry has completed running, the "ON" setting');
+		AddHelpText('will return you to PGME. If it is "OFF", you will return to the');
+		AddHelpText('command line.');
 		T.Left := T.Left + T.Width;
 		T.Width := B.Width + B.Left - T.Left;
 		SetBounds(T);
@@ -150,6 +160,15 @@ begin
 	FEditTitle^.SetCaption('');
 	FMaxAvail^.SetOn(False);
 	FReturn^.SetOn(True);
+	{ PGMVARS, SIMPLE, TONE, GROUP, FILENAME, CLASS }
+	if Not Assigned(AItem) then begin
+		if Assigned(PGME.FMenuCache) then 
+			FEditTitle^.SetCaption(PMenuCache(PGME.FMenuCache)^.FNoNameStr);
+	end else with PCacheApp(AItem^.Data)^ do begin
+		FEditTitle^.SetCaption(Title);	
+		FMaxAvail^.SetOn(MaxMemory);
+		FReturn^.SetOn(ReturnAfter);
+	end;
 end;
 
 {$ENDIF}
