@@ -97,11 +97,13 @@ type
 { Some Global Variables }	
 var
 	PGME : TPGME;
-	OldIdleProc : procedure;
 
 {$ENDIF}
 
 {$IFDEF IMPLEMENTATION}
+var
+	OldIdleProc : procedure;
+
 procedure FormatClock (AVisual : PControl; var AValue : String); far;
 var
 	FD : array[0..4] of TFormatData;

@@ -12,38 +12,14 @@
 program Program_Manager_Eternity_Main_Application; { X Series }
 
 uses QCrt, QErrors, QStrings, QDos, QFiles, QClass, QObjects, QControls, QFmtStr, PGM_Call,
-	EConst, ECache;
+	EConst, ECache, EDialogs, EPGM;
 
 {$DEFINE INTERFACE}
-
-{$I TDLGOpts.inc}
-{$I TDLGCfg.inc}
-{$I TDLGProg.inc}
-{$I TDLGPAdd.inc}
-{$I TDLGPEdit.inc}
-{$I TDLGPDelete.inc}
-{$I TDLGMenu.inc}
-{$I TDLGMAdd.inc}
-{$I TDLGMEdit.inc}
-{$I TDLGMDelete.inc}
-
-{$I TPGME.inc}
 
 {$UNDEF INTERFACE}
 {$DEFINE IMPLEMENTATION}
 
-{$I TDLGOpts.inc}
-{$I TDLGCfg.inc}
-{$I TDLGProg.inc}
-{$I TDLGPAdd.inc}
-{$I TDLGPEdit.inc}
-{$I TDLGPDelete.inc}
-{$I TDLGMenu.inc}
-{$I TDLGMAdd.inc}
-{$I TDLGMEdit.inc}
-{$I TDLGMDelete.inc}
-
-{$I TPGME.inc}
+{$UNDEF IMPLEMENTATION}
 
 
 begin
