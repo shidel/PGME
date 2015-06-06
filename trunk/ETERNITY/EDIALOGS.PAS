@@ -16,16 +16,17 @@ uses QCrt, QErrors, QStrings, QDos, QFiles, QClass, QObjects, QControls, QFmtStr
 	
 {$DEFINE INTERFACE}
 
-{$I TDLGOpts.inc}
-{$I TDLGCfg.inc}
-{$I TDLGProg.inc}
-{$I TDLGPAdd.inc}
-{$I TDLGPEdit.inc}
-{$I TDLGPDelete.inc}
-{$I TDLGMenu.inc}
-{$I TDLGMAdd.inc}
-{$I TDLGMEdit.inc}
-{$I TDLGMDelete.inc}
+{$I TDlgOpts.inc}
+{$I TDlgCfg.inc}
+{$I TDlgProg.inc}
+{$I TDlgPAdd.inc}
+{$I TDlgPEdit.inc}
+{$I TDlgPDelete.inc}
+{$I TDlgMenu.inc}
+{$I TDlgMAdd.inc}
+{$I TDlgMEdit.inc}
+{$I TDlgMDelete.inc}
+{$I TDlgLaunch.inc}
 
 {$UNDEF INTERFACE}
 
@@ -35,16 +36,17 @@ uses EConst, ECache, EPGM;
 
 {$DEFINE IMPLEMENTATION}
 
-{$I TDLGOpts.inc}
-{$I TDLGCfg.inc}
-{$I TDLGProg.inc}
-{$I TDLGPAdd.inc}
-{$I TDLGPEdit.inc}
-{$I TDLGPDelete.inc}
-{$I TDLGMenu.inc}
-{$I TDLGMAdd.inc}
-{$I TDLGMEdit.inc}
-{$I TDLGMDelete.inc}
+{$I TDlgOpts.inc}
+{$I TDlgCfg.inc}
+{$I TDlgProg.inc}
+{$I TDlgPAdd.inc}
+{$I TDlgPEdit.inc}
+{$I TDlgPDelete.inc}
+{$I TDlgMenu.inc}
+{$I TDlgMAdd.inc}
+{$I TDlgMEdit.inc}
+{$I TDlgMDelete.inc}
+{$I TDlgLaunch.inc}
 
 {$UNDEF IMPLEMENTATION}
 

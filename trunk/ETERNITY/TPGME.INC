@@ -36,6 +36,7 @@ type
 			FDlgPAdd, FDlgPEdit, FDlgPDel,
 			FDlgMAdd, FDlgMEdit, FDlgMDel,
 			FDlgPGMOpt, FDlgPGMCfg,
+			FDlgLaunch,
 			FDlgChangeLang, FDlgChangeTheme : PDialog;			
 			FFind : record
 				FLabel : PLabel;
@@ -77,6 +78,7 @@ type
 		function GetDlgMDelete : PControl; virtual;
 		function GetDlgPGMOpt : PControl; virtual;		
 		function GetDlgPGMCfg : PControl; virtual;
+		function GetDlgLaunch : PControl; virtual;
 		function GetReturnStr : String; virtual;		
 		procedure CreateAllDialogs(ConserveMemory : boolean); virtual;
 		procedure Restart; virtual;
@@ -210,6 +212,7 @@ begin
 	FDlgPGMCfg := nil;
 	FDlgChangeLang := nil;
 	FDlgChangeTheme := nil;
+	FDlgLaunch := nil;
 	FTimeOut := 0;
 	OldIdleProc := QCrt.IdleProc;
 	QCrt.IdleProc := PGMIdleProc;
@@ -831,6 +834,15 @@ begin
 	GetDlgPGMCfg := FDlgPGMCfg;
 end;
 
+function TPGME.GetDlgLaunch : PControl;
+begin
+	if Not Assigned(FDlgLaunch) then begin
+		FDlgLaunch := New(PDlgLaunch, Create(@Self, 'DIALOG.LAUNCH'));
+		ApplySettings(FDlgLaunch);
+	end;
+	GetDlgLaunch := FDlgLaunch;
+end;
+
 function TPGME.GetChangeLang;
 var
 	B : TBounds;
@@ -967,6 +979,8 @@ begin
 	if ConserveMemory then FreeDialog(PDialog(FDlgPGMOpt));
 	GetDlgPGMCfg;
 	if ConserveMemory then FreeDialog(PDialog(FDlgPGMCfg));
+	GetDlgLaunch;
+	if ConserveMemory then FreeDialog(PDialog(FDlgLaunch));
 	GetChangeLang('','');
 	if ConserveMemory then FreeDialog(PDialog(FDlgChangeLang));
 	GetChangeTheme('','');
