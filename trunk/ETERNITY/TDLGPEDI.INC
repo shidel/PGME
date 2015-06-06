@@ -43,8 +43,8 @@ var
 begin	
 	inherited Create(AParent, 'DIALOG.PROG.EDIT', False);
 	SetTitle('Edit Program');
-	SetHelpText('');
-	AddHelpText('');
+	SetHelpText('The "Edit Program" dialog box is for updating the currently');
+	AddHelpText('selected program.');
 end;
 
 destructor TDlgPEdit.Destroy;
