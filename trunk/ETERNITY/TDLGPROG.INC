@@ -226,6 +226,8 @@ begin
 			end;
 			cmBrowseExec : begin
 				ClearEvent(AEvent);
+				PGME.GetDlgLaunch;
+				PGME.FDlgLaunch^.ShowModal;
 				UpdateData;
 			end;
 		end;
