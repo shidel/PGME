@@ -69,7 +69,7 @@ begin
 	TextAttr := ColorEdit;
 	FEditTitle := New(PEdit, Create(@Self, 'TITLE.EDIT'));
 	with PEdit(FEditTitle)^ do begin
-		SetHelpText('Use the "Program Title" to enter the full title of');
+		SetHelpText('Use the "Program Title" field to enter the full title of');
 		AddHelpText('the programs menu title.');
 		SetBounds(B);
 		SetAnchors(abLeft or abRight or abTop);

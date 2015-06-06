@@ -42,9 +42,9 @@ var
 	B : TBounds;
 begin	
 	inherited Create(AParent, 'DIALOG.PROG.ADD', True);
-	SetTitle('New Program');
-	SetHelpText('');
-	AddHelpText('');
+	SetTitle('Add New Program');
+	SetHelpText('The "Add New Program" dialog box is for adding a program');
+	AddHelpText('to the current menu.');
 end;
 
 destructor TDlgPAdd.Destroy;
