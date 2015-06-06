@@ -1573,7 +1573,7 @@ begin
 	M.SetFileName(CMenu);
 	M.OpenSection('*');
 	M.SetValue('TITLE.' + Application^.FLanguageID, PDlgMAdd(FDlgMAdd)^.FEditShort^.GetCaption );
-	if trim(M.GetValue('TITLE', '')) = '' then 
+	if Trim(M.GetValue('TITLE', '')) = '' then 
 		M.SetValue('TITLE', PDlgMAdd(FDlgMAdd)^.FEditShort^.GetCaption );
 	M.SetValue('DESCRIPTION.' + Application^.FLanguageID, PDlgMAdd(FDlgMAdd)^.FEditLong^.GetCaption );
 	if Trim(M.GetValue('DESCRIPTION', '')) = '' then 
@@ -1616,17 +1616,15 @@ begin
 	M.Read;
 	M.OpenSection('*');
 	M.SetValue('TITLE.' + Application^.FLanguageID, PDlgMEdit(FDlgMEdit)^.FEditShort^.GetCaption );
-	if trim(M.GetValue('TITLE', '')) = '' then 
+	if Trim(M.GetValue('TITLE', '')) = '' then 
 		M.SetValue('TITLE', PDlgMEdit(FDlgMEdit)^.FEditShort^.GetCaption );
 	M.SetValue('DESCRIPTION.' + Application^.FLanguageID, PDlgMEdit(FDlgMEdit)^.FEditLong^.GetCaption );
-	if trim(M.GetValue('DESCRIPTION', '')) = '' then 
-		M.SetValue('DESCRIPTION', PDlgMEdit(FDlgMEdit)^.FEditLong^.GetCaption );
-	
+	if Trim(M.GetValue('DESCRIPTION', '')) = '' then 
+		M.SetValue('DESCRIPTION', PDlgMEdit(FDlgMEdit)^.FEditLong^.GetCaption );	
 	if Assigned(PDlgMEdit(FDlgMEdit)^.FLockToggle) then
 		if PDlgMEdit(FDlgMEdit)^.FLockToggle^.GetOn then
 			if PDlgMEdit(FDlgMEdit)^.FLockAccept^.GetState = 1 then
 				M.SetValue('WRITABLE', 'NO');
-		
 	M.Write;
 	M.Destroy;
 	StartDrawing;
@@ -1638,7 +1636,51 @@ begin
 end;
 
 procedure TPGME.AddProgram; 
+var
+	M : TConfigFile;
+	CMenu, CProg : String;
+	S : String;
+	I : Integer;
 begin
+	if not Assigned(FMenuCache) then exit;
+	if not (Assigned(FMenus) and Assigned(FMenus^.FCurrent)) then exit;
+	with PCacheMenu(FMenus^.FCurrent^.Data)^ do begin
+		CMenu := PCacheDir(Parent)^.GetNameID + GetNameID;
+	end;
+	M.Create('TEMP');
+	M.SetFileName(CMenu);
+	M.Read;
+	CProg := ReduceStr(	PDlgPAdd(FDlgPAdd)^.FEditTitle^.GetCaption, 10);
+	if M.FList.FindID(CProg) <> nil then begin
+		I := 0;
+		while M.FList.FindID(CProg + '-' + HexStr(I)) <> nil do Inc(I);
+		CProg := CProg + '-' + HexStr(I);
+	end;
+	M.OpenSection(CProg);
+	M.SetValue('TITLE.' + Application^.FLanguageID, PDlgPAdd(FDlgPAdd)^.FEditTitle^.GetCaption );
+	if Trim(M.GetValue('TITLE', '')) = '' then 
+		M.SetValue('TITLE', PDlgPAdd(FDlgPAdd)^.FEditTitle^.GetCaption );	
+		
+	S := CMenu;
+	Delete(S, 1, LastPos('\', S));
+	S := Copy(S, 1, Pos('.', S) - 1);
+	
+	M.SetValue('GROUP', S);
+	M.SetValue('CLASS', 'PROGRAM');
+	M.SetValue('MAXAVAIL', BoolStr(PDlgPAdd(FDlgPAdd)^.FMaxAvail^.GetOn));
+	M.SetValue('SIMPLE', BoolStr(not (PDlgPAdd(FDlgPAdd)^.FMaxAvail^.GetOn)));
+	M.SetValue('RETURN', BoolStr(PDlgPAdd(FDlgPAdd)^.FReturn^.GetOn));
+	M.SetValue('FILE', '');
+	M.SetValue('TONE', FEndTone);
+
+	M.Write;
+	M.Destroy;
+	StartDrawing;
+	UpdateMenuCache;
+	SelectMenu(CMenu);
+	SelectProg(CProg);
+	FMenus^.Update;
+	FinishDrawing;
 end;
 
 procedure TPGME.ModifyProgram; 
