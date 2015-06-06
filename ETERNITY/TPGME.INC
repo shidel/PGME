@@ -1666,8 +1666,8 @@ begin
 		end;
 	end else 
 		AMenu.DeleteKey('COMMANDS');
-
-	{ AMenu.SetValue('TONE', FEndTone);	}
+	if Assigned(PDlgProg(ADlg)^.FEditTones) then
+		AMenu.SetValue('TONE', PDlgProg(ADlg)^.FEditTones^.GetCaption);	
 end;
 
 procedure TPGME.AddProgram; 
