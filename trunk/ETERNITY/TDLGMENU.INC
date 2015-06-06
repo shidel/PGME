@@ -169,7 +169,7 @@ begin
 	Inc(B.Top, 2);
 	FOK := New(PButton, Create(@Self, 'BUTTON.OK'));
 	with PButton(FOK)^ do begin
-		B.Left := B.Left + B.Width div 2 - 7;
+		B.Left := B.Left + B.Width div 2 - 6;
 		B.Width := 14;
 		SetBounds(B);
 		SetAnchors(abLeft or abRight or abTop);
