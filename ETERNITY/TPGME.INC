@@ -1641,6 +1641,7 @@ var
 	CMenu, CProg : String;
 	S : String;
 	I : Integer;
+	Simple : boolean;
 begin
 	if not Assigned(FMenuCache) then exit;
 	if not (Assigned(FMenus) and Assigned(FMenus^.FCurrent)) then exit;
@@ -1666,12 +1667,22 @@ begin
 	S := Copy(S, 1, Pos('.', S) - 1);
 	
 	M.SetValue('GROUP', S);
-	M.SetValue('CLASS', 'PROGRAM');
 	M.SetValue('MAXAVAIL', BoolStr(PDlgPAdd(FDlgPAdd)^.FMaxAvail^.GetOn));
-	M.SetValue('SIMPLE', BoolStr(not (PDlgPAdd(FDlgPAdd)^.FMaxAvail^.GetOn)));
 	M.SetValue('RETURN', BoolStr(PDlgPAdd(FDlgPAdd)^.FReturn^.GetOn));
-	M.SetValue('FILE', '');
+	Simple := (Not PDlgPAdd(FDlgPAdd)^.FMaxAvail^.GetOn);
+	M.SetValue('FILE', 'ATOM.SCR');
 	M.SetValue('TONE', FEndTone);
+	
+	S := UCase(FileExtension(M.GetValue('FILE', '')));
+	if (S = 'EXE') or (S = 'COM') then 
+		M.SetValue('CLASS', 'PROGRAM')
+	else if (S = 'SCR') then 
+		M.SetValue('CLASS', 'ESAVER')
+	else begin
+		M.SetValue('CLASS', 'OTHER');
+		Simple := False;
+	end;
+	M.SetValue('SIMPLE', BoolStr(Simple));
 
 	M.Write;
 	M.Destroy;
