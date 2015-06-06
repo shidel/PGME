@@ -92,6 +92,7 @@ type
 		procedure AddProgram; virtual;
 		procedure ModifyMenu; virtual;
 		procedure ModifyProgram; virtual;
+		procedure UpdateProgram(AMenu : TConfigFile; ADlg : PDialog); virtual;
 	end;   
 
 { Some Global Variables }	
@@ -1635,13 +1636,46 @@ begin
 	FinishDrawing;
 end;
 
+procedure TPGME.UpdateProgram(AMenu : TConfigFile; ADlg : PDialog);
+var
+	P, K : PListItem;
+begin
+	AMenu.SetValue('TITLE.' + Application^.FLanguageID, 
+		PDlgProg(ADlg)^.FEditTitle^.GetCaption );
+	AMenu.SetValue('FILE', PDlgPAdd(ADlg)^.FFile);
+
+	if Trim(AMenu.GetValue('TITLE', '')) = '' then 
+		AMenu.SetValue('TITLE', PDlgProg(ADlg)^.FEditTitle^.GetCaption );			
+	if StrBool(AMenu.GetValue('MAXAVAIL', 'False')) <> PDlgProg(ADlg)^.FMaxAvail^.GetOn then
+		AMenu.SetValue('MAXAVAIL', BoolStr(PDlgProg(ADlg)^.FMaxAvail^.GetOn));
+	if StrBool(AMenu.GetValue('RETURN', 'True')) <> PDlgProg(ADlg)^.FReturn^.GetOn then
+		AMenu.SetValue('RETURN', BoolStr(PDlgProg(ADlg)^.FReturn^.GetOn));
+	if StrBool(AMenu.GetValue('SIMPLE', 'True')) <> PDlgProg(ADlg)^.FSimple then
+		AMenu.SetValue('SIMPLE', BoolStr(PDlgProg(ADlg)^.FSimple));
+	if StrBool(AMenu.GetValue('PGMVARS', 'False')) <> PDlgProg(ADlg)^.FPGMVars then
+		AMenu.SetValue('PGMVARS', BoolStr(PDlgProg(ADlg)^.FPGMVars));
+	if AMenu.GetValue('CLASS', '') = '' then
+		AMenu.SetValue('CLASS', PDlgPAdd(ADlg)^.FClass);
+	if PDlgProg(ADlg)^.FCommands.Count > 0 then begin
+		AMenu.SetValue('COMMANDS', '');
+		K := AMenu.FindKey('COMMANDS');
+		P := PDlgProg(ADlg)^.FCommands.First;
+		while Assigned(P) and Assigned(K) do begin
+			K^.Add(New(PListItem, Create(P^.GetNameID)));
+			P := P^.Next;
+		end;
+	end else 
+		AMenu.DeleteKey('COMMANDS');
+
+	{ AMenu.SetValue('TONE', FEndTone);	}
+end;
+
 procedure TPGME.AddProgram; 
 var
 	M : TConfigFile;
 	CMenu, CProg : String;
 	S : String;
 	I : Integer;
-	Simple : boolean;
 begin
 	if not Assigned(FMenuCache) then exit;
 	if not (Assigned(FMenus) and Assigned(FMenus^.FCurrent)) then exit;
@@ -1658,32 +1692,11 @@ begin
 		CProg := CProg + '-' + HexStr(I);
 	end;
 	M.OpenSection(CProg);
-	M.SetValue('TITLE.' + Application^.FLanguageID, PDlgPAdd(FDlgPAdd)^.FEditTitle^.GetCaption );
-	if Trim(M.GetValue('TITLE', '')) = '' then 
-		M.SetValue('TITLE', PDlgPAdd(FDlgPAdd)^.FEditTitle^.GetCaption );	
-		
 	S := CMenu;
 	Delete(S, 1, LastPos('\', S));
 	S := Copy(S, 1, Pos('.', S) - 1);
-	
 	M.SetValue('GROUP', S);
-	M.SetValue('MAXAVAIL', BoolStr(PDlgPAdd(FDlgPAdd)^.FMaxAvail^.GetOn));
-	M.SetValue('RETURN', BoolStr(PDlgPAdd(FDlgPAdd)^.FReturn^.GetOn));
-	Simple := (Not PDlgPAdd(FDlgPAdd)^.FMaxAvail^.GetOn);
-	M.SetValue('FILE', 'ATOM.SCR');
-	M.SetValue('TONE', FEndTone);
-	
-	S := UCase(FileExtension(M.GetValue('FILE', '')));
-	if (S = 'EXE') or (S = 'COM') then 
-		M.SetValue('CLASS', 'PROGRAM')
-	else if (S = 'SCR') then 
-		M.SetValue('CLASS', 'ESAVER')
-	else begin
-		M.SetValue('CLASS', 'OTHER');
-		Simple := False;
-	end;
-	M.SetValue('SIMPLE', BoolStr(Simple));
-
+	UpdateProgram(M, FDlgPAdd);
 	M.Write;
 	M.Destroy;
 	StartDrawing;
@@ -1695,7 +1708,30 @@ begin
 end;
 
 procedure TPGME.ModifyProgram; 
+var
+	M : TConfigFile;
+	CMenu, CProg : String;
 begin
+	if not Assigned(FMenuCache) then exit;
+	if not (Assigned(FMenus) and Assigned(FMenus^.FCurrent) and 
+	Assigned(FPrograms) and Assigned(FPrograms^.FCurrent)) then exit;
+	with PCacheApp(FPrograms^.FCurrent^.Data)^ do begin
+		CMenu := PCacheDir(Parent^.Parent)^.GetNameID + PCacheMenu(Parent)^.GetNameID; 
+		CProg := GetNameID;
+	end;
+	M.Create('TEMP');
+	M.SetFileName(CMenu);
+	M.Read;
+	M.OpenSection(CProg);
+	UpdateProgram(M, FDlgPEdit);
+	M.Write;
+	M.Destroy;
+	StartDrawing;
+	UpdateMenuCache;
+	SelectMenu(CMenu);
+	SelectProg(CProg);
+	FMenus^.Update;
+	FinishDrawing;
 end;
 
 procedure TPGME.CheckLocal(var AEvent : TEvent); 

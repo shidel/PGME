@@ -20,6 +20,9 @@ type
     		FEditTitle : PEdit;
     		FMaxAvail, FReturn : PToggle;
     		FOK : PButton;
+    		FFile, FClass : String;
+    		FSimple, FPGMVars : boolean;
+    		FCommands : TListItem;
 		function  ObjectClass ( AName : String ) : String; virtual;
     public { protected }
 		procedure CheckLocal(var AEvent : TEvent); virtual;
@@ -28,6 +31,7 @@ type
 		constructor Create(AParent : PControl; AName : String; ANewProg : boolean);
 		destructor Destroy; virtual;
 		procedure SetData(AItem : PListItem); virtual;
+		procedure UpdateData; virtual;
 	end;   
 
 {$ENDIF}
@@ -136,27 +140,37 @@ begin
 		else
 			SetCaption('Update');
 		SetCommand(cmOK);
-		
 	end;
+	FCommands.Create('COMMANDS');
 end;
 
 destructor TDlgProg.Destroy;
 begin
+	FCommands.Destroy;
 	inherited Destroy;
 end;
 
 procedure TDlgProg.CheckLocal(var AEvent : TEvent);
 begin
 	inherited CheckLocal(AEvent);
+	UpdateData;
 end;
 
 procedure TDlgProg.BeforeShow;
 begin
 	inherited BeforeShow;
+	UpdateData;
 end;
 
 procedure TDlgProg.SetData(AItem : PListItem);
+var
+	P : PListItem;
 begin
+	FCommands.Clear;
+	FPGMVars := False;
+	FSimple := True;
+	FClass := '';
+	FFile := '';
 	FEditTitle^.SetCaption('');
 	FMaxAvail^.SetOn(False);
 	FReturn^.SetOn(True);
@@ -168,7 +182,36 @@ begin
 		FEditTitle^.SetCaption(Title);	
 		FMaxAvail^.SetOn(MaxMemory);
 		FReturn^.SetOn(ReturnAfter);
+		FFile := FileName;
+		FClass := ClassName;
+		FPGMVars := PGMVars;
+		P := PCacheApp(AItem^.Data)^.First;
+		while Assigned(P) do begin
+			FCommands.Add(New(PListItem, Create(P^.GetNameID)));
+			P := P^.Next;
+		end;
 	end;
+	UpdateData;
+end;
+
+procedure TDlgProg.UpdateData;
+var
+	S : String;
+begin
+	FSimple := (Not FMaxAvail^.GetOn) and (FCommands.Count = 0);
+	
+	S := UCase(FileExtension(FFile));
+	if (S = 'EXE') or (S = 'COM') then 
+		FClass := 'PROGRAM'
+	else if (S = 'SCR') then 
+		FClass := 'ESAVER'
+	else if (S = 'TXT') or (S = 'DOC') or (S = 'ME') then 
+		FClass := 'DOCUMENT'
+	else begin
+		FClass := 'OTHER';
+		FSimple := False;
+	end;
+	FOK^.SetEnabled(Trim(FFile) <> '');
 end;
 
 {$ENDIF}
