@@ -40,7 +40,7 @@ end;
 
 constructor TDlgLaunch.Create;
 const
-	ColorLabel = $70;
+	ColorLabel = $3E;
 	ColorEdit = $1E;
 	ColorFile = $71;
 	ColorOK = $2E;
@@ -49,9 +49,11 @@ const
 	ColorLaunch = $3E;
 var
 	B, T : TBounds;
-begin	
+begin
+	TextAttr := $3E;
 	inherited Create(AParent, AName);
 	Bounds(1,1,55,15, B);
+	SetBackGround($3);
 	if AParent^.Height > 18 then begin
 		Inc(B.Height, 2);
 	end;
@@ -76,7 +78,7 @@ begin
 		B.Width := 14;
 		SetBounds(B);
 		SetAnchors(abLeft or abRight or abTop);
-		SetCaption('Apply');
+		SetCaption('Done');
 		SetCommand(cmOK);
 	end;
 end;
