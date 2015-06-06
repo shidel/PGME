@@ -11,8 +11,8 @@ unit ECache;
 
 interface
 
-	uses QCrt, QErrors, QStrings, QDos, QFiles, QClass, QObjects, QControls, QFmtStr,
-		EConst;
+uses QCrt, QErrors, QStrings, QDos, QFiles, QClass, QObjects, QControls, QFmtStr,
+	EConst;
 
 {$DEFINE INTERFACE}
 
