@@ -14,6 +14,11 @@ const
 	class_TDlgProg = 'TDlgProg';
 
 type 
+	PDlgLaunchFwd =^TDlgLaunchFwd;
+	TDlgLaunchFwd = object(TDialog)
+		procedure SetData(ADlg : PDialog); virtual;
+	end;
+	
 	PDlgProg = ^TDlgProg;
 	TDlgProg = object (TDIALOG)
     public { protected }	
@@ -37,6 +42,10 @@ type
 {$ENDIF}
 
 {$IFDEF IMPLEMENTATION}
+procedure TDlgLaunchFwd.SetData;
+begin
+end;
+
 function TDlgProg.ObjectClass(AName : String) : String; 
 begin
 	if (AName = '') or (AName = class_TDlgProg) then 
@@ -216,6 +225,8 @@ begin
 end;
 
 procedure TDlgProg.CheckLocal(var AEvent : TEvent);
+var 
+	P : PDialog;
 begin
 	inherited CheckLocal(AEvent);
 	if AEvent.What = evCommand then 
@@ -226,7 +237,8 @@ begin
 			end;
 			cmBrowseExec : begin
 				ClearEvent(AEvent);
-				PGME.GetDlgLaunch;
+				P := PDialog(PGME.GetDlgLaunch);
+				PDlgLaunchFwd(P)^.SetData(@Self);
 				PGME.FDlgLaunch^.ShowModal;
 				UpdateData;
 			end;
