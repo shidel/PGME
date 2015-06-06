@@ -15,7 +15,7 @@ const
 
 type 
 	PDlgLaunch = ^TDlgLaunch;
-	TDlgLaunch = object (TDIALOG)
+	TDlgLaunch = object (TDlgLaunchFwd)
     public { protected }	
     		FOK : PButton;
 		function  ObjectClass ( AName : String ) : String; virtual;
@@ -25,6 +25,7 @@ type
 	public
 		constructor Create(AParent : PControl; AName : String);
 		destructor Destroy; virtual;
+		procedure SetData(ADlg : PDialog); virtual;
 	end;   
 
 {$ENDIF}
@@ -40,7 +41,7 @@ end;
 
 constructor TDlgLaunch.Create;
 const
-	ColorLabel = $3E;
+	ColorLabel = $70;
 	ColorEdit = $1E;
 	ColorFile = $71;
 	ColorOK = $2E;
@@ -50,17 +51,27 @@ const
 var
 	B, T : TBounds;
 begin
-	TextAttr := $3E;
+	{ TextAttr := $3E; }
 	inherited Create(AParent, AName);
+	FAutoEndModal := True;
 	Bounds(1,1,55,15, B);
-	SetBackGround($3);
+	{ SetBackGround($3); }
 	if AParent^.Height > 18 then begin
 		Inc(B.Height, 2);
 	end;
 	SetBounds(B);					
-	FAutoEndModal := True;
-	SetBounds(B);
-	Bounds(3,2,47,1, B);		
+
+	TextAttr := ColorOK;
+	FOK := New(PButton, Create(@Self, 'BUTTON.OK'));
+	with PButton(FOK)^ do begin
+		Bounds(B.Left + B.Width - 20, B.Top + B.Height - 5, 14, 1, B);
+		SetBounds(B);
+		SetAnchors(abRight or abTop);
+		SetCaption('Done');
+		SetCommand(cmOK);
+	end;
+
+{	Bounds(3,2,47,1, B);		
 	TextAttr := ColorLabel;
 	with PLabel(New(PLabel, Create(@Self, 'TITLE.LABEL')))^ do begin
 		SetBounds(B);
@@ -68,19 +79,7 @@ begin
 		FHAlign := AlignLeft;
 		SetCaption('Program Title:');
 	end;
-	Inc(B.Top);
-
-	TextAttr := ColorOK;
-	Inc(B.Top, 2);
-	FOK := New(PButton, Create(@Self, 'BUTTON.OK'));
-	with PButton(FOK)^ do begin
-		B.Left := B.Left + B.Width div 2 - 6;
-		B.Width := 14;
-		SetBounds(B);
-		SetAnchors(abLeft or abRight or abTop);
-		SetCaption('Done');
-		SetCommand(cmOK);
-	end;
+}
 end;
 
 destructor TDlgLaunch.Destroy;
@@ -99,6 +98,14 @@ end;
 procedure TDlgLaunch.BeforeShow;
 begin
 	inherited BeforeShow;
+end;
+
+procedure TDlgLaunch.SetData(ADlg : PDialog);
+begin
+	SetTitle('');
+	if Assigned(ADlg) then begin
+		SetTitle(PDlgProg(ADlg)^.FEditTitle^.GetCaption);
+	end;
 end;
 
 {$ENDIF}
