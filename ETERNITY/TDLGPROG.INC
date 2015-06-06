@@ -53,6 +53,7 @@ const
 	ColorOK = $2E;
 	ColorToggle = $0F;
 	ColorAccept = $74;
+	ColorLaunch = $3E;
 var
 	B, T : TBounds;
 begin	
@@ -126,12 +127,42 @@ begin
 		SetAnchors(abRight or abTop);
 		SetOn(True);
 	end;
+	
+	Inc(B.Top, 2);
+	TextAttr := ColorLabel;
+	with PLabel(New(PLabel, Create(@Self, 'LAUNCH.LABEL')))^ do begin
+		T := B;
+		T.Width := T.Width - 14;
+		SetBounds(T);
+		SetAnchors(abLeft or abRight or abTop);
+		FHAlign := AlignLeft;
+		if ANewProg then 
+			SetCaption('Select program to launch:')
+		else
+			SetCaption('Change program to launch:');		
+	end;
+	TextAttr := ColorLaunch;
+	with PButton(New(PButton, Create(@Self, 'LAUNCH.BUTTON')))^ do begin
+		SetHelpText('The "Return to PGM Eternity" toggle is rather straight forward.');
+		AddHelpText('After the menu entry has completed running, the "ON" setting');
+		AddHelpText('will return you to PGME. If it is "OFF", you will return to the');
+		AddHelpText('command line.');
+		T.Left := T.Left + T.Width;
+		T.Width := B.Width + B.Left - T.Left;
+		SetBounds(T);
+		SetAnchors(abRight or abTop);
+		if ANewProg then 
+			SetCaption('Select')
+		else
+			SetCaption('Modify');
+		SetCommand(cmEditFile)
+	end;
 
 	TextAttr := ColorOK;
 	Inc(B.Top, 2);
 	FOK := New(PButton, Create(@Self, 'BUTTON.OK'));
 	with PButton(FOK)^ do begin
-		B.Left := B.Left + B.Width div 2 - 7;
+		B.Left := B.Left + B.Width div 2 - 6;
 		B.Width := 14;
 		SetBounds(B);
 		SetAnchors(abLeft or abRight or abTop);
