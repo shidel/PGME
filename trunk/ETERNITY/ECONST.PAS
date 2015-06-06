@@ -36,6 +36,8 @@ const
 	cmBrowseFont = cmBrowseTheme + 1;
 	cmBrowseESaver = cmBrowseFont + 1;
 	cmBrowseLang = cmBrowseESaver + 1;
+
+	cmBrowseExec = cmBrowseLang + 1;
 		
 	ftMenu	= 'MENU';
 

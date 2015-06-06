@@ -17,7 +17,7 @@ type
 	PDlgProg = ^TDlgProg;
 	TDlgProg = object (TDIALOG)
     public { protected }	
-    		FEditTitle : PEdit;
+    		FEditTitle, FEditTones : PEdit;
     		FMaxAvail, FReturn : PToggle;
     		FOK : PButton;
     		FFile, FClass : String;
@@ -59,6 +59,10 @@ var
 begin	
 	inherited Create(AParent, AName);
 	Bounds(1,1,55,15, B);
+	FEditTones := nil;
+	if AParent^.Height > 18 then begin
+		Inc(B.Height, 2);
+	end;
 	SetBounds(B);					
 	FAutoEndModal := True;
 	SetBounds(B);
@@ -143,10 +147,12 @@ begin
 	end;
 	TextAttr := ColorLaunch;
 	with PButton(New(PButton, Create(@Self, 'LAUNCH.BUTTON')))^ do begin
-		SetHelpText('The "Return to PGM Eternity" toggle is rather straight forward.');
-		AddHelpText('After the menu entry has completed running, the "ON" setting');
-		AddHelpText('will return you to PGME. If it is "OFF", you will return to the');
-		AddHelpText('command line.');
+		if ANewProg then 
+			SetHelpText('Use the "Select" program to launch button to configure')
+		else
+			SetHelpText('Use the "Modify" program to launch button to alter');
+		AddHelpText('the program(s) you wish to execute when PGME');
+		AddHelpText('launches this programs menu item.');
 		T.Left := T.Left + T.Width;
 		T.Width := B.Width + B.Left - T.Left;
 		SetBounds(T);
@@ -155,7 +161,35 @@ begin
 			SetCaption('Select')
 		else
 			SetCaption('Modify');
-		SetCommand(cmEditFile)
+		SetCommand(cmBrowseExec)
+	end;
+	
+	if Height > 15 then begin
+		Inc(B.Top, 2);
+		TextAttr := ColorLabel;
+		with PLabel(New(PLabel, Create(@Self, 'TONE.LABEL')))^ do begin
+			T := B;
+			T.Width := 14;
+			SetBounds(T);
+			SetAnchors(abLeft or abRight or abTop);
+			FHAlign := AlignLeft;
+			SetCaption('Launch Tones:')
+		end;
+		TextAttr := ColorEdit;
+		FEditTones := New(PEdit, Create(@Self, 'TONE.EDIT'));
+		with PEdit(FEditTones)^ do begin
+			SetHelpText('Use the "Launch Tones" field to set the tones played when');
+			AddHelpText('this menu entry is launched. If this is left blank, PGME');
+			AddHelpText('will just play the default launching tones.');
+			AddHelpText('Custom tones are "Frequency:Duration[,...]" The');
+			AddHelpText('duration is value of 0 or larger and is 1/18th of a second');
+			AddHelpText('(or about 1000 bpm). If you wish this entry to make no');
+			AddHelpText('sound, just use "0:0" (No Frequency:No Duration) as its tone.');
+			T.Left := T.Left + T.Width;
+			T.Width := B.Width + B.Left - T.Left;
+			SetBounds(T);
+			SetAnchors(abRight or abTop);
+		end;
 	end;
 
 	TextAttr := ColorOK;
@@ -184,7 +218,17 @@ end;
 procedure TDlgProg.CheckLocal(var AEvent : TEvent);
 begin
 	inherited CheckLocal(AEvent);
-	UpdateData;
+	if AEvent.What = evCommand then 
+		case AEvent.Command of
+			cmEdit : if Assigned(FEditTones) and (AEvent.InfoPtr = FEditTones) then begin
+				ClearEvent(AEvent);
+				SpeakerPlay(FEditTones^.GetCaption);
+			end;
+			cmBrowseExec : begin
+				ClearEvent(AEvent);
+				UpdateData;
+			end;
+		end;
 end;
 
 procedure TDlgProg.BeforeShow;
@@ -221,6 +265,8 @@ begin
 			FCommands.Add(New(PListItem, Create(P^.GetNameID)));
 			P := P^.Next;
 		end;
+		if Assigned(FEditTones) then
+			FEditTones^.SetCaption(Tone);	
 	end;
 	UpdateData;
 end;
