@@ -23,6 +23,7 @@ type
     public { protected }
 		procedure CheckLocal(var AEvent : TEvent); virtual;
 		procedure BeforeShow; virtual;
+		procedure UpdateButtons; virtual;
 	public
 		constructor Create(AParent : PControl; AName : String);
 		destructor Destroy; virtual;
@@ -131,6 +132,13 @@ begin
 	inherited BeforeShow;
 end;
 
+procedure TDlgLaunch.UpdateButtons;
+begin
+	FRemove^.SetEnabled(Assigned(FProc^.FCurrent));
+	FModify^.SetEnabled(Assigned(FProc^.FCurrent));
+	FClear^.SetEnabled(FProc^.FItems.Count > 0);
+end;
+
 procedure TDlgLaunch.CheckLocal(var AEvent : TEvent);
 begin
 	inherited CheckLocal(AEvent);
@@ -145,6 +153,7 @@ begin
 	if Assigned(ADlg) then begin
 		SetTitle(PDlgProg(ADlg)^.FEditTitle^.GetCaption);
 	end;
+	UpdateButtons;
 end;
 
 {$ENDIF}
