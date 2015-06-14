@@ -140,11 +140,26 @@ begin
 end;
 
 procedure TDlgLaunch.CheckLocal(var AEvent : TEvent);
+var
+	PDlg, POpt : PDialog;
+	R, R2 : integer;
 begin
 	inherited CheckLocal(AEvent);
-{	if AEvent.What = evCommand then 
+	if AEvent.What = evCommand then 
 		case AEvent.Command of
-		end;}
+			cmAdd : begin
+				POpt := nil;
+				PDlg := PDialog(PGME.GetDlgFindExec);
+				R := PDlg^.ShowModal;
+				R2 := mrCancel;
+				if R = mrOK then begin
+					POpt := PDialog(PGME.GetDlgOptExec);
+					PDlgExecOpt(POpt)^.SetData(nil);
+					R2 := POpt^.ShowModal;
+				end;
+				
+			end;
+		end;
 end;
 
 procedure TDlgLaunch.SetData(ADlg : PDialog);

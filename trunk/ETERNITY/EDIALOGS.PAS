@@ -12,7 +12,7 @@ unit EDialogs;
 interface
 
 uses QCrt, QErrors, QStrings, QDos, QFiles, QClass, QObjects, QControls, QFmtStr, 
-	QSpeaker, QDirCntl;
+	QSpeaker, QDirCntl, QFileDlg;
 	
 {$DEFINE INTERFACE}
 
@@ -26,6 +26,7 @@ uses QCrt, QErrors, QStrings, QDos, QFiles, QClass, QObjects, QControls, QFmtStr
 {$I TDlgMAdd.inc}
 {$I TDlgMEdit.inc}
 {$I TDlgMDelete.inc}
+{$I TDlgExecOpt.inc}
 {$I TDlgLaunch.inc}
 
 {$UNDEF INTERFACE}
@@ -46,6 +47,7 @@ uses EConst, ECache, EPGM;
 {$I TDlgMAdd.inc}
 {$I TDlgMEdit.inc}
 {$I TDlgMDelete.inc}
+{$I TDlgExecOpt.inc}
 {$I TDlgLaunch.inc}
 
 {$UNDEF IMPLEMENTATION}
