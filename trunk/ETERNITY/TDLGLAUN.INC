@@ -16,8 +16,10 @@ const
 type 
 	PDlgLaunch = ^TDlgLaunch;
 	TDlgLaunch = object (TDlgLaunchFwd)
-    public { protected }	
-    		FOK : PButton;
+    public { protected }
+			FPath : PDirDropList;
+			FDirs : PDirList;
+    		FOK, FAdd : PButton;	
 		function  ObjectClass ( AName : String ) : String; virtual;
     public { protected }
 		procedure CheckLocal(var AEvent : TEvent); virtual;
@@ -53,8 +55,15 @@ var
 begin
 	{ TextAttr := $3E; }
 	inherited Create(AParent, AName);
+	FStyle := bxSingle;
+{	FMargin.Left := 0;
+	FMargin.Top := 0;
+	FMargin.Right:= 0;
+	FMargin.Bottom := 0; }
+	
 	FAutoEndModal := True;
 	Bounds(1,1,55,15, B);
+	
 	{ SetBackGround($3); }
 	if AParent^.Height > 18 then begin
 		Inc(B.Height, 2);
@@ -64,22 +73,30 @@ begin
 	TextAttr := ColorOK;
 	FOK := New(PButton, Create(@Self, 'BUTTON.OK'));
 	with PButton(FOK)^ do begin
-		Bounds(B.Left + B.Width - 20, B.Top + B.Height - 5, 14, 1, B);
-		SetBounds(B);
+		Bounds(B.Left + B.Width - 20, B.Top + B.Height - 5, 14, 1, T);
+		SetBounds(T);
 		SetAnchors(abRight or abTop);
 		SetCaption('Done');
 		SetCommand(cmOK);
 	end;
 
-{	Bounds(3,2,47,1, B);		
-	TextAttr := ColorLabel;
-	with PLabel(New(PLabel, Create(@Self, 'TITLE.LABEL')))^ do begin
+	Bounds(3,3, B.Width - 10, 10, T);
+	TextAttr := $1E;
+	FPath := New(PDirDropList, Create(@Self, 'PATH'));
+	with FPath^ do begin
 		SetBounds(B);
-		SetAnchors(abLeft or abRight or abTop);
-		FHAlign := AlignLeft;
-		SetCaption('Program Title:');
+		SetAnchors(abRight or abTop or ableft);
 	end;
-}
+	
+	Bounds(T.Left, T.Top + 2, T.Width, Height - T.Top - 4, T);
+	TextAttr := $1E;
+	FDirs := New(PDirList, Create(@Self, 'DIRECTORY'));
+	with FDirs^ do begin
+		SetBounds(T);
+		SetAnchors(abAll);
+		FFilter := '';
+	end;
+
 end;
 
 destructor TDlgLaunch.Destroy;
