@@ -46,6 +46,10 @@ var
 	B, T : TBounds;
 begin
 	inherited Create(AParent, AName);
+	SetHelpText('This is "Execution Process" editor.');
+	AddHelpText('');
+	AddHelpText('It provides the basic functionality to add, edit and remove items ');
+	AddHelpText('from a programs launch process.');
 	FStyle := bxSingle;	
 	FAutoEndModal := True;
 	Bounds(1,1,64,15, B);
@@ -67,6 +71,7 @@ begin
 	TextAttr := $17;
 	FProc := New(PListView, Create(@Self, 'PROCLIST'));
 	with FProc^ do begin
+		SetHelpText('The "Process List" shows the current launch process.');
 		Inc(T.Top, 2);
 		T.Height := B.Height - T.Top - 3;
 		SetBounds(T);
@@ -77,6 +82,7 @@ begin
 	TextAttr := $2E;
 	FAdd := New(PButton, Create(@Self, 'BUTTON.ADD'));
 	with FAdd^ do begin
+		SetHelpText('5;Use the "%0" button to add another executable to the process.');
 		SetBounds(T);
 		SetAnchors(abRight or abTop);
 		SetCaption('Add');
@@ -86,6 +92,7 @@ begin
 	TextAttr := $3E;
 	FModify := New(PButton, Create(@Self, 'BUTTON.OPTIONS'));
 	with FModify^ do begin
+		SetHelpText('5;Use the "%0" button to modify an executables command line parameters.');
 		SetBounds(T);
 		SetAnchors(abRight or abTop);
 		SetCaption('Options');
@@ -95,6 +102,7 @@ begin
 	TextAttr := $4E;
 	FRemove := New(PButton, Create(@Self, 'BUTTON.REMOVE'));
 	with FRemove^ do begin
+		SetHelpText('5;Use the "%0" button to remove a line from the process.');
 		SetBounds(T);
 		SetAnchors(abRight or abTop);
 		SetCaption('Remove');
@@ -104,6 +112,7 @@ begin
 	TextAttr := $4E;
 	FClear := New(PButton, Create(@Self, 'BUTTON.CLEAR'));
 	with FClear^ do begin
+		SetHelpText('5;Use the "%0" button to clear the entire process and start over.');
 		SetBounds(T);
 		SetAnchors(abRight or abTop);
 		SetCaption('Clear');
@@ -114,6 +123,7 @@ begin
 	TextAttr := $2E;
 	FOK := New(PButton, Create(@Self, 'BUTTON.OK'));
 	with FOK^ do begin
+		SetHelpText('5;Use the "%0" button accept all changes.');
 		SetBounds(T);
 		SetAnchors(abRight or abBottom);
 		SetCaption('Done');
@@ -154,7 +164,7 @@ begin
 				R2 := mrCancel;
 				if R = mrOK then begin
 					POpt := PDialog(PGME.GetDlgOptExec);
-					PDlgExecOpt(POpt)^.SetData(nil);
+					PDlgExecOpt(POpt)^.SetData(PDlg);
 					R2 := POpt^.ShowModal;
 				end;
 				

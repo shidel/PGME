@@ -854,6 +854,16 @@ begin
 	if Not Assigned(FDlgFindExec) then begin
 		FDlgFindExec := New(POpenDialog, Create(@Self, 'DIALOG.FINDEXEC'));
 		with POpenDialog(FDlgFindExec)^ do begin
+			SetHelpText('This is a standard "Select File" dialog box.');
+			AddHelpText('');
+			AddHelpText('You may use the dropdown path list to select one of the systems current');
+			AddHelpText('active directories. Or, you may type in one for direct access. Also,' );
+			AddHelpText('recently entered paths are stored into the list for quick selection.');
+			AddHelpText('');
+			AddHelpText('The filter list can be used filter the directory listings by file types.' );
+			AddHelpText('They will be sorted in the order listed. Also, if a filename is entered manually' );
+			AddHelpText('that contains wildcards, it will be added as a user filter.');
+			AddHelpText('');
 			FAutoEndModal := True;
 			SetTitle('Select Program');
 			FBOK.SetCaption('OK');
