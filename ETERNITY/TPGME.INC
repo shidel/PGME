@@ -1123,11 +1123,19 @@ const
 	I : word = 100;
 	S : word = 100;
 	L : longInt = 0;
+	F : boolean = false;
 var
 	Ticks : LongInt absolute $0040:$006c;
 	Hour, Min, Sec, Sec100 : word;
 begin
 	inherited Idle;
+	if Assigned(FMenus) then begin
+		if (FMenus^.FCurrent <> FLastMenu) and (not F) then begin
+			F := True;
+			PutCommand(cmNone, nil);
+		end else 
+			F := False;
+	end;
 	if (Not Assigned(Application)) or (Not Application^.GetVisible) then exit;
 	if Ticks = L then Exit;
 	L := Ticks;
@@ -1871,10 +1879,12 @@ begin
 		end; 
 
 	inherited CheckLocal(AEvent);
+	
 	if FLastMenu <> FMenus^.FCurrent then begin
 		OpenCurrentMenu;
 	end else if (FLastProgram <> FPrograms^.FCurrent) then
 		UpdateButtons;
+		
 	FLastMenu := FMenus^.FCurrent;
 	FLastProgram := FPrograms^.FCurrent;
 

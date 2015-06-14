@@ -17,9 +17,8 @@ type
 	PDlgLaunch = ^TDlgLaunch;
 	TDlgLaunch = object (TDlgLaunchFwd)
     public { protected }
-			FPath : PDirDropList;
-			FDirs : PDirList;
-    		FOK, FAdd : PButton;	
+			FProc	: PListView;
+    		FOK, FAdd, FClear, FModify, FRemove : PButton;	
 		function  ObjectClass ( AName : String ) : String; virtual;
     public { protected }
 		procedure CheckLocal(var AEvent : TEvent); virtual;
@@ -42,59 +41,82 @@ begin
 end;
 
 constructor TDlgLaunch.Create;
-const
-	ColorLabel = $70;
-	ColorEdit = $1E;
-	ColorFile = $71;
-	ColorOK = $2E;
-	ColorToggle = $0F;
-	ColorAccept = $74;
-	ColorLaunch = $3E;
 var
 	B, T : TBounds;
 begin
-	{ TextAttr := $3E; }
 	inherited Create(AParent, AName);
-	FStyle := bxSingle;
-{	FMargin.Left := 0;
-	FMargin.Top := 0;
-	FMargin.Right:= 0;
-	FMargin.Bottom := 0; }
-	
+	FStyle := bxSingle;	
 	FAutoEndModal := True;
-	Bounds(1,1,55,15, B);
+	Bounds(1,1,64,15, B);
 	
-	{ SetBackGround($3); }
 	if AParent^.Height > 18 then begin
 		Inc(B.Height, 2);
 	end;
 	SetBounds(B);					
 
-	TextAttr := ColorOK;
-	FOK := New(PButton, Create(@Self, 'BUTTON.OK'));
-	with PButton(FOK)^ do begin
-		Bounds(B.Left + B.Width - 20, B.Top + B.Height - 5, 14, 1, T);
+	TextAttr := $70;
+	with PLabel(New(PLabel, Create(@Self, 'LABEL')))^ do begin
+		Bounds(3, 2, 40, 1, T);
 		SetBounds(T);
 		SetAnchors(abRight or abTop);
-		SetCaption('Done');
-		SetCommand(cmOK);
-	end;
-
-	Bounds(3,3, B.Width - 10, 10, T);
-	TextAttr := $1E;
-	FPath := New(PDirDropList, Create(@Self, 'PATH'));
-	with FPath^ do begin
-		SetBounds(B);
-		SetAnchors(abRight or abTop or ableft);
+		SetCaption('Execution Process:');
+		FHAlign := AlignLeft;
 	end;
 	
-	Bounds(T.Left, T.Top + 2, T.Width, Height - T.Top - 4, T);
-	TextAttr := $1E;
-	FDirs := New(PDirList, Create(@Self, 'DIRECTORY'));
-	with FDirs^ do begin
+	TextAttr := $17;
+	FProc := New(PListView, Create(@Self, 'PROCLIST'));
+	with FProc^ do begin
+		Inc(T.Top, 2);
+		T.Height := B.Height - T.Top - 3;
 		SetBounds(T);
-		SetAnchors(abAll);
-		FFilter := '';
+	end;
+
+	Bounds(B.Left + B.Width - 20, 2, 14, 1, T);
+	Inc(T.Top, 2);
+	TextAttr := $2E;
+	FAdd := New(PButton, Create(@Self, 'BUTTON.ADD'));
+	with FAdd^ do begin
+		SetBounds(T);
+		SetAnchors(abRight or abTop);
+		SetCaption('Add');
+		SetCommand(cmAdd);
+	end;
+	Inc(T.Top, 2);
+	TextAttr := $3E;
+	FModify := New(PButton, Create(@Self, 'BUTTON.OPTIONS'));
+	with FModify^ do begin
+		SetBounds(T);
+		SetAnchors(abRight or abTop);
+		SetCaption('Options');
+		SetCommand(cmModify);
+	end;
+	Inc(T.Top, 2);
+	TextAttr := $4E;
+	FRemove := New(PButton, Create(@Self, 'BUTTON.REMOVE'));
+	with FRemove^ do begin
+		SetBounds(T);
+		SetAnchors(abRight or abTop);
+		SetCaption('Remove');
+		SetCommand(cmRemove);
+	end;
+	Inc(T.Top, 2);
+	TextAttr := $4E;
+	FClear := New(PButton, Create(@Self, 'BUTTON.CLEAR'));
+	with FClear^ do begin
+		SetBounds(T);
+		SetAnchors(abRight or abTop);
+		SetCaption('Clear');
+		SetCommand(cmClear);
+	end;
+
+	T.Top := B.Height - 4;
+	TextAttr := $2E;
+	FOK := New(PButton, Create(@Self, 'BUTTON.OK'));
+	with FOK^ do begin
+		SetBounds(T);
+		SetAnchors(abRight or abBottom);
+		SetCaption('Done');
+		SetCommand(cmOk);
 	end;
 
 end;
@@ -104,17 +126,17 @@ begin
 	inherited Destroy;
 end;
 
+procedure TDlgLaunch.BeforeShow;
+begin
+	inherited BeforeShow;
+end;
+
 procedure TDlgLaunch.CheckLocal(var AEvent : TEvent);
 begin
 	inherited CheckLocal(AEvent);
 {	if AEvent.What = evCommand then 
 		case AEvent.Command of
 		end;}
-end;
-
-procedure TDlgLaunch.BeforeShow;
-begin
-	inherited BeforeShow;
 end;
 
 procedure TDlgLaunch.SetData(ADlg : PDialog);

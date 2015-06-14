@@ -150,16 +150,16 @@ begin
 		SetAnchors(abLeft or abRight or abTop);
 		FHAlign := AlignLeft;
 		if ANewProg then 
-			SetCaption('Select program to launch:')
+			SetCaption('Select program launch process:')
 		else
-			SetCaption('Change program to launch:');		
+			SetCaption('Change program launch process:');		
 	end;
 	TextAttr := ColorLaunch;
 	with PButton(New(PButton, Create(@Self, 'LAUNCH.BUTTON')))^ do begin
 		if ANewProg then 
-			SetHelpText('Use the "Select" program to launch button to configure')
+			SetHelpText('Use the "Select" program launch process button to configure')
 		else
-			SetHelpText('Use the "Modify" program to launch button to alter');
+			SetHelpText('Use the "Modify" program launch process button to alter');
 		AddHelpText('the program(s) you wish to execute when PGME');
 		AddHelpText('launches this programs menu item.');
 		T.Left := T.Left + T.Width;
