@@ -36,7 +36,8 @@ type
 			FDlgPAdd, FDlgPEdit, FDlgPDel,
 			FDlgMAdd, FDlgMEdit, FDlgMDel,
 			FDlgPGMOpt, FDlgPGMCfg,
-			FDlgLaunch,
+			FDlgLaunch, 
+			FDlgFindExec, FDlgOptExec,
 			FDlgChangeLang, FDlgChangeTheme : PDialog;			
 			FFind : record
 				FLabel : PLabel;
@@ -79,6 +80,8 @@ type
 		function GetDlgPGMOpt : PControl; virtual;		
 		function GetDlgPGMCfg : PControl; virtual;
 		function GetDlgLaunch : PControl; virtual;
+		function GetDlgFindExec : PControl; virtual;
+		function GetDlgOptExec : PControl; virtual;
 		function GetReturnStr : String; virtual;		
 		procedure CreateAllDialogs(ConserveMemory : boolean); virtual;
 		procedure Restart; virtual;
@@ -843,6 +846,50 @@ begin
 	GetDlgLaunch := FDlgLaunch;
 end;
 
+function TPGME.GetDlgFindExec : PControl;
+var
+	S : String;
+	P : PListItem;
+begin
+	if Not Assigned(FDlgFindExec) then begin
+		FDlgFindExec := New(POpenDialog, Create(@Self, 'DIALOG.FINDEXEC'));
+		with POpenDialog(FDlgFindExec)^ do begin
+			FAutoEndModal := True;
+			SetTitle('Select Program');
+			FBOK.SetCaption('OK');
+			FBMKDir.SetVisible(False);
+			AddFilter('Executable (*.EXE;*.COM;*.BAT)');
+			AddFilter('Screen Saver (*.SCR)');
+			FConfig.OpenSection(Self.GetPathID +'.VIEWERS');
+			S := '';
+			if Assigned(FConfig.FSectionKey) then begin
+				P := FConfig.FSectionKey^.First;
+				while Assigned(P) do begin
+					if S <> '' then S := S + ';';
+					S := S + '*.' + P^.GetNameID;
+					P := P^.Next;
+				end;
+			end;
+			if S <> '' then 
+				AddFilter('Viewable (' + S + ')');
+			AddFilter('All Files (*.*)');
+		end;
+		ApplySettings(FDlgFindExec);
+		
+	end;
+	GetDlgFindExec := FDlgFindExec;
+end;
+
+function TPGME.GetDlgOptExec : PControl;
+begin
+	if Not Assigned(FDlgOptExec) then begin
+		FDlgOptExec := New(PDlgExecOpt, Create(@Self, 'DIALOG.OPTEXEC'));
+		ApplySettings(FDlgOptExec);
+		
+	end;
+	GetDlgOptExec := FDlgOptExec;
+end;
+
 function TPGME.GetChangeLang;
 var
 	B : TBounds;
@@ -981,6 +1028,10 @@ begin
 	if ConserveMemory then FreeDialog(PDialog(FDlgPGMCfg));
 	GetDlgLaunch;
 	if ConserveMemory then FreeDialog(PDialog(FDlgLaunch));
+	GetDlgFindExec;
+	if ConserveMemory then FreeDialog(PDialog(FDlgFindExec));
+	GetDlgOptExec;
+	if ConserveMemory then FreeDialog(PDialog(FDlgOptExec));
 	GetChangeLang('','');
 	if ConserveMemory then FreeDialog(PDialog(FDlgChangeLang));
 	GetChangeTheme('','');

@@ -11,7 +11,8 @@ unit EPGM;
 
 interface
 
-uses QCrt, QErrors, QStrings, QDos, QFiles, QClass, QObjects, QControls, QFmtStr, PGM_Call;
+uses QCrt, QErrors, QStrings, QDos, QFiles, QClass, QObjects, QControls, QFmtStr, PGM_Call,
+	QFileDlg;
 	
 {$DEFINE INTERFACE}
 
