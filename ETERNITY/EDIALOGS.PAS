@@ -12,7 +12,7 @@ unit EDialogs;
 interface
 
 uses QCrt, QErrors, QStrings, QDos, QFiles, QClass, QObjects, QControls, QFmtStr, 
-	QSpeaker;
+	QSpeaker, QDirCntl;
 	
 {$DEFINE INTERFACE}
 
