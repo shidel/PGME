@@ -238,7 +238,7 @@ begin
 			cmBrowseExec : begin
 				ClearEvent(AEvent);
 				P := PDialog(PGME.GetDlgLaunch);
-				PDlgLaunchFwd(P)^.SetData(@Self);
+				PDlgLaunch(P)^.SetData(@Self);
 				PGME.FDlgLaunch^.ShowModal;
 				UpdateData;
 			end;
@@ -255,6 +255,7 @@ procedure TDlgProg.SetData(AItem : PListItem);
 var
 	P : PListItem;
 begin
+	Data := AItem;
 	FCommands.Clear;
 	FPGMVars := False;
 	FSimple := True;

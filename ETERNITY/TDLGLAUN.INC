@@ -17,6 +17,7 @@ type
 	PDlgLaunch = ^TDlgLaunch;
 	TDlgLaunch = object (TDlgLaunchFwd)
     public { protected }
+    		FStartDir : String;
 			FProc	: PListView;
     		FOK, FAdd, FClear, FModify, FDos, FRemove : PButton;	
 		function  ObjectClass ( AName : String ) : String; virtual;
@@ -30,7 +31,10 @@ type
 		procedure SetData(ADlg : PDialog); virtual;
 		procedure ClearData; virtual;
 		procedure AddData(ADlg : PDialog); virtual;
+		procedure AddDefaults; virtual;
+		procedure AddCurrent; virtual;
 		procedure RemoveData; virtual;
+		procedure AddSingle(AFilename : String); virtual;
 	end;   
 	
 	PLaunchItem = ^TLaunchItem;
@@ -161,8 +165,13 @@ end;
 
 procedure TDlgLaunch.UpdateButtons;
 begin
-	FRemove^.SetEnabled(Assigned(FProc^.FCurrent));
-	FModify^.SetEnabled(Assigned(FProc^.FCurrent));
+	if Assigned(FProc^.FCurrent) and (PLaunchItem(FProc^.FCurrent)^.FLock = false) then begin
+		FRemove^.SetEnabled(True);
+		FModify^.SetEnabled(True);
+	end else begin
+		FRemove^.SetEnabled(False);
+		FModify^.SetEnabled(False);
+	end;
 	FClear^.SetEnabled(FProc^.FItems.Count > 0);
 end;
 
@@ -206,29 +215,79 @@ begin
 		end;
 end;
 
+procedure TDlgLaunch.AddDefaults;
+var
+	P : PLaunchItem;
+begin
+	P := New(PLaunchItem, Create('@ECHO OFF'));
+	P^.FLock := True;
+	with FProc^ do begin
+		FItems.Add(P);
+	end;	
+	P := New(PLaunchItem, Create(Copy(FStartDir, 1, 2)));
+	P^.FLock := True;
+	with FProc^ do begin
+		FItems.Add(P);
+	end;	
+	P := New(PLaunchItem, Create('CD ' + Copy(FStartDir, 3, Length(FStartDir))));
+	P^.FLock := True;
+	with FProc^ do begin
+		FItems.Add(P);
+		AdjustSize;
+		Update;
+		Bottom;
+	end;	
+end;
+
+procedure TDlgLaunch.AddCurrent; 
+begin
+	with PCacheApp(PListItem(Data)^.Data)^ do begin
+		if Count = 0 then 
+			AddSingle(FileName);
+	end;
+end;
+
 procedure TDlgLaunch.SetData(ADlg : PDialog);
 begin
 	SetTitle('');
 	if Assigned(ADlg) then begin
 		SetTitle(PDlgProg(ADlg)^.FEditTitle^.GetCaption);
 	end;
+	FStartDir := '';
+	Data := ADlg^.Data;
+	FProc^.ClearItems;
+	if Assigned(Data) then begin
+		with PCacheItem(PListItem(Data)^.Data)^ do
+			FStartDir := PCacheDir(Parent^.Parent)^.GetNameID;
+	end	else begin
+		with PGME do 
+			if Assigned(FMenus) and Assigned(FMenus^.FCurrent) then 
+				with PCacheMenu(FMenus^.FCurrent^.Data)^ do 
+					FStartDir := PCacheDir(Parent)^.GetNameID; 
+	end;
+	AddDefaults;
+	if Assigned(Data) then AddCurrent;
 	UpdateButtons;
 end;
 
-procedure TDlgLaunch.AddData;
+procedure TDlgLaunch.AddSingle;
 var
-	FName : String;
 	P : PLaunchItem;
 begin
-	FName := POpenDialog(ADlg)^.GetFileName;
-	P := New(PLaunchItem, Create(FName));
+	P := New(PLaunchItem, Create(AFilename));
 	P^.FLock := False;
-	StartDrawing;
 	with FProc^ do begin
 		FItems.Add(P);
 		AdjustSize;
 		Update;
+		Bottom;
 	end;
+end;
+
+procedure TDlgLaunch.AddData;
+begin
+	StartDrawing;
+	AddSingle(POpenDialog(ADlg)^.GetFileName);
 	UpdateButtons;
 	FinishDrawing;
 end;
@@ -247,6 +306,7 @@ procedure TDlgLaunch.ClearData;
 begin
 	StartDrawing;
 	FProc^.ClearItems;
+	AddDefaults;
 	UpdateButtons;
 	FinishDrawing;
 end;
