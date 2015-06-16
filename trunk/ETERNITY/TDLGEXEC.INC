@@ -27,7 +27,7 @@ type
 	public
 		constructor Create(AParent : PControl; AName : String);
 		destructor Destroy; virtual;
-		procedure SetData(ADlg : PDialog); virtual;
+		procedure SetData(ADlg : PObject); virtual;
 	end;   
 
 {$ENDIF}
@@ -122,7 +122,7 @@ begin
 		end;}
 end;
 
-procedure TDlgExecOpt.SetData(ADlg : PDialog);
+procedure TDlgExecOpt.SetData(ADlg : PObject);
 begin
 	FFileName^.SetCaption('');
 	FCmdLine^.SetCaption('');
