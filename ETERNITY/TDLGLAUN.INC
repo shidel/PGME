@@ -18,7 +18,7 @@ type
 	TDlgLaunch = object (TDlgLaunchFwd)
     public { protected }
 			FProc	: PListView;
-    		FOK, FAdd, FClear, FModify, FRemove : PButton;	
+    		FOK, FAdd, FClear, FModify, FDos, FRemove : PButton;	
 		function  ObjectClass ( AName : String ) : String; virtual;
     public { protected }
 		procedure CheckLocal(var AEvent : TEvent); virtual;
@@ -29,9 +29,14 @@ type
 		destructor Destroy; virtual;
 		procedure SetData(ADlg : PDialog); virtual;
 		procedure ClearData; virtual;
-		procedure AddData; virtual;
+		procedure AddData(ADlg : PDialog); virtual;
 		procedure RemoveData; virtual;
 	end;   
+	
+	PLaunchItem = ^TLaunchItem;
+	TLaunchItem = object(TListItem)
+		FLock : boolean;
+	end;
 
 {$ENDIF}
 
@@ -55,7 +60,7 @@ begin
 	AddHelpText('from a programs launch process.');
 	FStyle := bxSingle;	
 	FAutoEndModal := True;
-	Bounds(1,1,64,15, B);
+	Bounds(1,1,65,15, B);
 	
 	if AParent^.Height > 18 then begin
 		Inc(B.Height, 2);
@@ -80,8 +85,7 @@ begin
 		SetBounds(T);
 	end;
 
-	Bounds(B.Left + B.Width - 20, 2, 14, 1, T);
-	Inc(T.Top, 2);
+	Bounds(B.Left + B.Width - 21, 2, 15, 1, T);
 	TextAttr := $2E;
 	FAdd := New(PButton, Create(@Self, 'BUTTON.ADD'));
 	with FAdd^ do begin
@@ -90,6 +94,16 @@ begin
 		SetAnchors(abRight or abTop);
 		SetCaption('Add');
 		SetCommand(cmAdd);
+	end;
+	Inc(T.Top, 2);
+	TextAttr := $2E;
+	FDos := New(PButton, Create(@Self, 'BUTTON.COMMAND'));
+	with FDos^ do begin
+		SetHelpText('5;Use the "%0" button to manually add a dos command.');
+		SetBounds(T);
+		SetAnchors(abRight or abTop);
+		SetCaption('DOS Command');
+		SetCommand(cmEdit);
 	end;
 	Inc(T.Top, 2);
 	TextAttr := $3E;
@@ -160,11 +174,16 @@ begin
 	inherited CheckLocal(AEvent);
 	if AEvent.What = evCommand then 
 		case AEvent.Command of
+			cmListView : if AEvent.InfoPtr = FProc then begin
+				ClearEvent(AEvent);
+				UpdateButtons;
+			end;
 			cmAdd : begin
+				ClearEvent(AEvent);
 {				POpt := nil; }
 				PDlg := PDialog(PGME.GetDlgFindExec);
 				R := PDlg^.ShowModal;
-				if R = mrOK then AddData;
+				if R = mrOK then AddData(PDlg);
 {				R2 := mrCancel;
 				if R = mrOK then begin
 					POpt := PDialog(PGME.GetDlgOptExec);
@@ -172,10 +191,14 @@ begin
 					R2 := POpt^.ShowModal;
 				end; }
 			end;
-			cmModify : begin
+			cmListViewDouble, cmModify : if (AEvent.Command = cmModify) or 
+			(AEvent.InfoPtr = FProc) then begin
+				ClearEvent(AEvent);
+				if Assigned(FProc^.FCurrent) then begin
 					POpt := PDialog(PGME.GetDlgOptExec);
 					PDlgExecOpt(POpt)^.SetData(FProc^.FCurrent);
 					R := POpt^.ShowModal;
+				end;
 			end; 
 			cmClear : ClearData;
 			cmRemove : RemoveData;			
@@ -193,19 +216,39 @@ begin
 end;
 
 procedure TDlgLaunch.AddData;
+var
+	FName : String;
+	P : PLaunchItem;
 begin
-	FProc^.AddItem('Test');
+	FName := POpenDialog(ADlg)^.GetFileName;
+	P := New(PLaunchItem, Create(FName));
+	P^.FLock := False;
+	StartDrawing;
+	with FProc^ do begin
+		FItems.Add(P);
+		AdjustSize;
+		Update;
+	end;
 	UpdateButtons;
+	FinishDrawing;
 end;
 
 procedure TDlgLaunch.RemoveData;
 begin
+	if Not Assigned(FProc^.FCurrent) then exit;
+	if PLaunchItem(FProc^.FCurrent)^.FLock then exit;
+	StartDrawing;
+	FProc^.DeleteItem(FProc^.FCurrent);
 	UpdateButtons;
+	FinishDrawing;
 end;
 
 procedure TDlgLaunch.ClearData;
 begin
+	StartDrawing;
+	FProc^.ClearItems;
 	UpdateButtons;
+	FinishDrawing;
 end;
 
 {$ENDIF}
