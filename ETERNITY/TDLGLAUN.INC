@@ -28,6 +28,9 @@ type
 		constructor Create(AParent : PControl; AName : String);
 		destructor Destroy; virtual;
 		procedure SetData(ADlg : PDialog); virtual;
+		procedure ClearData; virtual;
+		procedure AddData; virtual;
+		procedure RemoveData; virtual;
 	end;   
 
 {$ENDIF}
@@ -68,7 +71,7 @@ begin
 		FHAlign := AlignLeft;
 	end;
 	
-	TextAttr := $17;
+	TextAttr := $1E;
 	FProc := New(PListView, Create(@Self, 'PROCLIST'));
 	with FProc^ do begin
 		SetHelpText('The "Process List" shows the current launch process.');
@@ -158,17 +161,25 @@ begin
 	if AEvent.What = evCommand then 
 		case AEvent.Command of
 			cmAdd : begin
-				POpt := nil;
+{				POpt := nil; }
 				PDlg := PDialog(PGME.GetDlgFindExec);
 				R := PDlg^.ShowModal;
-				R2 := mrCancel;
+				if R = mrOK then AddData;
+{				R2 := mrCancel;
 				if R = mrOK then begin
 					POpt := PDialog(PGME.GetDlgOptExec);
 					PDlgExecOpt(POpt)^.SetData(PDlg);
 					R2 := POpt^.ShowModal;
-				end;
-				
+				end; }
 			end;
+			cmModify : begin
+					POpt := PDialog(PGME.GetDlgOptExec);
+					PDlgExecOpt(POpt)^.SetData(FProc^.FCurrent);
+					R := POpt^.ShowModal;
+			end; 
+			cmClear : ClearData;
+			cmRemove : RemoveData;			
+				
 		end;
 end;
 
@@ -178,6 +189,22 @@ begin
 	if Assigned(ADlg) then begin
 		SetTitle(PDlgProg(ADlg)^.FEditTitle^.GetCaption);
 	end;
+	UpdateButtons;
+end;
+
+procedure TDlgLaunch.AddData;
+begin
+	FProc^.AddItem('Test');
+	UpdateButtons;
+end;
+
+procedure TDlgLaunch.RemoveData;
+begin
+	UpdateButtons;
+end;
+
+procedure TDlgLaunch.ClearData;
+begin
 	UpdateButtons;
 end;
 
