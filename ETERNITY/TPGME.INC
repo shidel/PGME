@@ -38,7 +38,8 @@ type
 			FDlgPGMOpt, FDlgPGMCfg,
 			FDlgLaunch, 
 			FDlgFindExec, FDlgOptExec,
-			FDlgChangeLang, FDlgChangeTheme : PDialog;			
+			FDlgChangeLang, FDlgChangeTheme,
+			FDlgAbout, FDlgDosCommand : PDialog;			
 			FFind : record
 				FLabel : PLabel;
 				FEdit : PEdit;
@@ -82,6 +83,8 @@ type
 		function GetDlgLaunch : PControl; virtual;
 		function GetDlgFindExec : PControl; virtual;
 		function GetDlgOptExec : PControl; virtual;
+		function GetDlgAbout : PControl; virtual;
+		function GetDlgDosCommand : PControl; virtual;
 		function GetReturnStr : String; virtual;		
 		procedure CreateAllDialogs(ConserveMemory : boolean); virtual;
 		procedure Restart; virtual;
@@ -216,6 +219,8 @@ begin
 	FDlgChangeLang := nil;
 	FDlgChangeTheme := nil;
 	FDlgLaunch := nil;
+	FDlgAbout := nil;
+	FDlgDosCommand := nil;
 	FTimeOut := 0;
 	OldIdleProc := QCrt.IdleProc;
 	QCrt.IdleProc := PGMIdleProc;
@@ -900,6 +905,24 @@ begin
 	GetDlgOptExec := FDlgOptExec;
 end;
 
+function TPGME.GetDlgAbout : PControl;
+begin
+	if Not Assigned(FDlgAbout) then begin
+		FDlgAbout := New(PDlgAbout, Create(@Self));
+		ApplySettings(FDlgAbout);
+	end;
+	GetDlgAbout := FDlgAbout;
+end;
+
+function TPGME.GetDlgDosCommand : PControl;
+begin
+	if Not Assigned(FDlgDosCommand) then begin
+		FDlgDosCommand := New(PDlgDosCommand, Create(@Self));
+		ApplySettings(FDlgDosCommand);
+	end;
+	GetDlgDosCommand := FDlgDosCommand;
+end;
+
 function TPGME.GetChangeLang;
 var
 	B : TBounds;
@@ -1046,6 +1069,10 @@ begin
 	if ConserveMemory then FreeDialog(PDialog(FDlgChangeLang));
 	GetChangeTheme('','');
 	if ConserveMemory then FreeDialog(PDialog(FDlgChangeTheme));
+	GetDlgAbout;
+	if ConserveMemory then FreeDialog(PDialog(FDlgAbout));
+	GetDlgDosCommand;
+	if ConserveMemory then FreeDialog(PDialog(FDlgDosCommand));
 end;
 
 procedure TPGME.ParseCommandLine;
@@ -1231,6 +1258,7 @@ begin
 	if Assigned(FDlgPGMCfg) and FDlgPGMCfg^.GetVisible then Exit;
 	if Assigned(FDlgChangeLang) and FDlgChangeLang^.GetVisible then Exit;
 	if Assigned(FDlgChangeTheme) and FDlgChangeTheme^.GetVisible then Exit;
+	if Assigned(FDlgAbout) and FDlgAbout^.GetVisible then Exit;
 	
 	if S <> Sec then begin
 		S := Sec;
