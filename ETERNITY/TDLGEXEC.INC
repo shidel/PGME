@@ -127,8 +127,12 @@ begin
 	FFileName^.SetCaption('');
 	FCmdLine^.SetCaption('');
 	if Assigned(ADlg) then begin
-		if ADlg^.ClassOf(class_TFileDialog) then
-			FFileName^.SetCaption(PFileDialog(ADlg)^.GetFileName);
+		if ADlg^.ClassOf(class_TDlgLaunch) then begin
+			FFileName^.SetCaption(PDlgLaunch(ADlg)^.FProc^.FCurrent^.GetNameID);
+			FCmdLine^.SetCaption(PLaunchItem(PDlgLaunch(ADlg)^.FProc^.FCurrent)^.FOptions);			
+		end else 
+			if ADlg^.ClassOf(class_TFileDialog) then
+				FFileName^.SetCaption(PFileDialog(ADlg)^.GetFileName);
 	end;
 end;
 

@@ -12,6 +12,7 @@
 {$IFDEF INTERFACE}
 const
 	class_TDlgLaunch = 'TDlgLaunch';
+	class_TLaunchItem = 'TLaunchItem';
 
 type 
 	PDlgLaunch = ^TDlgLaunch;
@@ -39,12 +40,34 @@ type
 	
 	PLaunchItem = ^TLaunchItem;
 	TLaunchItem = object(TListItem)
+	public
+		function  ObjectClass ( AName : String ) : String; virtual;
+	public
+		FPath : String;
 		FLock : boolean;
+		FOptions : String;
+		constructor Create(AName : String);
 	end;
 
 {$ENDIF}
 
 {$IFDEF IMPLEMENTATION}
+function TLaunchItem.ObjectClass(AName : String) : String; 
+begin
+	if (AName = '') or (AName = class_TLaunchItem) then 
+		ObjectClass := class_TLaunchItem
+	else
+		ObjectClass := inherited ObjectClass(AName);
+end;
+
+constructor TLaunchItem.Create;
+begin
+	inherited Create(AName);
+	FLock := False;
+	FPath := '';
+	FOptions := '';
+end;
+
 function TDlgLaunch.ObjectClass(AName : String) : String; 
 begin
 	if (AName = '') or (AName = class_TDlgLaunch) then 
@@ -205,8 +228,15 @@ begin
 				ClearEvent(AEvent);
 				if Assigned(FProc^.FCurrent) then begin
 					POpt := PDialog(PGME.GetDlgOptExec);
-					PDlgExecOpt(POpt)^.SetData(FProc^.FCurrent);
+					PDlgExecOpt(POpt)^.SetData(@Self);
 					R := POpt^.ShowModal;
+					if R = mrOK then begin
+						PLaunchItem(FProc^.FCurrent)^.Clear;
+						PLaunchItem(FProc^.FCurrent)^.FOptions := 
+							PDlgExecOpt(POpt)^.FCmdLine^.GetCaption;
+						FProc^.FCurrent^.Add(New(PListItem, Create(
+							PLaunchItem(FProc^.FCurrent)^.FOptions)));
+					end;
 				end;
 			end; 
 			cmClear : ClearData;
@@ -272,10 +302,19 @@ end;
 
 procedure TDlgLaunch.AddSingle;
 var
+	FName, FPath, FOpts : String;
 	P : PLaunchItem;
 begin
-	P := New(PLaunchItem, Create(AFilename));
+	FName := Trim(PullStr('', AFilename));
+	FPath := PathOf(FName);
+	FName := Copy(FName, Length(FPath) + 1, Length(FName));
+	FOpts := AFilename;
+	P := New(PLaunchItem, Create(FName));
 	P^.FLock := False;
+	P^.FOptions := FOpts;
+	P^.FPath := FPath;	
+	if FOpts <> '' then
+		P^.Add(New(PListItem, Create(FOpts)));
 	with FProc^ do begin
 		FItems.Add(P);
 		AdjustSize;
