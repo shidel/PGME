@@ -15,8 +15,9 @@ const
 
 type 
 	PDlgAbout = ^TDlgAbout;
-	TDlgAbout = object (TDialog)
+	TDlgAbout = object (TMessageBox)
     public { protected }
+    	FOK : PButton;
 		function  ObjectClass ( AName : String ) : String; virtual;
     public { protected }
 		procedure CheckLocal(var AEvent : TEvent); virtual;
@@ -38,17 +39,31 @@ begin
 end;
 
 constructor TDlgAbout.Create;
+const
+	ColorLabel = $70;
+	ColorOK = $2E;
 var
 	B : TBounds;
 begin	
-	inherited Create(AParent, 'DIALOG.ABOUT', True);
-	SetTitle('Create New Menu');
+	inherited Create(AParent, 'DIALOG.ABOUT');
+	Bounds(1,1,50,15, B);
+	SetStyle(bxSingle);
+	SetBounds(B);
+	FAutoEndModal := True;
+	SetTitle('About PGME');
 	SetHelpText('The "About" dialog box.');
 	AddHelpText('');
 	AddHelpText('This is dialog box provides some information regarding PGME.');
 	AddHelpText('Additional information is available in the BLAHBLAH.TXT file');
 	AddHelpText('and online at http://pgme.sourceforge.net');
+	TextAttr := ColorOK;
+	FOK := New(PButton, Create(@Self, 'BUTTON.OK'));
 	with PButton(FOK)^ do begin
+		Bounds(B.Left + (B.Width - 5) div 2 - 6 , B.Height - 4, 14, 1, B);
+		SetBounds(B);
+		SetAnchors(abLeft or abRight or abBottom);
+		SetCaption('OK');
+		SetCommand(cmOK);		
 		SetHelpText('5;Use the "%0" button to close the dialog box.');
 	end;
 end;
