@@ -273,11 +273,20 @@ begin
 	end;	
 end;
 
-procedure TDlgLaunch.AddCurrent; 
+procedure TDlgLaunch.AddCurrent;
+var
+	P : PListItem;
 begin
 	with PCacheApp(PListItem(Data)^.Data)^ do begin
 		if Count = 0 then 
-			AddSingle(FileName);
+			AddSingle(FileName)
+		else begin
+			P := First;
+			while Assigned(P) do begin
+				AddSingle(P^.GetNameID);
+				P := P^.Next;
+			end;
+		end;
 	end;
 end;
 
@@ -313,7 +322,7 @@ begin
 		LPath := PLaunchItem(FProc^.FItems.Last)^.FPath
 	else
 		LPath := Dir(FStartDir);
-	FName := UCase(Trim(PullStr('', AFilename)));
+	FName := UCase(Trim(PullStr(' ', AFilename)));
 	FPath := PathOf(FName);
 	FName := Copy(FName, Length(FPath) + 1, Length(FName));
 	FPath := Dir(FPath);
