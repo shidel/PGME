@@ -378,11 +378,12 @@ begin
 
 		{ Title Display }
 		TextAttr := $71;
-		FVersion := PLabel(New(PLabel, Create(P, 'SAM_I_AM')));
+		FVersion := PLabel(New(PButton, Create(P, 'SAM_I_AM')));
 		with FVersion^ do begin
 			OnFormat := FormatVersion;
 			SetCaption('0[Z4,X3.2],1,2[Z2];Version %1/%2/%0');
 			SetAnchors(alClient);
+			SetCommand(cmAbout);
 		end;
 	
 	{ Right Pane }
@@ -1863,6 +1864,11 @@ begin
 			cmPrevMenu : begin
 				ClearEvent(AEvent);
 				FMenus^.Up(True);
+			end;
+			cmAbout : begin
+				ClearEvent(AEvent);
+				GetDlgAbout;
+				FDlgAbout^.ShowModal;
 			end;
 		end; 
 	

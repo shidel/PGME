@@ -35,7 +35,7 @@ type
 		procedure AddDefaults; virtual;
 		procedure AddCurrent; virtual;
 		procedure RemoveData; virtual;
-		procedure AddSingle(AFilename : String); virtual;
+		procedure AddSingle(AFilename : String; DosCmd : boolean); virtual;
 	end;   
 	
 	PLaunchItem = ^TLaunchItem;
@@ -44,7 +44,7 @@ type
 		function  ObjectClass ( AName : String ) : String; virtual;
 	public
 		FPath : String;
-		FLock, FNOpt : boolean;
+		FExact, FLock, FNOpt : boolean;
 		FOptions : String;
 		constructor Create(AName : String);
 	end;
@@ -65,6 +65,7 @@ begin
 	inherited Create(AName);
 	FLock := False;
 	FNOpt := False;
+	FExact := False;
 	FPath := '';
 	FOptions := '';
 end;
@@ -215,7 +216,8 @@ begin
 			cmEdit : if AEvent.InfoPtr = FDos then begin
 				PDlg := PDialog(PGME.GetDlgDosCOmmand);
 				R := PDlg^.ShowModal;
-{				if R = mrOK then AddData(PDlg);		}		
+				if R = mrOK then 
+					AddData(PDlg);		
 			end;
 			cmAdd : begin
 				ClearEvent(AEvent);
@@ -284,11 +286,11 @@ var
 begin
 	with PCacheApp(PListItem(Data)^.Data)^ do begin
 		if Count = 0 then 
-			AddSingle(FileName)
+			AddSingle(FileName, False)
 		else begin
 			P := First;
 			while Assigned(P) do begin
-				AddSingle(P^.GetNameID);
+				AddSingle(P^.GetNameID, False);
 				P := P^.Next;
 			end;
 		end;
@@ -318,7 +320,7 @@ begin
 	UpdateButtons;
 end;
 
-procedure TDlgLaunch.AddSingle;
+procedure TDlgLaunch.AddSingle(AFilename : String; DosCmd : boolean);
 var
 	FName, FPath, FOpts, LPath : String;
 	P, D : PLaunchItem;
@@ -327,11 +329,17 @@ begin
 		LPath := PLaunchItem(FProc^.FItems.Last)^.FPath
 	else
 		LPath := Dir(FStartDir);
-	FName := UCase(Trim(PullStr(' ', AFilename)));
-	FPath := PathOf(FName);
-	FName := Copy(FName, Length(FPath) + 1, Length(FName));
-	FPath := Dir(FPath);
-	FOpts := Trim(AFilename);
+	if DosCmd then begin
+		FPath := LPath;
+		FName := UCase(Trim(PullStr(' ', AFilename)));
+		FOpts := AFilename;
+	end else begin
+		FName := UCase(Trim(PullStr(' ', AFilename)));
+		FPath := PathOf(FName);
+		FName := Copy(FName, Length(FPath) + 1, Length(FName));
+		FPath := Dir(FPath);
+		FOpts := Trim(AFilename);
+	end;
 	if FPath = '' then begin
 		if Assigned(FProc^.FItems.Last) then 
 			FPath := PLaunchItem(FProc^.FItems.Last)^.FPath
@@ -358,6 +366,7 @@ begin
 	P^.FLock := False;
 	P^.FOptions := FOpts;
 	P^.FPath := Dir(FPath);	
+	P^.FExact := DosCmd;
 	if FOpts <> '' then
 		P^.Add(New(PListItem, Create(FOpts)));
 	with FProc^ do begin
@@ -371,7 +380,11 @@ end;
 procedure TDlgLaunch.AddData;
 begin
 	StartDrawing;
-	AddSingle(POpenDialog(ADlg)^.GetFileName);
+	if ADlg^.ClassOf(class_TOpenDialog) then
+		AddSingle(POpenDialog(ADlg)^.GetFileName, False)
+	else
+	if ADlg^.ClassOf(class_TDlgDosCommand) then
+		AddSingle(PDlgDosCommand(ADlg)^.FCmdLine^.GetCaption, True);
 	UpdateButtons;
 	FinishDrawing;
 end;
