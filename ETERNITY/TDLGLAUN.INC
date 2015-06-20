@@ -212,6 +212,11 @@ begin
 				ClearEvent(AEvent);
 				UpdateButtons;
 			end;
+			cmEdit : if AEvent.InfoPtr = FDos then begin
+				PDlg := PDialog(PGME.GetDlgDosCOmmand);
+				R := PDlg^.ShowModal;
+{				if R = mrOK then AddData(PDlg);		}		
+			end;
 			cmAdd : begin
 				ClearEvent(AEvent);
 {				POpt := nil; }

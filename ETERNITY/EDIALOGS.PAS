@@ -28,6 +28,8 @@ uses QCrt, QErrors, QStrings, QDos, QFiles, QClass, QObjects, QControls, QFmtStr
 {$I TDlgMDelete.inc}
 {$I TDlgExecOpt.inc}
 {$I TDlgLaunch.inc}
+{$I TDlgAbout.inc}
+{$I TDlgDosCommand.inc}
 
 {$UNDEF INTERFACE}
 
@@ -49,6 +51,8 @@ uses EConst, ECache, EPGM;
 {$I TDlgMDelete.inc}
 {$I TDlgExecOpt.inc}
 {$I TDlgLaunch.inc}
+{$I TDlgAbout.inc}
+{$I TDlgDosCommand.inc}
 
 {$UNDEF IMPLEMENTATION}
 

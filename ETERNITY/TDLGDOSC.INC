@@ -17,6 +17,8 @@ type
 	PDlgDOSCommand = ^TDlgDOSCommand;
 	TDlgDOSCommand = object (TDialog)
     public { protected }
+    	FOK : PButton;
+    	FCmdLine : PEdit;
 		function  ObjectClass ( AName : String ) : String; virtual;
     public { protected }
 		procedure CheckLocal(var AEvent : TEvent); virtual;
@@ -38,16 +40,50 @@ begin
 end;
 
 constructor TDlgDOSCommand.Create;
+const
+	ColorLabel = $47;
+	ColorEdit = $0E;
+	ColorOK = $2E;
 var
-	B : TBounds;
-begin	
-	inherited Create(AParent, 'DIALOG.DOSCOMMAND', True);
-	SetTitle('Create New Menu');
+	B, T : TBounds;
+begin
+	TextAttr := ColorLabel;
+	inherited Create(AParent, 'DIALOG.DOSCOMMAND');
+	SetBackGround(ColorLabel shr 4);
+	Bounds(1,1,55,10, B);
+	FAutoEndModal := True;
+	SetStyle(bxSingle);
+	SetBounds(B);
+	SetTitle('Add DOS Command');
 	SetHelpText('The "DOS Command" dialog box.');
 	AddHelpText('');
 	AddHelpText('This is where you manually enter a DOS command to the program');
 	AddHelpText('execution process.');
+	TextAttr := ColorLabel;
+	Bounds(3,2,B.Width - 8, 1, T);
+	with PLabel(New(PLabel, Create(@Self, 'LABEL')))^ do begin
+		SetBounds(T);
+		SetAnchors(abLeft or abRight or abTop);
+		SetCaption('Custom DOS Command:');
+		FHAlign := AlignLeft;
+	end;
+	Inc(T.Top, 1);
+	TextAttr := ColorEdit;
+	FCmdLine := New(PEdit, Create(@Self, 'EDIT'));
+	with FCmdLine^ do begin
+		SetBounds(T);
+		SetAnchors(abLeft or abRight or abBottom);
+		SetCaption('');		
+	end;
+	
+	TextAttr := ColorOK;
+	FOK := New(PButton, Create(@Self, 'BUTTON.OK'));
 	with PButton(FOK)^ do begin
+		Bounds(B.Left + (B.Width - 5) div 2 - 6 , B.Height - 4, 14, 1, B);
+		SetBounds(B);
+		SetAnchors(abLeft or abRight or abBottom);
+		SetCaption('OK');
+		SetCommand(cmOK);		
 		SetHelpText('5;Use the "%0" button to add the DOS command');
 		AddHelpText('and close the dialog box.');
 	end;
