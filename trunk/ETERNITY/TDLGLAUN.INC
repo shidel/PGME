@@ -44,7 +44,7 @@ type
 		function  ObjectClass ( AName : String ) : String; virtual;
 	public
 		FPath : String;
-		FLock : boolean;
+		FLock, FNOpt : boolean;
 		FOptions : String;
 		constructor Create(AName : String);
 	end;
@@ -64,6 +64,7 @@ constructor TLaunchItem.Create;
 begin
 	inherited Create(AName);
 	FLock := False;
+	FNOpt := False;
 	FPath := '';
 	FOptions := '';
 end;
@@ -188,7 +189,8 @@ end;
 
 procedure TDlgLaunch.UpdateButtons;
 begin
-	if Assigned(FProc^.FCurrent) and (PLaunchItem(FProc^.FCurrent)^.FLock = false) then begin
+	if Assigned(FProc^.FCurrent) and (PLaunchItem(FProc^.FCurrent)^.FLock = false) and 
+	(PLaunchItem(FProc^.FCurrent)^.FNOpt = false) then begin
 		FRemove^.SetEnabled(True);
 		FModify^.SetEnabled(True);
 	end else begin
@@ -256,11 +258,13 @@ begin
 	end;	
 	P := New(PLaunchItem, Create(Copy(FStartDir, 1, 2)));
 	P^.FLock := True;
+	P^.FPath := Copy(FStartDir, 1, 2);
 	with FProc^ do begin
 		FItems.Add(P);
 	end;	
 	P := New(PLaunchItem, Create('CD ' + Copy(FStartDir, 3, Length(FStartDir))));
 	P^.FLock := True;
+	P^.FPath := Dir(FStartDir);
 	with FProc^ do begin
 		FItems.Add(P);
 		AdjustSize;
@@ -302,17 +306,44 @@ end;
 
 procedure TDlgLaunch.AddSingle;
 var
-	FName, FPath, FOpts : String;
-	P : PLaunchItem;
+	FName, FPath, FOpts, LPath : String;
+	P, D : PLaunchItem;
 begin
-	FName := Trim(PullStr('', AFilename));
+	if Assigned(FProc^.FItems.Last) then 
+		LPath := PLaunchItem(FProc^.FItems.Last)^.FPath
+	else
+		LPath := Dir(FStartDir);
+	FName := UCase(Trim(PullStr('', AFilename)));
 	FPath := PathOf(FName);
 	FName := Copy(FName, Length(FPath) + 1, Length(FName));
-	FOpts := AFilename;
+	FPath := Dir(FPath);
+	FOpts := Trim(AFilename);
+	if FPath = '' then begin
+		if Assigned(FProc^.FItems.Last) then 
+			FPath := PLaunchItem(FProc^.FItems.Last)^.FPath
+		else
+			FPath := FStartDir;
+	end;
+
+	if LPath[1] <> FPath[1] then begin
+		D := New(PLaunchItem, Create(Copy(FPath, 1, 2)));
+		D^.FLock := False;
+		D^.FNOpt := True;
+		D^.FPath := Copy(FPath, 1, 2);
+		FProc^.FItems.Add(D);
+	end;
+	if LPath <> FPath then begin
+		D := New(PLaunchItem, Create('CD ' + Copy(FPath, 3, Length(FPath))));
+		D^.FLock := False;
+		D^.FNOpt := True;
+		D^.FPath := FPath;
+		FProc^.FItems.Add(D);
+	end;
+	
 	P := New(PLaunchItem, Create(FName));
 	P^.FLock := False;
 	P^.FOptions := FOpts;
-	P^.FPath := FPath;	
+	P^.FPath := Dir(FPath);	
 	if FOpts <> '' then
 		P^.Add(New(PListItem, Create(FOpts)));
 	with FProc^ do begin
