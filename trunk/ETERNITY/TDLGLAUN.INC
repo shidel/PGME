@@ -114,6 +114,12 @@ begin
 		Inc(T.Top, 2);
 		T.Height := B.Height - T.Top - 3;
 		SetBounds(T);
+		SetColumns(2);
+		FColumns^[0].Width := 13;
+		FColumns^[0].Name := StrPtr('COMMAND');
+		FColumns^[1].Width := T.Width - FColumns^[0].Width;
+		FColumns^[1].Name := StrPtr('OPTIONS');
+		FColumns^[1].Colors.Normal := (FColumns^[1].Colors.Normal and $F0) or $07;
 	end;
 
 	Bounds(B.Left + B.Width - 21, 2, 15, 1, T);
