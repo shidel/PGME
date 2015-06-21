@@ -20,6 +20,7 @@ type
     public { protected }
     		FStartDir : String;
 			FProc	: PListView;
+			FDlg : PDialog;
     		FOK, FAdd, FClear, FModify, FDos, FRemove : PButton;	
 		function  ObjectClass ( AName : String ) : String; virtual;
     public { protected }
@@ -83,6 +84,7 @@ var
 	B, T : TBounds;
 begin
 	inherited Create(AParent, AName);
+	FDlg := nil;
 	SetHelpText('This is "Execution Process" editor.');
 	AddHelpText('');
 	AddHelpText('It provides the basic functionality to add, edit and remove items ');
@@ -284,21 +286,22 @@ procedure TDlgLaunch.AddCurrent;
 var
 	P : PListItem;
 begin
-	with PCacheApp(PListItem(Data)^.Data)^ do begin
+	with PDlgProg(FDlg)^ do begin
 		if Count = 0 then 
-			AddSingle(FileName, False)
+			AddSingle(FFile, False)
 		else begin
-			P := First;
+			P := FCommands.First;
 			while Assigned(P) do begin
 				AddSingle(P^.GetNameID, False);
 				P := P^.Next;
 			end;
 		end;
-	end;
+	end; 
 end;
 
 procedure TDlgLaunch.SetData(ADlg : PDialog);
 begin
+	FDlg := ADlg;
 	SetTitle('');
 	if Assigned(ADlg) then begin
 		SetTitle(PDlgProg(ADlg)^.FEditTitle^.GetCaption);
@@ -329,12 +332,12 @@ begin
 		LPath := PLaunchItem(FProc^.FItems.Last)^.FPath
 	else
 		LPath := Dir(FStartDir);
+		
+	FName := UCase(Trim(PullStr(' ', AFilename)));
 	if DosCmd then begin
 		FPath := LPath;
-		FName := UCase(Trim(PullStr(' ', AFilename)));
 		FOpts := AFilename;
 	end else begin
-		FName := UCase(Trim(PullStr(' ', AFilename)));
 		FPath := PathOf(FName);
 		FName := Copy(FName, Length(FPath) + 1, Length(FName));
 		FPath := Dir(FPath);
