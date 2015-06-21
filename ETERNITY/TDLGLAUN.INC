@@ -288,7 +288,7 @@ var
 	P : PListItem;
 begin
 	with PDlgProg(FDlg)^ do begin
-		if Count = 0 then 
+		if FCommands.Count = 0 then 
 			AddSingle(FFile, False)
 		else begin
 			P := FCommands.First;
