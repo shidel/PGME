@@ -239,8 +239,8 @@ begin
 					R2 := POpt^.ShowModal;
 				end; }
 			end;
-			cmListViewDouble, cmModify : if (AEvent.Command = cmModify) or 
-			(AEvent.InfoPtr = FProc) then begin
+			cmListViewDouble, cmModify : if FModify^.GetEnabled and ((AEvent.Command = cmModify) or 
+			(AEvent.InfoPtr = FProc)) then begin
 				ClearEvent(AEvent);
 				if Assigned(FProc^.FCurrent) then begin
 					POpt := PDialog(PGME.GetDlgOptExec);
@@ -329,13 +329,15 @@ begin
 		LPath := '';
 		
 	FName := UCase(Trim(PullStr(' ', AFilename)));
+	if ((Length(FName) = 2) and (FName[2] = ':')) or (FName = 'CD') then 
+		DosCmd := True;
+		
 	if DosCmd then begin
 		FPath := LPath;
 		FOpts := AFilename;
 	end else begin
 		FPath := PathOf(FName);
 		FName := Copy(FName, Length(FPath) + 1, Length(FName));
-		FPath := Dir(FPath);
 		FOpts := Trim(AFilename);
 	end;
 	
