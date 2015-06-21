@@ -37,6 +37,7 @@ type
 		destructor Destroy; virtual;
 		procedure SetData(AItem : PListItem); virtual;
 		procedure UpdateData; virtual;
+		procedure ReplaceCommands(AWith : PObject); virtual;
 	end;   
 
 {$ENDIF}
@@ -239,8 +240,8 @@ begin
 				ClearEvent(AEvent);
 				P := PDialog(PGME.GetDlgLaunch);
 				PDlgLaunch(P)^.SetData(@Self);
-				PGME.FDlgLaunch^.ShowModal;
-				UpdateData;
+				if PGME.FDlgLaunch^.ShowModal = mrOK then 
+					ReplaceCommands(P);
 			end;
 		end;
 end;
@@ -306,4 +307,22 @@ begin
 	FOK^.SetEnabled(Trim(FFile) <> '');
 end;
 
+procedure TDlgProg.ReplaceCommands;
+var
+	P : PLaunchItem;
+begin
+	FCommands.Clear;
+	P := PLaunchItem(PDlgLaunch(AWith)^.FProc^.FItems.First);
+	while Assigned(P) do begin
+		if Not (P^.FLock) then begin
+			if Trim(P^.FOptions) <> '' then 
+				FCommands.Add(New(PListItem, Create(P^.GetNameID + ' ' 
+				+ Trim(P^.FOptions))))
+			else
+				FCommands.Add(New(PListItem, Create(P^.GetNameID)));
+		end;
+		P := PLaunchItem(P^.Next);
+	end;
+	UpdateData;
+end;
 {$ENDIF}
