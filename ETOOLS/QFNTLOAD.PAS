@@ -10,7 +10,7 @@
 {$I ETOOLS.DEF}
 program Eternity_Font_Loader; { X Series }
 
-uses QBIOS;
+uses QBIOS, QStrings;
 
 {$I ..\ETERNITY\LICENSE.INC}
 
@@ -30,7 +30,13 @@ asm
   POP  CX
   INT  $10
 end;
-		
+
+procedure ResetTextMode; assembler;
+asm
+  MOV AX, 0003h
+  INT $10
+end;		
+
 procedure Execute;
 const
 	FileID : String = 'QCRT-FONT'#0;
@@ -54,7 +60,10 @@ var
 begin
 	P := nil;
 	if ParamStr(1) = '' then 
-		WriteLn('Please Specify a QuickCrt font file to load.')
+		WriteLn('Please Specify a QuickCrt font file to load or the reset command.')
+	else
+	if UCase(ParamStr(1)) = 'RESET' then 
+		ResetTextMode
 	else begin
 		{$I-}
 		Assign(F, ParamStr(1));
