@@ -330,8 +330,8 @@ begin
 				{ ignore }
 			end else begin
 				T := PullStr(' ', S);
-				if T <> 'CD' then begin
-					if FFile <> '' then 
+				if (T <> 'CD') then begin
+					if (FFile <> '') or (Pos('.', T) < 2) then 
 						Multi := True
 					else begin
 						FFile := T;
