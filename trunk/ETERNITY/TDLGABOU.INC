@@ -50,7 +50,7 @@ begin
 	SetBounds(B);
 	FAutoEndModal := True;
 	SetMessage(' ');
-	AppendMessage('The Program Manager Eternity');
+	AppendMessage('The Program Manager Eternity Edition');
 	AppendMessage('Copyright 2015.');
 	AppendMessage(' ');
 	AppendMessage('The QuickCRT Framework');
@@ -61,7 +61,7 @@ begin
 	AppendMessage(' ');
 	AppendMessage('http://pgme.sourceforge.net');
 	AppendMessage('http://quickcrt.sourceforge.net');
-	SetTitle('About PGME');
+	SetTitle('About PGM Eternity');
 	SetHelpText('The "About" dialog box.');
 	AddHelpText('');
 	AddHelpText('This is dialog box provides some information regarding PGME.');
