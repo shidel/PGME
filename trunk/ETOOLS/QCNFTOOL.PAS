@@ -21,7 +21,7 @@ const
 	
 begin
 	WriteLn('Placeholder application for ' + AppTitle);
-	WriteLn('Later, it will be able to edit, merge and export text based configuration');
+{	WriteLn('Later, it will be able to edit, merge and export text based configuration');
 	WriteLn('files like ETERNITY.CFG and ETERNITY.MNU. As well as Theme, Language and');
-	WriteLn('Keymap files.');
+	WriteLn('Keymap files.'); }
 end.
