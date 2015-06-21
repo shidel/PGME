@@ -310,19 +310,44 @@ end;
 procedure TDlgProg.ReplaceCommands;
 var
 	P : PLaunchItem;
+	S, T : String;
+	Multi : boolean;
 begin
 	FCommands.Clear;
+	FFile := '';
+	S := '';
+	Multi := False;
 	P := PLaunchItem(PDlgLaunch(AWith)^.FProc^.FItems.First);
 	while Assigned(P) do begin
-		if Not (P^.FLock) then begin
+		if (Not P^.FLock) and (Trim(P^.GetNameID) <> '') then begin
 			if Trim(P^.FOptions) <> '' then 
 				FCommands.Add(New(PListItem, Create(P^.GetNameID + ' ' 
 				+ Trim(P^.FOptions))))
 			else
 				FCommands.Add(New(PListItem, Create(P^.GetNameID)));
+			S := FCommands.Last^.GetNameID;
+			if (Length(S) = 2) and (S[2] = ':') then begin
+				{ ignore }
+			end else begin
+				T := PullStr(' ', S);
+				if T <> 'CD' then begin
+					if FFile <> '' then 
+						Multi := True
+					else begin
+						FFile := T;
+						if P^.FPath <> PDlgLaunch(AWith)^.FStartDir then
+							FFile := Dir(P^.FPath) + FFile;
+						if (S <> '') or (P^.FExact) then 
+							Multi := True;
+					end;
+				end;
+					
+			end;
 		end;
 		P := PLaunchItem(P^.Next);
 	end;
+	if Not Multi then 
+		FCommands.Clear;
 	UpdateData;
 end;
 {$ENDIF}
