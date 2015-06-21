@@ -14,6 +14,18 @@ const
 	class_TDlgLaunch = 'TDlgLaunch';
 	class_TLaunchItem = 'TLaunchItem';
 
+type
+	PLaunchItem = ^TLaunchItem;
+	TLaunchItem = object(TListItem)
+	public
+		function  ObjectClass ( AName : String ) : String; virtual;
+	public
+		FPath : String;
+		FExact, FLock, FNOpt : boolean;
+		FOptions : String;
+		constructor Create(AName : String);
+	end;
+
 type 
 	PDlgLaunch = ^TDlgLaunch;
 	TDlgLaunch = object (TDlgLaunchFwd)
@@ -36,20 +48,8 @@ type
 		procedure AddDefaults; virtual;
 		procedure AddCurrent; virtual;
 		procedure RemoveData; virtual;
-		procedure AddSingle(AFilename : String; DosCmd : boolean); virtual;
+		function AddSingle(AFilename : String; DosCmd : boolean) : PLaunchItem; virtual;
 	end;   
-	
-	PLaunchItem = ^TLaunchItem;
-	TLaunchItem = object(TListItem)
-	public
-		function  ObjectClass ( AName : String ) : String; virtual;
-	public
-		FPath : String;
-		FExact, FLock, FNOpt : boolean;
-		FOptions : String;
-		constructor Create(AName : String);
-	end;
-
 {$ENDIF}
 
 {$IFDEF IMPLEMENTATION}
@@ -219,6 +219,7 @@ begin
 			end;
 			cmEdit : if AEvent.InfoPtr = FDos then begin
 				PDlg := PDialog(PGME.GetDlgDosCOmmand);
+				PDlgDosCommand(PDlg)^.FCmdLine^.SetCaption('');
 				R := PDlg^.ShowModal;
 				if R = mrOK then 
 					AddData(PDlg);		
@@ -227,6 +228,8 @@ begin
 				ClearEvent(AEvent);
 {				POpt := nil; }
 				PDlg := PDialog(PGME.GetDlgFindExec);
+				if Assigned(FProc^.FItems.Last) then
+					POpenDialog(PDlg)^.SetDir(PLaunchItem(FProc^.FItems.Last)^.FPath);
 				R := PDlg^.ShowModal;
 				if R = mrOK then AddData(PDlg);
 {				R2 := mrCancel;
@@ -267,21 +270,11 @@ begin
 	with FProc^ do begin
 		FItems.Add(P);
 	end;	 }
-	P := New(PLaunchItem, Create(Copy(FStartDir, 1, 2)));
+	
+	P := AddSingle(Copy(FStartDir, 1, 2), True);
 	P^.FLock := True;
-	P^.FPath := Copy(FStartDir, 1, 2);
-	with FProc^ do begin
-		FItems.Add(P);
-	end;	
-	P := New(PLaunchItem, Create('CD ' + Copy(FStartDir, 3, Length(FStartDir))));
+	P := AddSingle('CD ' + Copy(FStartDir, 3, Length(FStartDir)), True);
 	P^.FLock := True;
-	P^.FPath := Dir(FStartDir);
-	with FProc^ do begin
-		FItems.Add(P);
-		AdjustSize;
-		Update;
-		Bottom;
-	end;	
 end;
 
 procedure TDlgLaunch.AddCurrent;
@@ -325,7 +318,7 @@ begin
 	UpdateButtons;
 end;
 
-procedure TDlgLaunch.AddSingle(AFilename : String; DosCmd : boolean);
+function TDlgLaunch.AddSingle(AFilename : String; DosCmd : boolean) : PLaunchItem;
 var
 	FName, FPath, FOpts, LPath : String;
 	P, D : PLaunchItem;
@@ -333,7 +326,7 @@ begin
 	if Assigned(FProc^.FItems.Last) then 
 		LPath := PLaunchItem(FProc^.FItems.Last)^.FPath
 	else
-		LPath := Dir(FStartDir);
+		LPath := '';
 		
 	FName := UCase(Trim(PullStr(' ', AFilename)));
 	if DosCmd then begin
@@ -345,35 +338,54 @@ begin
 		FPath := Dir(FPath);
 		FOpts := Trim(AFilename);
 	end;
+	
 	if FPath = '' then begin
 		if Assigned(FProc^.FItems.Last) then 
 			FPath := PLaunchItem(FProc^.FItems.Last)^.FPath
 		else
 			FPath := FStartDir;
 	end;
+	
+	FPath := Dir(FPath);
 
-	if LPath[1] <> FPath[1] then begin
-		D := New(PLaunchItem, Create(Copy(FPath, 1, 2)));
-		D^.FLock := False;
-		D^.FNOpt := True; 
-		D^.FPath := Copy(FPath, 1, 2);
-		FProc^.FItems.Add(D);
-	end;
-	if LPath <> FPath then begin
-		D := New(PLaunchItem, Create('CD ' + Copy(FPath, 3, Length(FPath))));
-		D^.FLock := False;
-{		D^.FNOpt := True; }
-		D^.FPath := FPath;
-		FProc^.FItems.Add(D);
+	if (Length(FName) = 2) and (FName[2] = ':') then begin
+		LPath := FName;
+		FPath := FName;
+	end else begin
+		if LPath[1] <> FPath[1] then begin
+			D := New(PLaunchItem, Create(Copy(FPath, 1, 2)));
+			D^.FLock := False;
+			D^.FNOpt := True; 
+			D^.FPath := Copy(FPath, 1, 2);
+			FProc^.FItems.Add(D);
+		end;
 	end;
 	
+	if FName = 'CD' then begin
+		FOpts := Trim(UCase(FOpts));
+		FPath := Dir(Copy(FPath, 1, 2) + FOpts);
+		FOpts := Copy(FPath, 3, Length(FPath));
+		LPath := FPath;
+	end else begin
+		if LPath <> FPath then begin
+			D := New(PLaunchItem, Create('CD ' + Copy(FPath, 3, Length(FPath))));
+			D^.FLock := False;
+			D^.FNOpt := True; 
+			D^.FPath := FPath;
+			FProc^.FItems.Add(D);
+		end;
+	end;
 	P := New(PLaunchItem, Create(FName));
 	P^.FLock := False;
 	P^.FOptions := FOpts;
-	P^.FPath := Dir(FPath);	
+	P^.FPath := FPath;	
 	P^.FExact := DosCmd;
-	if (Length(FName) = 2) and (FName[2] = ':') then
+	if (Length(FName) = 2) and (FName[2] = ':') then begin
 		P^.FNOpt := True;
+	end;
+	if FName = 'CD' then
+		P^.FNOpt := True;
+	
 	if FOpts <> '' then
 		P^.Add(New(PListItem, Create(FOpts)));
 	with FProc^ do begin
@@ -382,6 +394,7 @@ begin
 		Update;
 		Bottom;
 	end;
+	AddSingle := P;
 end;
 
 procedure TDlgLaunch.AddData;
