@@ -19,6 +19,15 @@ Known Issues (That I either can not or will not do anything about):
 	QScroll Smooth scrolling doesn't work in VMware.
 	ATOM screen saver will not work in DosBox fullscreen mode.
 
+To-Do (Sooner or later, maybe):
+	
+	Use Viewers in Complex Execution Process.
+	Custom Color DAC Support.
+	Menu Path Drive Scanning for Disc Insertion.
+	User Interface Support for PGMVars.
+	Option Sets and Option prompting before launching.
+	Other Utilities.
+
 Building PGME from source requires:
 	
 	PGME source trunk from http://pgme.sourceforce.net
