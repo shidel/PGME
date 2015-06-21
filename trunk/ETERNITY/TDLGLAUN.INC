@@ -192,10 +192,12 @@ end;
 
 procedure TDlgLaunch.UpdateButtons;
 begin
-	if Assigned(FProc^.FCurrent) and (PLaunchItem(FProc^.FCurrent)^.FLock = false) and 
-	(PLaunchItem(FProc^.FCurrent)^.FNOpt = false) then begin
+	if Assigned(FProc^.FCurrent) and (PLaunchItem(FProc^.FCurrent)^.FLock = false) then begin
 		FRemove^.SetEnabled(True);
-		FModify^.SetEnabled(True);
+		if (PLaunchItem(FProc^.FCurrent)^.FNOpt = false) then
+			FModify^.SetEnabled(True)
+		else
+			FModify^.SetEnabled(False);
 	end else begin
 		FRemove^.SetEnabled(False);
 		FModify^.SetEnabled(False);
@@ -353,14 +355,14 @@ begin
 	if LPath[1] <> FPath[1] then begin
 		D := New(PLaunchItem, Create(Copy(FPath, 1, 2)));
 		D^.FLock := False;
-		D^.FNOpt := True;
+		D^.FNOpt := True; 
 		D^.FPath := Copy(FPath, 1, 2);
 		FProc^.FItems.Add(D);
 	end;
 	if LPath <> FPath then begin
 		D := New(PLaunchItem, Create('CD ' + Copy(FPath, 3, Length(FPath))));
 		D^.FLock := False;
-		D^.FNOpt := True;
+{		D^.FNOpt := True; }
 		D^.FPath := FPath;
 		FProc^.FItems.Add(D);
 	end;
@@ -370,6 +372,8 @@ begin
 	P^.FOptions := FOpts;
 	P^.FPath := Dir(FPath);	
 	P^.FExact := DosCmd;
+	if (Length(FName) = 2) and (FName[2] = ':') then
+		P^.FNOpt := True;
 	if FOpts <> '' then
 		P^.Add(New(PListItem, Create(FOpts)));
 	with FProc^ do begin
