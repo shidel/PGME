@@ -258,11 +258,11 @@ procedure TDlgLaunch.AddDefaults;
 var
 	P : PLaunchItem;
 begin
-	P := New(PLaunchItem, Create('@ECHO OFF'));
+{	P := New(PLaunchItem, Create('@ECHO OFF'));
 	P^.FLock := True;
 	with FProc^ do begin
 		FItems.Add(P);
-	end;	
+	end;	 }
 	P := New(PLaunchItem, Create(Copy(FStartDir, 1, 2)));
 	P^.FLock := True;
 	P^.FPath := Copy(FStartDir, 1, 2);
