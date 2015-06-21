@@ -327,7 +327,7 @@ end;
 function TDlgLaunch.AddSingle(AFilename : String; DosCmd : boolean) : PLaunchItem;
 var
 	FName, FPath, FOpts, LPath : String;
-	P, D : PLaunchItem;
+	P : PLaunchItem;
 begin
 	if Assigned(FProc^.FItems.Last) then 
 		LPath := PLaunchItem(FProc^.FItems.Last)^.FPath
@@ -361,11 +361,11 @@ begin
 		FPath := FName;
 	end else begin
 		if LPath[1] <> FPath[1] then begin
-			D := New(PLaunchItem, Create(Copy(FPath, 1, 2)));
-			D^.FLock := False;
-			D^.FNOpt := True; 
-			D^.FPath := Copy(FPath, 1, 2);
-			FProc^.FItems.Add(D);
+			P := New(PLaunchItem, Create(Copy(FPath, 1, 2)));
+			P^.FLock := False;
+			P^.FNOpt := True; 
+			P^.FPath := Copy(FPath, 1, 2);
+			FProc^.FItems.Add(P);
 		end;
 	end;
 	
@@ -376,11 +376,14 @@ begin
 		LPath := FPath;
 	end else begin
 		if LPath <> FPath then begin
-			D := New(PLaunchItem, Create('CD ' + Copy(FPath, 3, Length(FPath))));
-			D^.FLock := False;
-			D^.FNOpt := True; 
-			D^.FPath := FPath;
-			FProc^.FItems.Add(D);
+			{P := New(PLaunchItem, Create('CD'));
+			P^.FLock := False;
+			P^.FNOpt := True; 
+			P^.FPath := FPath;
+			P^.FOptions := Copy(FPath, 3, Length(FPath));
+			P^.Add(New(PListItem, Create(Copy(FPath, 3, Length(FPath)))));
+			FProc^.FItems.Add(P); }
+			Self.AddSingle('CD ' + Copy(FPath, 3, Length(FPath)), False);
 		end;
 	end;
 	P := New(PLaunchItem, Create(FName));
