@@ -1305,7 +1305,7 @@ begin
 	FPrograms^.BeginUpdate;
 	FPrograms^.ClearItems;
 	FWritable := False;
-	if Assigned(FMenus^.FCurrent) and Assigned(FMenus^.FCurrent^.Data) then
+	if Assigned(FMenus^.FCurrent) and Assigned(FMenus^.FCurrent^.Data) then begin
 		with PCacheMenu(FMenus^.FCurrent^.Data)^ do begin
 			FWritable := Writable;
 			FEditTitle^.SetCaption(LongTitle);
@@ -1316,6 +1316,8 @@ begin
 				P := P^.Next;
 			end;
 		end;
+	end else
+		FEditTitle^.SetCaption('');
 	UpdateButtons;
 	FLastMenu := FMenus^.FCurrent;
 	FPrograms^.EndUpdate;
@@ -1699,7 +1701,7 @@ var
 	M : TConfigFile;
 	CMenu, S : String;
 begin
-	if not (Assigned(FMenus) and Assigned(FMenus^.FCurrent) and
+	if not (Assigned(FMenus) and
 	Assigned(FDlgMAdd) and Assigned(PDlgMAdd(FDlgMAdd)^.FLabelFile)) then exit;
 	M.Create('TEMP');
 	CMenu := PDlgMAdd(FDlgMAdd)^.FLabelFile^.GetCaption;
