@@ -21,7 +21,6 @@ Known Issues (That I either can not or will not do anything about):
 
 To-Do (Sooner or later, maybe):
 	
-	Use Viewers in Complex Execution Process.
 	Custom Color DAC Support.
 	Menu Path Drive Scanning for Disc Insertion.
 	User Interface Support for PGMVars.
