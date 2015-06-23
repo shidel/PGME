@@ -1102,6 +1102,7 @@ begin
 				FResumeText := V			
 		end;
 	end;
+{	FBatLoop := True; }
 	FInSound := True;
 	if (FReqMenu <> '') and (FReqProg <> '') then
 		FInitRun := False;
@@ -1435,7 +1436,8 @@ var
 	begin
 		CheckViewer := True;
 		with PCacheApp(AItem^.Data)^ do begin
-			FExt := UCase(Copy(FName, LastPos('.', FName) + 1, Length(FName) ));
+			FExt := FileExtension(FName);
+			
 			FView := FConfig.GetValue(FExt, '');
 			if SimpleExec and (not MaxMemory) and (Count = 0) and (FName <> '') and 
 			(not PGMVars) and (FView = '') and (FExt = 'BAT') then begin
@@ -1459,6 +1461,24 @@ var
 			end;
 		end;
 	end;
+	
+	procedure FileWriteExec(Command : String);
+	begin
+		FName := PullStr(' ', Command);
+		FExt := FileExtension(FName);
+		FView := FConfig.GetValue(FExt, '');
+		if FView <> '' then begin
+			Command := Trim(FName + ' ' + Command);
+			FName := FileExpand(FView);
+		end;
+		FExt := FileExtension(FName);
+		if FExt = 'BAT' then begin
+			Command := Trim(FName + ' ' + Command);
+			FName := 'CALL';
+		end;		
+		FileWrite(Trim(FName + ' ' + Command));
+	end;
+
 	
 begin
 	(* 
@@ -1526,9 +1546,9 @@ begin
 			else
 				S2 := 'REM SET ';
 			
-			FileWrite(S2 + 'PGME=' + GetExePath);
-			FileWrite(S2 + 'MENU=' + FDir + PCacheMenu(Parent)^.GetNameID );
-			FileWrite(S2 + 'PROG=' + GetNameID);
+			FileWrite(S2 + 'PGME_PATH=' + GetExePath);
+			FileWrite(S2 + 'PGME_MENU=' + FDir + PCacheMenu(Parent)^.GetNameID );
+			FileWrite(S2 + 'PGME_PROG=' + GetNameID);
 			FileWrite('');
 			FileWrite('REM Begin by setting current dir and drive to menu directory.');
 			FileWrite(Copy(FDir, 1, 2));
@@ -1536,15 +1556,15 @@ begin
 			FileWrite('');
 			FileWrite('REM Continue by running complex launching processes.');
 
+			FExt := UCase(Copy(FName, LastPos('.', FName) + 1, Length(FName) ));
+			FView := FConfig.GetValue(FExt, '');
+						
 			P := PCacheProc(First);
 			if OK then begin
 				if Not assigned(P) then begin
-					if FExt = 'BAT' then
-						FileWrite('CALL ' + FName + ' ' + FOpts)
-					else
-						FileWrite(FName + ' ' + FOpts);
+					FileWriteExec(FName + ' ' + FOpts);
 				end else while Assigned(P) and OK do begin
-					FileWrite(P^.GetNameID);
+					FileWriteExec(P^.GetNameID);
 					P := PCacheProc(P^.Next);
 				end;
 			end;
@@ -1552,9 +1572,9 @@ begin
 			if PGMVars then begin			
 				FileWrite('');
 				FileWrite('REM Clear PGME Environment Variables');
-				FileWrite(S2 + 'PGME=');
-				FileWrite(S2 + 'MENU=');
-				FileWrite(S2 + 'PROG=');
+				FileWrite(S2 + 'PGME_PATH=');
+				FileWrite(S2 + 'PGME_MENU=');
+				FileWrite(S2 + 'PGME_PROG=');
 			end;
 			
 			FileWrite('');

@@ -12,7 +12,7 @@ efntdsgn: efntdsgn.exe
 
 efnttools: qfntload.exe qfnt2raw.exe raw2qfnt.exe qfnt2tsr.exe
 
-all: efntdsgn efnttools qscroll.exe qcnftool.exe qdetune.exe qkeys.exe
+all: efntdsgn efnttools qscroll.exe qcnftool.exe qdetune.exe qkeys.exe qnothing.exe
 
 .pas.tpu: 
     @if not exist $(BINDIR) mkdir $(BINDIR)
