@@ -58,3 +58,18 @@
 	MAXAVAIL=False
 	SIMPLE=True
 	TONE=400:1,300:1,400:1,500:1,600:1,0:2
+	
+[KILL-MENU]
+	CLASS=PROGRAM
+	COMMANDS=
+
+		+=QNOTHING.EXE Goodbye Cruel World
+		+=DEL ETERNITY.MNU
+
+	FILE=QNOTHING.EXE
+	GROUP=ETERNITY
+	SIMPLE=FALSE
+	TITLE= Remove the Eternity Default Menu
+	TITLE.EN_US=Remove the Eternity Default Menu
+	TONE=200:3,0:2,250:3,0:5,200:3,0:5,150:18
+
