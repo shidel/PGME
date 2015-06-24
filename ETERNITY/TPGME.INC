@@ -1465,8 +1465,20 @@ var
 	end;
 	
 	procedure FileWriteExec(Command : String);
+	var
+		TDir : String;
 	begin
 		FName := PullStr(' ', Command);
+		TDir := PathOf(FName);
+		if (TDir <> '') and (TDir <> FDir) then begin
+			if TDir[1] <> FDir[1] then 
+				FileWrite (Copy(TDir, 1,2));
+			FileWrite('CD ' + Copy(TDir, 3, Length(TDir)));
+		end;
+		if (Length(FName) = 2) and (FName[2] = ':') then 
+			FDir := FName;
+		if FName = 'CD' then 
+			FDir := Command;
 		FExt := FileExtension(FName);
 		FView := FConfig.GetValue(FExt, '');
 		if FView <> '' then begin
@@ -1477,7 +1489,7 @@ var
 		if FExt = 'BAT' then begin
 			Command := Trim(FName + ' ' + Command);
 			FName := 'CALL';
-		end;		
+		end;	
 		FileWrite(Trim(FName + ' ' + Command));
 	end;
 
@@ -1580,6 +1592,7 @@ begin
 			end;
 			
 			FileWrite('');
+			{FileWrite('PAUSE');}
 			FileWrite('REM Return to Program Manager Eternity');
 			FileWrite('PGM.BAT ' + FRet);
 
