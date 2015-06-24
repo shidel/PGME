@@ -12,7 +12,7 @@
 program Program_Manager_Eternity_Main_Application; { X Series }
 
 uses QCrt, QErrors, QStrings, QDos, QFiles, QClass, QObjects, QControls, QFmtStr, PGM_Call,
-	EConst, ECache, EDialogs, EPGM;
+	EConst, ECache, EDialogs, EPGM, QBIOS;
 
 {$DEFINE INTERFACE}
 
@@ -21,11 +21,15 @@ uses QCrt, QErrors, QStrings, QDos, QFiles, QClass, QObjects, QControls, QFmtStr
 
 {$UNDEF IMPLEMENTATION}
 
+	procedure RunEternity;
+	begin
+		ErrorsOnExit := True; 
+		PGME.Create;
+		PGME.Execute;
+		PGME.Destroy;  
+		GotoXY(1, WhereY); 
+	end;
 
 begin
-	ErrorsOnExit := True; 
-	PGME.Create;
-	PGME.Execute;
-	PGME.Destroy;  
-	GotoXY(1, WhereY); 
-end.
+	RunEternity; 
+end.
