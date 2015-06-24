@@ -1474,6 +1474,7 @@ var
 			if TDir[1] <> FDir[1] then 
 				FileWrite (Copy(TDir, 1,2));
 			FileWrite('CD ' + Copy(TDir, 3, Length(TDir)));
+			FName := Copy(FName, Length(TDir) + 1, Length(FName));
 		end;
 		if (Length(FName) = 2) and (FName[2] = ':') then 
 			FDir := FName;
