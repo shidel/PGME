@@ -1528,10 +1528,19 @@ begin
 		ChDir(FHoldDir);
 		if SimpleExec and (not MaxMemory) and (Count = 0) and (FName <> '') and 
 		(not PGMVars) then begin
+			if PathOf(FName) <> FDir then
+				FExecDir := PathOf(FName);
+			if FView <> '' then begin
+				FView := FileExpand(FView);
+				S := FOpts;
+				FExecDir := PathOf(FileExpand(PullStr(' ', S)));
+			end;
 			if FExecDir <> '' then 
 				FOriginalPath := FExecDir;
 			if Tone <> '' then 
 				FEndTone := Tone;
+			ChDir(FExecDir);
+			SetCurDisk(Ord(FExecDir[1]) - 64);
 			CallBack(FName, FOpts, FRet, ReturnAfter or (not FCanQuit));
 			Terminate;
 		end else begin
