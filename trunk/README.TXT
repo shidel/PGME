@@ -6,7 +6,7 @@
 	extract and execute the INSTALL.EXE file. It will perform the needed 
 	steps to install or upgrade to the latest version of PGME. 
 		
-		It will create an installation derectory or detect the previous one.
+		It will create an installation directory or detect the previous one.
 		Also, it creates a launcher batch file called PGM.BAT and
 		will place it in a directory listed your path environment 
 		variable. You should really use the PGM.BAT launcher to start
