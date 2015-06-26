@@ -23,10 +23,8 @@ type
 		function  ObjectClass ( AName : String ) : String; virtual;
     public { protected }
 		procedure CheckLocal(var AEvent : TEvent); virtual;
-		procedure BeforeShow; virtual;
 	public
 		constructor Create(AParent : PControl; AName : String);
-		destructor Destroy; virtual;
 		procedure SetData(ADlg : PObject); virtual;
 	end;   
 
@@ -103,16 +101,6 @@ begin
 
 end;
 
-destructor TDlgExecOpt.Destroy;
-begin
-	inherited Destroy;
-end;
-
-procedure TDlgExecOpt.BeforeShow;
-begin
-	inherited BeforeShow;
-end;
-
 procedure TDlgExecOpt.CheckLocal(var AEvent : TEvent);
 begin
 	inherited CheckLocal(AEvent);
@@ -135,5 +123,4 @@ begin
 				FFileName^.SetCaption(PFileDialog(ADlg)^.GetFileName);
 	end;
 end;
-
 {$ENDIF}

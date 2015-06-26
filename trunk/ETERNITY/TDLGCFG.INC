@@ -21,12 +21,10 @@ type
     	FLang : PDropList;
 		function  ObjectClass ( AName : String ) : String; virtual;
     public { protected }
-		procedure CheckLocal(var AEvent : TEvent); virtual;
 		procedure BeforeShow; virtual;
 		procedure Save; virtual;
 	public
 		constructor Create(AParent : PControl);
-		destructor Destroy; virtual;
 		function Modified: boolean; virtual;
 	end;   
 
@@ -102,16 +100,6 @@ begin
 		SetCommand(cmOK);
 	end;
 	
-end;
-
-destructor TDlgPGMCfg.Destroy;
-begin
-	inherited Destroy;
-end;
-
-procedure TDlgPGMCfg.CheckLocal(var AEvent : TEvent);
-begin
-	inherited CheckLocal(AEvent);
 end;
 
 procedure TDlgPGMCfg.BeforeShow;

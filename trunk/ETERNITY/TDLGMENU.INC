@@ -29,7 +29,6 @@ type
 		procedure BeforeShow; virtual;
 	public
 		constructor Create(AParent : PControl; AName : String; ANewMenu : boolean);
-		destructor Destroy; virtual;
 		procedure SetData(AItem : PListItem); virtual;
 		procedure UpdateFileName; virtual;
 	end;   
@@ -180,11 +179,6 @@ begin
 		SetCommand(cmOK);
 		
 	end;
-end;
-
-destructor TDlgMenu.Destroy;
-begin
-	inherited Destroy;
 end;
 
 procedure TDlgMenu.CheckLocal(var AEvent : TEvent);
