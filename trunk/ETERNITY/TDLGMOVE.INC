@@ -15,7 +15,7 @@ const
 
 type 
 	PDlgMove = ^TDlgMove;
-	TDlgMove = object (TMessageBox)
+	TDlgMove = object (TDialog)
     public { protected }
 {    	FOK : PButton;}
 		function  ObjectClass ( AName : String ) : String; virtual;
@@ -49,24 +49,11 @@ begin
 	SetStyle(bxSingle);
 	SetBounds(B);
 	FAutoEndModal := True;
-	SetMessage(' ');
-	AppendMessage('The Program Manager Eternity Edition');
-	AppendMessage('Copyright 2015.');
-	AppendMessage(' ');
-	AppendMessage('The QuickCRT Framework');
-	AppendMessage('Copyright 1990-2015.');
-	AppendMessage(' ');
-	AppendMessage('Both PGME and QuickCRT are opensource and');
-	AppendMessage('can be found on sourceforge at:');	
-	AppendMessage(' ');
-	AppendMessage('http://pgme.sourceforge.net');
-	AppendMessage('http://quickcrt.sourceforge.net');
-	SetTitle('About PGM Eternity');
-	SetHelpText('The "About" dialog box.');
+	SetTitle('Move Program');
+	SetHelpText('The "Move" dialog box.');
 	AddHelpText('');
-	AddHelpText('This is dialog box provides some information regarding PGME.');
-	AddHelpText('Additional information is available in the BLAHBLAH.TXT file');
-	AddHelpText('and online at http://pgme.sourceforge.net');
+	AddHelpText('This is dialog box provides a means to copy or move a menu entry from');
+	AddHelpText('menu onto another.');
 {	TextAttr := ColorOK;
 	FOK := New(PButton, Create(@Self, 'BUTTON.OK'));
 	with PButton(FOK)^ do begin

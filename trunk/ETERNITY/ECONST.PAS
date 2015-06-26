@@ -38,6 +38,8 @@ const
 	cmBrowseLang = cmBrowseESaver + 1;
 
 	cmBrowseExec = cmBrowseLang + 1;
+
+	cmProgMove = cmBrowseExec + 1;
 		
 	ftMenu	= 'MENU';
 

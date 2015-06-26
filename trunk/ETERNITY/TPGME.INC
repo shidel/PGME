@@ -48,7 +48,7 @@ type
 			FDate, FTime : PLabel;
 			FMenuCache : PObject;
 			FEditMenu : PControl;
-			FBtnPAdd, FBtnPEdit, FBtnPDel,
+			FBtnPAdd, FBtnPEdit, FBtnPDel, FBtnPMove,
 			FBtnMAdd, FBtnMEdit, FBtnMDel,
 			FBtnPGMOpt, FBtnPGMCfg : PButton;
 			FResumeText : String;
@@ -642,7 +642,7 @@ var
 begin
 	if Not Assigned(FEditMenu) then begin
 		TextAttr := $04;
-		Bounds(FBtnEdit^.Left + FBtnEdit^.Width - 21, FBtnEdit^.Top - 12, 22, 12, B);
+		Bounds(FBtnEdit^.Left + FBtnEdit^.Width - 21, FBtnEdit^.Top - 13, 22, 13, B);
 		FEditMenu := New(PPopup, Create(PControl(FBtnEdit^.Parent), 'POPUP.EDITMENU'));
 		with PPopUp(FEditMenu)^ do begin
 			SetHelpText('A note regarding the edit button popup menu shortcut keys.');
@@ -650,14 +650,14 @@ begin
 			SetShadow(False);
 			SetBounds(B);	
 			SetAnchors(abBottom or abRight);
-			Bounds(0,4,Width, 1, B);
+			Bounds(0,5,Width, 1, B);
 			with PLine(New(PLine, Create(FEditMenu, 'LINE.UPPER')))^ do begin
 				SetStyle(lnSingle or lnHorizontal);
 				SetAllowedOutside(True);
 				SetAnchors(abLeft or abRight or abTop);
 				SetBounds(B);
 			end;
-			Bounds(0,8,Width, 1, B);
+			Bounds(0,9,Width, 1, B);
 			with PLine(New(PLine, Create(FEditMenu, 'LINE.LOWER')))^ do begin
 				SetStyle(lnSingle or lnHorizontal);
 				SetAllowedOutside(True);
@@ -688,6 +688,18 @@ begin
 				SetBounds(B);
 				SetCommand(cmProgEdit);
 				SetKeycode(kbE, 0, kfMatches);
+			end;
+			{TextAttr := $0C;}
+			Inc(B.Top);
+			FBtnPMove := New(PButton, Create(FEditMenu, 'BTN.PROG.MOVE'));
+			with PButton(FBtnPMove)^ do begin
+				SetHelpText('5;"%0" Option: Select move or copy the currently selected program.');
+				AddHelpText('The default keyboard shortcut is "X".');
+				SetCaption('Move Program...');
+				FHAlign := AlignLeft;
+				SetBounds(B);
+				SetCommand(cmProgMove);
+				SetKeycode(kbX, 0, kfMatches);
 			end;
 			{TextAttr := $0C;}
 			Inc(B.Top);
@@ -766,6 +778,8 @@ begin
 	FBtnPAdd^.SetEnabled(FWritable and Assigned(FMenus^.FCurrent));
 	FBtnPEdit^.SetEnabled(FWritable and Assigned(FMenus^.FCurrent) and Assigned(FPrograms^.FCurrent));
 	FBtnPDel^.SetEnabled(FWritable and Assigned(FMenus^.FCurrent) and Assigned(FPrograms^.FCurrent));
+	FBtnPMove^.SetEnabled(FWritable and Assigned(FMenus^.FCurrent) and Assigned(FPrograms^.FCurrent));
+	FBtnPMove^.SetEnabled(False);
 	FBtnMAdd^.SetEnabled((Not FReadOnly));
 	FBtnMEdit^.SetEnabled(FWritable and Assigned(FMenus^.FCurrent));
 	FBtnMDel^.SetEnabled(FWritable and Assigned(FMenus^.FCurrent));
