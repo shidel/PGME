@@ -18,12 +18,8 @@ type
 	TDlgPAdd = object (TDlgProg)
     public { protected }
 		function  ObjectClass ( AName : String ) : String; virtual;
-    public { protected }
-		procedure CheckLocal(var AEvent : TEvent); virtual;
-		procedure BeforeShow; virtual;
 	public
 		constructor Create(AParent : PControl);
-		destructor Destroy; virtual;
 	end;   
 
 {$ENDIF}
@@ -47,18 +43,4 @@ begin
 	AddHelpText('to the current menu.');
 end;
 
-destructor TDlgPAdd.Destroy;
-begin
-	inherited Destroy;
-end;
-
-procedure TDlgPAdd.CheckLocal(var AEvent : TEvent);
-begin
-	inherited CheckLocal(AEvent);
-end;
-
-procedure TDlgPAdd.BeforeShow;
-begin
-	inherited BeforeShow;
-end;
 {$ENDIF}

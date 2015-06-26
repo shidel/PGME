@@ -20,12 +20,8 @@ type
     	FOK : PButton;
     	FCmdLine : PEdit;
 		function  ObjectClass ( AName : String ) : String; virtual;
-    public { protected }
-		procedure CheckLocal(var AEvent : TEvent); virtual;
-		procedure BeforeShow; virtual;
 	public
 		constructor Create(AParent : PControl);
-		destructor Destroy; virtual;
 	end;   
 
 {$ENDIF}
@@ -87,20 +83,5 @@ begin
 		SetHelpText('5;Use the "%0" button to add the DOS command');
 		AddHelpText('and close the dialog box.');
 	end;
-end;
-
-destructor TDlgDOSCommand.Destroy;
-begin
-	inherited Destroy;
-end;
-
-procedure TDlgDOSCommand.CheckLocal(var AEvent : TEvent);
-begin
-	inherited CheckLocal(AEvent);
-end;
-
-procedure TDlgDOSCommand.BeforeShow;
-begin
-	inherited BeforeShow;
 end;
 {$ENDIF}

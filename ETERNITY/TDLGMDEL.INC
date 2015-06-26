@@ -18,12 +18,8 @@ type
 	TDlgMDel = object (TMessageBox)
     public { protected }
 		function  ObjectClass ( AName : String ) : String; virtual;
-    public { protected }
-		procedure CheckLocal(var AEvent : TEvent); virtual;
-		procedure BeforeShow; virtual;
 	public
 		constructor Create(AParent : PControl);
-		destructor Destroy; virtual;
 	end;   
 
 {$ENDIF}
@@ -75,18 +71,4 @@ begin
 	end;
 end;
 
-destructor TDlgMDel.Destroy;
-begin
-	inherited Destroy;
-end;
-
-procedure TDlgMDel.CheckLocal(var AEvent : TEvent);
-begin
-	inherited CheckLocal(AEvent);
-end;
-
-procedure TDlgMDel.BeforeShow;
-begin
-	inherited BeforeShow;
-end;
 {$ENDIF}

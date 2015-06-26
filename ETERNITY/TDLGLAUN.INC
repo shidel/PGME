@@ -37,11 +37,9 @@ type
 		function  ObjectClass ( AName : String ) : String; virtual;
     public { protected }
 		procedure CheckLocal(var AEvent : TEvent); virtual;
-		procedure BeforeShow; virtual;
 		procedure UpdateButtons; virtual;
 	public
 		constructor Create(AParent : PControl; AName : String);
-		destructor Destroy; virtual;
 		procedure SetData(ADlg : PDialog); virtual;
 		procedure ClearData; virtual;
 		procedure AddData(ADlg : PDialog); virtual;
@@ -186,16 +184,6 @@ begin
 
 end;
 
-destructor TDlgLaunch.Destroy;
-begin
-	inherited Destroy;
-end;
-
-procedure TDlgLaunch.BeforeShow;
-begin
-	inherited BeforeShow;
-end;
-
 procedure TDlgLaunch.UpdateButtons;
 begin
 	if Assigned(FProc^.FCurrent) and (PLaunchItem(FProc^.FCurrent)^.FLock = false) then begin
@@ -320,7 +308,10 @@ begin
 					FStartDir := PCacheDir(Parent)^.GetNameID; 
 	end;
 	AddDefaults;
-	if Assigned(Data) then AddCurrent;
+	{if Assigned(Data) then}
+	if Assigned(FDlg) and 
+	((PDlgProg(FDlg)^.FCommands.Count > 0) or (PDlgProg(FDlg)^.FFile <> '')) then 
+		AddCurrent;
 	UpdateButtons;
 end;
 

@@ -18,12 +18,8 @@ type
 	TDlgMEdit = object (TDlgMenu)
     public { protected }
 		function  ObjectClass ( AName : String ) : String; virtual;
-    public { protected }
-		procedure CheckLocal(var AEvent : TEvent); virtual;
-		procedure BeforeShow; virtual;
 	public
 		constructor Create(AParent : PControl);
-		destructor Destroy; virtual;
 	end;   
 
 {$ENDIF}
@@ -51,20 +47,5 @@ begin
 		SetHelpText('5;Use the "%0" button to apply the new settings to the current menu');
 		AddHelpText('and close the dialog box.');
 	end;
-end;
-
-destructor TDlgMEdit.Destroy;
-begin
-	inherited Destroy;
-end;
-
-procedure TDlgMEdit.CheckLocal(var AEvent : TEvent);
-begin
-	inherited CheckLocal(AEvent);
-end;
-
-procedure TDlgMEdit.BeforeShow;
-begin
-	inherited BeforeShow;
 end;
 {$ENDIF}

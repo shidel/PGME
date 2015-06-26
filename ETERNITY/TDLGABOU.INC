@@ -17,16 +17,10 @@ type
 	PDlgAbout = ^TDlgAbout;
 	TDlgAbout = object (TMessageBox)
     public { protected }
-{    	FOK : PButton;}
 		function  ObjectClass ( AName : String ) : String; virtual;
-    public { protected }
-		procedure CheckLocal(var AEvent : TEvent); virtual;
-		procedure BeforeShow; virtual;
 	public
 		constructor Create(AParent : PControl);
-		destructor Destroy; virtual;
 	end;   
-
 {$ENDIF}
 
 {$IFDEF IMPLEMENTATION}
@@ -77,20 +71,5 @@ begin
 		SetCommand(cmOK);		
 		SetHelpText('5;Use the "%0" button to close the dialog box.');
 	end;}
-end;
-
-destructor TDlgAbout.Destroy;
-begin
-	inherited Destroy;
-end;
-
-procedure TDlgAbout.CheckLocal(var AEvent : TEvent);
-begin
-	inherited CheckLocal(AEvent);
-end;
-
-procedure TDlgAbout.BeforeShow;
-begin
-	inherited BeforeShow;
 end;
 {$ENDIF}

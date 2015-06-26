@@ -18,12 +18,8 @@ type
 	TDlgMAdd = object (TDlgMenu)
     public { protected }
 		function  ObjectClass ( AName : String ) : String; virtual;
-    public { protected }
-		procedure CheckLocal(var AEvent : TEvent); virtual;
-		procedure BeforeShow; virtual;
-	public
+ 	public
 		constructor Create(AParent : PControl);
-		destructor Destroy; virtual;
 	end;   
 
 {$ENDIF}
@@ -53,18 +49,4 @@ begin
 	end;
 end;
 
-destructor TDlgMAdd.Destroy;
-begin
-	inherited Destroy;
-end;
-
-procedure TDlgMAdd.CheckLocal(var AEvent : TEvent);
-begin
-	inherited CheckLocal(AEvent);
-end;
-
-procedure TDlgMAdd.BeforeShow;
-begin
-	inherited BeforeShow;
-end;
 {$ENDIF}

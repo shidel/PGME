@@ -307,7 +307,7 @@ begin
 	FOK^.SetEnabled(Trim(FFile) <> '');
 end;
 
-procedure TDlgProg.ReplaceCommands;
+procedure TDlgProg.ReplaceCommands(AWith : PObject);
 var
 	P : PLaunchItem;
 	S, T : String;

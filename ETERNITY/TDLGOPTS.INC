@@ -28,7 +28,6 @@ type
 		procedure Save; virtual;
 	public
 		constructor Create(AParent : PControl);
-		destructor Destroy; virtual;
 		function Modified : boolean; virtual;
 	end;   
 
@@ -218,11 +217,6 @@ begin
 		setCOmmand(cmOK);
 	end;
 	
-end;
-
-destructor TDlgPGMOpt.Destroy;
-begin
-	inherited Destroy;
 end;
 
 procedure TDlgPGMOpt.CheckLocal(var AEvent : TEvent);
