@@ -30,6 +30,7 @@ uses QCrt, QErrors, QStrings, QDos, QFiles, QClass, QObjects, QControls, QFmtStr
 {$I TDlgLaunch.inc}
 {$I TDlgAbout.inc}
 {$I TDlgDosCommand.inc}
+{$I TDlgMove.inc}
 
 {$UNDEF INTERFACE}
 
@@ -53,6 +54,7 @@ uses EConst, ECache, EPGM;
 {$I TDlgLaunch.inc}
 {$I TDlgAbout.inc}
 {$I TDlgDosCommand.inc}
+{$I TDlgMove.inc}
 
 {$UNDEF IMPLEMENTATION}
 

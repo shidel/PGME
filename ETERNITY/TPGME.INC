@@ -39,7 +39,8 @@ type
 			FDlgLaunch, 
 			FDlgFindExec, FDlgOptExec,
 			FDlgChangeLang, FDlgChangeTheme,
-			FDlgAbout, FDlgDosCommand : PDialog;			
+			FDlgAbout, FDlgDosCommand,
+			FDlgMove : PDialog;			
 			FFind : record
 				FLabel : PLabel;
 				FEdit : PEdit;
@@ -84,6 +85,7 @@ type
 		function GetDlgFindExec : PControl; virtual;
 		function GetDlgOptExec : PControl; virtual;
 		function GetDlgAbout : PControl; virtual;
+		function GetDlgMove : PControl; virtual;
 		function GetDlgDosCommand : PControl; virtual;
 		function GetReturnStr : String; virtual;		
 		procedure CreateAllDialogs(ConserveMemory : boolean); virtual;
@@ -221,6 +223,7 @@ begin
 	FDlgLaunch := nil;
 	FDlgAbout := nil;
 	FDlgDosCommand := nil;
+	FDlgMove := nil;
 	FTimeOut := 0;
 	OldIdleProc := QCrt.IdleProc;
 	QCrt.IdleProc := PGMIdleProc;
@@ -915,6 +918,15 @@ begin
 	GetDlgAbout := FDlgAbout;
 end;
 
+function TPGME.GetDlgMove : PControl;
+begin
+	if Not Assigned(FDlgMove) then begin
+		FDlgMove := New(PDlgMove, Create(@Self));
+		ApplySettings(FDlgMove);
+	end;
+	GetDlgMove := FDlgMove;
+end;
+
 function TPGME.GetDlgDosCommand : PControl;
 begin
 	if Not Assigned(FDlgDosCommand) then begin
@@ -1070,6 +1082,8 @@ begin
 	GetDlgFindExec;
 	if ConserveMemory then FreeAllDialogs;
 	GetDlgOptExec;
+	if ConserveMemory then FreeAllDialogs;
+	GetDlgMove;
 	if ConserveMemory then FreeAllDialogs;
 	GetChangeLang('','');
 	if ConserveMemory then FreeAllDialogs;
@@ -1262,6 +1276,7 @@ begin
 	if Assigned(FDlgChangeLang) and FDlgChangeLang^.GetVisible then Exit;
 	if Assigned(FDlgChangeTheme) and FDlgChangeTheme^.GetVisible then Exit;
 	if Assigned(FDlgAbout) and FDlgAbout^.GetVisible then Exit;
+	if Assigned(FDlgMove) and FDlgMove^.GetVisible then Exit;
 	
 	if S <> Sec then begin
 		S := Sec;
