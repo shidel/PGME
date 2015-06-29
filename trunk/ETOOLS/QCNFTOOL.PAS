@@ -29,26 +29,52 @@ const
 	
 	flNone		= 0;
 	flMerge 	= 1;
-	flClear		= 2;
+	flPrint    	= 2;
 	flVerbose	= 3;
 	flOutName   = 4;
 	flSave		= 5;
+	flAutoMerge = 6;
+	flSection   = 7;
+	flKey		= 8;
+	flValue		= 9;
+	flUnSelect  = 10;
+	flDelete	= 11;
+	flExport    = 12;
+	flAppend 	= 13;
 	
 	NoFileName : Str12 = 'NONAME.CFG';
 	Switch 	   : Str1 = '/';
-	MaxOptions = 5;
+	MaxOptions = 14;
 	Options : array[0..MaxOptions] of TOption = (
 		( Flag:flNone;    SPM:False; Short:''; Long:''; Desc:''),
-		( Flag:flMerge;   SPM:False; Short:'M'; Long:'MERGE';   
-			Desc:'Merge FILENAME another file into the current.'),
-		( Flag:flClear;   SPM:False; Short:'C'; Long:'CLEAR';   
-			Desc:'Purge all data'),
 		( Flag:flVerbose; SPM:True;  Short:'V'; Long:'VERBOSE'; 
-			Desc:'Be verbose about doing stuff.'),
+			Desc:'+/- set verbose level.'),
+		( Flag:flMerge;   SPM:False; Short:'R'; Long:'READ';   
+			Desc:'Read/merge FILENAME into the current data.'),
+		( FLag:flSave; 	  SPM:False; Short:'W'; Long:'WRITE'; 	
+			Desc:'Write changes to output file now.'),
 		( Flag:flOutName; SPM:False; Short:'O'; Long:'OUTPUT';  
-			Desc:'Set Output FILENAME.'),
-		( FLag:flSave; 	  SPM:False; Short:'S'; Long:'SAVE'; 	
-			Desc:'Write changes to disk now.')
+			Desc:'Set output FILENAME.'),
+		( Flag:flAutoMerge; SPM:False; Short:'M'; Long:'AUTOMERGE';  
+			Desc:'+/- set auto merging state.'),
+		( Flag:flNone;    SPM:False; Short:''; Long:''; Desc:''),
+		( Flag:flSection; SPM:False; Short:'S'; Long:'SECTION';  
+			Desc:'Select section NAME.'),
+		( Flag:flKey; SPM:False; Short:'K'; Long:'KEY';  
+			Desc:'Select key NAME.'),
+		( Flag:flValue; SPM:False; Short:'D'; Long:'DATA';  
+			Desc:'Set DATA for key.'),
+		( Flag:flAppend; SPM:False; Short:'A'; Long:'APPEND';  
+			Desc:'Append DATA to key.'),
+		( Flag:flUnSelect; SPM:False; Short:'U'; Long:'UNSELECT';  
+			Desc:'Unselect section and key'),
+		( Flag:flExport; SPM:False; Short:'X'; Long:'EXPORT';  
+			Desc:'Export selection.'),
+		( Flag:flDelete; SPM:False; Short:'E'; Long:'ERASE';  
+			Desc:'Erase selection.'),
+		( Flag:flPrint; SPM:False; Short:'P'; Long:'PRINT';  
+			Desc:'Print selection to display.')
+			
 	);
 		
 
@@ -57,7 +83,9 @@ var
 	Verbose : boolean;
 	FlagValue : integer;
 	StateValue : boolean;
-	
+	Section : string;
+	Key : String;
+		
 procedure Help;
 var
 	I : integer;
@@ -68,7 +96,6 @@ begin
 	WriteLn(AppTitle, ' (', AppID, ') is for manipulating PGME');
 	Writeln('text based data files. These files are similar to windows INI files and');
 	WriteLn('may also be edited using a simple text editor.');
-	WriteLn;
 	M1 := 0;
 	M2 := 0;
 	for I := 0 to MaxOptions do begin
@@ -77,21 +104,24 @@ begin
 		if Length(Options[I].Long) > M2 then 
 			M2 := Length(Options[I].Long);
 	end;
+	if M1 < 4 then M1 := 4;
 	for I := 0 to MaxOptions do 
 		if Options[I].Flag <> flNone then begin
-			Write(LSpace(Options[I].Short, M1));
+			Write(LSpace(Options[I].Short, M1 + 1));
 			if (Options[I].Short <> '') and (Options[I].Long <> '') then
 				Write(', ')
 			else 
 				Write('  ');
 			Write(RSpace(Options[I].Long, M2));
-			Write(' ', Options[I].Desc);
-		end;
+			WriteLn(' ', Options[I].Desc);
+		end else
+			WriteLn;
 	Halt(0);
 end;
 
 procedure Abort(Code : integer);
 begin
+	Config.Destroy;
 	Halt(Code);
 end;
 
@@ -123,8 +153,82 @@ begin
 		end;
 end;
 
+procedure InitVars;
+begin
+	FlagValue := flNone;
+	StateValue := True;
+	Section := '';
+	Key := '';
+end;
+
+procedure Save;
+begin
+	if (Config.FFileName = '') then 
+		Config.FFileName := NoFileName;
+	if Verbose then
+			WriteLn('Writing ', Config.GetFileName);
+	if not Config.Write then 
+		Abort(erDisk_Write_Error);
+end;
+
+procedure PrintKey(AKey : String);
+var
+	P : PListItem;
+begin
+	if AKey <> '' then begin
+		P := Config.FindKey(AKey);
+		if (not Assigned(P)) then
+			WriteLn('Key ', AKey, ' not present.')
+		else if (P^.First = nil) then 
+			WriteLn(AKey, '=')
+		else begin
+			P := P^.First;
+			WriteLn(Space(5), AKey, '=', P^.GetNameId);
+			P := P^.Next;
+			while Assigned(P) do begin
+				WriteLn(Space(10), '+=', P^.GetNameID);
+				P := P^.Next;							
+			end;
+		end;
+	end;
+end;
+
+procedure PrintSection(ASection : String);
+var
+	P : PListItem;
+begin
+	Config.OpenSection(ASection);
+	if Not Assigned(Config.FSectionKey) then
+		WriteLn('Section ', ASection, ' not present.')
+	else begin
+		WriteLn('[', ASection, ']');
+		P := Config.FSectionKey^.First;
+		while Assigned(P) do begin
+			PrintKey(P^.GetNameID);
+			P := P^.Next;
+		end;
+	end;
+	Config.OpenSection(Section);
+end;
+
+procedure PrintAll;
+var
+	P : PListItem;
+begin
+	P := Config.FList.First;
+	if Not Assigned(P) then
+		WriteLn('File ', Config.FFileName, ' is empty.')
+	else begin
+		while Assigned(P) do begin
+			PrintSection(P^.GetNameID);
+			P := P^.Next;
+		end;
+	end;
+end;
+
 procedure Option(Opt : String);
 var
+	P : PListItem;
 	S : String;
 	TempFlag, State : boolean;
 begin
@@ -134,8 +238,44 @@ begin
 			Opt := UCase(Opt);
 			if Verbose then WriteLn('Set output to ', Opt);
 			Config.FFileName := Opt;
+		end else if FlagValue = flSection then begin
+			Key := '';
+			Section := UCase(Opt);
+			if Verbose then begin
+				if Config.FList.FindID(Section) = nil then 
+					WriteLn('Create section "', Section, '"')
+				else
+					WriteLn('Select section "', Section, '"');
+			end;
+			Config.OpenSection(Section);
+		end else if FlagValue = flKey then begin
+			Key := UCase(Opt);
+			if Verbose then begin
+				WriteLn('Select key "', Key, '"');
+			end;
+		end else if FlagValue = flValue then begin
+			if Key = '' then 
+				Abort(erParamError);
+			Config.SetValue(Key, Opt);
+			if Verbose then
+				WriteLn('Setting data "', Opt, '"')
+		end else if FlagValue = flAppend then begin
+			if Key = '' then 
+				Abort(erParamError);
+			P := Config.FindKey(Key);
+			if Assigned(P) then 
+				P^.Add(New(PListItem, Create(Opt)))
+			else
+				Config.SetValue(Key, Opt);
+			if Verbose then
+				WriteLn('Appending "', Opt, '"');
+			Config.FModified := True;
 		end else if (FlagValue = flMerge) or (FlagValue = flNone) then begin 
-			S := Config.GetFileName;
+			S := Config.FFileName;
+			if S = '' then begin
+				S := Opt;
+				Config.FFileName := S;
+			end;
 			Opt := UCase(Opt);
 			if FileExists(Opt) then begin
 				Config.FFileName := Opt;
@@ -150,53 +290,88 @@ begin
 				WriteLn('File not found: ', Opt);
 			end;
 		end else 
-			Abort(erInvalid_Function_Number);
+			Abort(erParamError);
 		FlagValue := flNone;
 	end else if (Opt[1] = Switch) then begin
 			TestSwitches(Opt);
 			if FlagValue = flNone then 
-				Abort(erInvalid_Function_Number);
+				Abort(erParamError);
 			
-			if (FlagValue = flClear) then begin
+			if (FlagValue = flDelete) then begin
 				FlagValue := flNone;
-				if Verbose then WriteLn('Clearing data.');
-				Config.Clear;
+				if Key <> '' then begin
+					Config.DeleteKey(Key);
+					if Verbose then WriteLn('Removing key "', Key, '"');
+					Key := '';
+				end else if Section <> '' then begin
+					Config.DeleteSection;
+					if Verbose then WriteLn('Removing section "', Section, '"');
+					Section := '';
+					InitVars;
+				end else begin
+					if Verbose then WriteLn('Removing all data.');
+					Config.Clear;
+					InitVars;
+				end;
+			end else if (FlagValue = flPrint) then begin
+					FlagValue := flNone;
+				if Key <> '' then 
+					PrintKey(Key)
+				else if Section <> '' then 
+					PrintSection(Section)
+				else 
+					PrintAll;
 			end else if (FlagValue = flVerbose) then begin
 				FlagValue := flNone;
 				WriteLn('Verbose ', BoolStr(StateValue));
 				Verbose := StateValue;
+			end else if (FlagValue = flUnSelect) then begin
+				InitVars;
+				FlagValue := flNone;
+				if Verbose then WriteLn('Unselecting section and key');
+			end else if (FlagValue = flAutoMerge) then begin
+				FlagValue := flNone;
+				if Verbose then WriteLn('Automerge ', BoolStr(StateValue));
+				Config.FAutoMerge := StateValue;
 			end else if (FlagValue = flSave) then begin
-				if Verbose then WriteLn('Saving ', Config.GetFileName);
-				if not Config.Write then 
-					Abort(erDisk_Write_Error);
+				FlagValue := flNone;
+				Save;
 			end;
 	end else begin
-		Abort(erInvalid_Function_Number);
+		Abort(erParamError);
 	end;
 end;
 
 procedure Parse;
 var
+	S : String;
 	I : integer;
 begin
 	Verbose := False;
 	Config.Create('');
 	Config.Clear;
-	Config.FFileName := NoFileName;
+	Config.FFileName := '';
 	Config.FAutoClear := False;
 	Config.FAutoMerge := False;
-	FlagValue := flNone;
-	StateValue := True;
-	
-	for I := 1 to ParamCount do begin
-		Option(ParamStr(I));
-	end;
-	if Config.GetModified and (Config.GetFileName <> '') then begin
-		if Verbose then
-			WriteLn('Saving ', Config.GetFileName);
-		if not Config.Write then 
-			Abort(erDisk_Write_Error);
-	end;
+	InitVars;
+	I := 0;
+	S := '';
+	repeat
+		Inc(I);
+		S := Trim(S + ' ' + ParamStr(I));
+		if (S[1] = '"') then begin
+			if S[Length(S)] = '"' then begin
+				Option(Copy(S, 2, Length(S) - 2));
+				S := '';
+			end;
+		end else begin
+			Option(S);
+			S := '';
+		end;
+	until (I = ParamCount);
+	if (S <> '') or (FlagValue <> flNone) then 
+		Abort(erParamError);		
+	if Config.GetModified then Save;
 	Config.Destroy;
 end;
 
