@@ -10,7 +10,7 @@
 {$I ETOOLS.DEF}
 program Eternity_Config_File_Toolkit; { X Series }
 
-uses QObjects, QStrings, QErrors, QDos;
+uses QObjects, QStrings, QErrors, QDos, QFiles;
 
 {$I ..\ETERNITY\LICENSE.INC}
 
@@ -41,10 +41,12 @@ const
 	flDelete	= 11;
 	flExport    = 12;
 	flAppend 	= 13;
+	flList		= 14;
+	flFile		= 15; 
 	
 	NoFileName : Str12 = 'NONAME.CFG';
 	Switch 	   : Str1 = '/';
-	MaxOptions = 14;
+	MaxOptions = 17;
 	Options : array[0..MaxOptions] of TOption = (
 		( Flag:flNone;    SPM:False; Short:''; Long:''; Desc:''),
 		( Flag:flVerbose; SPM:True;  Short:'V'; Long:'VERBOSE'; 
@@ -73,13 +75,18 @@ const
 		( Flag:flDelete; SPM:False; Short:'E'; Long:'ERASE';  
 			Desc:'Erase selection.'),
 		( Flag:flPrint; SPM:False; Short:'P'; Long:'PRINT';  
-			Desc:'Print selection to display.')
-			
+			Desc:'Print selection to display.'),
+		( Flag:flList; SPM:False; Short:'L'; Long:'LIST';  
+			Desc:'List sections, keys or values.'),		
+		( Flag:flNone;    SPM:False; Short:''; Long:''; Desc:''),
+		( Flag:flSection; SPM:False; Short:'F'; Long:'FILE';  
+			Desc:'Process FILENAME line command line options.')
 	);
 		
 
 var
 	Config : TConfigFile;
+	Export : TFile;
 	Verbose : boolean;
 	FlagValue : integer;
 	StateValue : boolean;
@@ -122,6 +129,7 @@ end;
 procedure Abort(Code : integer);
 begin
 	Config.Destroy;
+	Export.Destroy;
 	Halt(Code);
 end;
 
@@ -226,6 +234,139 @@ begin
 	end;
 end;
 
+procedure ListKey(AKey : String);
+var
+	P : PListItem;
+begin
+	if AKey <> '' then begin
+		P := Config.FindKey(AKey);
+		if (not Assigned(P)) and Verbose then
+			WriteLn('Key ', AKey, ' not present.')
+		else begin
+			P := P^.First;
+			while Assigned(P) do begin
+				WriteLn(P^.GetNameId);
+				P := P^.Next;							
+			end;
+		end;
+	end;
+end;
+
+procedure ListSection(ASection : String);
+var
+	P : PListItem;
+begin
+	Config.OpenSection(ASection);
+	if Not Assigned(Config.FSectionKey) then begin
+		if Verbose then WriteLn('Section ', ASection, ' not present.')
+	end else begin
+		P := Config.FSectionKey^.First;
+		while Assigned(P) do begin
+			WriteLn(P^.GetNameID);
+			P := P^.Next;
+		end;
+	end;
+	Config.OpenSection(Section);
+end;
+
+procedure ListAll;
+var
+	P : PListItem;
+begin
+	P := Config.FList.First;
+	if Not Assigned(P) then
+		WriteLn('File ', Config.FFileName, ' is empty.')
+	else begin
+		while Assigned(P) do begin
+			WriteLn('[', P^.GetNameID, ']');
+			P := P^.Next;
+		end;
+	end;
+end;
+
+procedure SetExportName;
+var
+	F : String;
+begin
+	F := Config.FFilename;
+	if F = '' then F := NoFileName;
+	if (Export.GetName <> F) and Verbose then
+		WriteLn('Export Filename is ', F);	
+	Export.Assign(F);
+end;
+
+procedure ExportLn(S : String);
+var
+	E : integer;
+begin
+	SetExportName;
+	if FileExists(Config.FFileName) then begin
+		Export.Reset;
+		Export.SeekEOF;
+	end else
+		Export.Rewrite;
+	Export.WriteLn(S);
+	E := Export.IOResult;
+	if E <> 0 then Halt(E);
+	Export.Close;
+end;
+
+procedure ExportKey(AKey : String);
+var
+	P : PListItem;
+begin
+	if AKey <> '' then begin
+		P := Config.FindKey(AKey);
+		if (not Assigned(P)) then begin
+			if Verbose then 
+				WriteLn('Export Key ', AKey, ' not present.')
+		end else if (P^.First = nil) then 
+			ExportLn(AKey + '=')
+		else begin
+			P := P^.First;
+			ExportLn(Space(5) + AKey + '=' + P^.GetNameId);
+			P := P^.Next;
+			while Assigned(P) do begin
+				ExportLn(Space(10) + '+=' + P^.GetNameID);
+				P := P^.Next;							
+			end;
+		end;
+	end;
+end;
+
+procedure ExportSection(ASection : String);
+var
+	P : PListItem;
+begin
+	Config.OpenSection(ASection);
+	if Not Assigned(Config.FSectionKey) then begin
+		WriteLn('Export Section ', ASection, ' not present.')
+	end else begin
+		ExportLn('[' + ASection + ']');
+		P := Config.FSectionKey^.First;
+		while Assigned(P) do begin
+			ExportKey(P^.GetNameID);
+			P := P^.Next;
+		end;
+	end;
+	Config.OpenSection(Section);
+end;
+
+procedure ExportAll;
+var
+	P : PListItem;
+begin
+	P := Config.FList.First;
+	if Not Assigned(P) then begin
+		WriteLn('Export no data.')
+	end else begin
+		while Assigned(P) do begin
+			ExportSection(P^.GetNameID);
+			P := P^.Next;
+		end;
+	end;
+end;
+
 procedure Option(Opt : String);
 var
 	P : PListItem;
@@ -321,6 +462,22 @@ begin
 					PrintSection(Section)
 				else 
 					PrintAll;
+			end else if (FlagValue = flList) then begin
+					FlagValue := flNone;
+				if Key <> '' then 
+					ListKey(Key)
+				else if Section <> '' then 
+					ListSection(Section)
+				else 
+					ListAll;
+			end else if (FlagValue = flExport) then begin
+					FlagValue := flNone;
+				if Key <> '' then 
+					ExportKey(Key)
+				else if Section <> '' then 
+					ExportSection(Section)
+				else 
+					ExportAll;
 			end else if (FlagValue = flVerbose) then begin
 				FlagValue := flNone;
 				WriteLn('Verbose ', BoolStr(StateValue));
@@ -349,6 +506,7 @@ var
 begin
 	Verbose := False;
 	Config.Create('');
+	Export.Create;
 	Config.Clear;
 	Config.FFileName := '';
 	Config.FAutoClear := False;
@@ -372,8 +530,9 @@ begin
 	if (S <> '') or (FlagValue <> flNone) then 
 		Abort(erParamError);		
 	if Config.GetModified and Verbose then 
-		Writeln('Warning changes to ', Config.FFileName, ' not saved.');
+		Writeln('Warning there changes to not saved.');
 	Config.Destroy;
+	Export.Destroy;
 end;
 
 begin
