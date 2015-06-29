@@ -273,12 +273,12 @@ begin
 		end else if (FlagValue = flMerge) or (FlagValue = flNone) then begin 
 			S := Config.FFileName;
 			if S = '' then begin
-				S := Opt;
+				S := UCase(Opt);
 				Config.FFileName := S;
 			end;
 			Opt := UCase(Opt);
 			if FileExists(Opt) then begin
-				Config.FFileName := Opt;
+				Config.FFileName := UCase(Opt);
 				if Verbose then WriteLn('Reading ', Opt);
 				TempFlag := Config.FList.Count <> 0 ;
 				if not Config.Read then
@@ -371,7 +371,8 @@ begin
 	until (I = ParamCount);
 	if (S <> '') or (FlagValue <> flNone) then 
 		Abort(erParamError);		
-	if Config.GetModified then Save;
+	if Config.GetModified and Verbose then 
+		Writeln('Warning changes to ', Config.FFileName, ' not saved.');
 	Config.Destroy;
 end;
 
