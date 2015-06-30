@@ -79,7 +79,7 @@ const
 		( Flag:flList; SPM:False; Short:'L'; Long:'LIST';  
 			Desc:'List sections, keys or values.'),		
 		( Flag:flNone;    SPM:False; Short:''; Long:''; Desc:''),
-		( Flag:flSection; SPM:False; Short:'F'; Long:'FILE';  
+		( Flag:flFile; SPM:False; Short:'F'; Long:'FILE';  
 			Desc:'Process FILENAME line command line options.')
 	);
 		
@@ -367,6 +367,8 @@ begin
 	end;
 end;
 
+procedure ParseFile(FileName : String); forward;
+
 procedure Option(Opt : String);
 var
 	P : PListItem;
@@ -411,6 +413,10 @@ begin
 			if Verbose then
 				WriteLn('Appending "', Opt, '"');
 			Config.FModified := True;
+		end else if FlagValue = flFile then begin
+			InitVars;
+			ParseFile(Opt);
+			InitVars;
 		end else if (FlagValue = flMerge) or (FlagValue = flNone) then begin 
 			S := Config.FFileName;
 			if S = '' then begin
@@ -496,6 +502,62 @@ begin
 			end;
 	end else begin
 		Abort(erParamError);
+	end;
+end;
+
+var
+	OptHold : String;
+	
+procedure OptionFile(Opt : String; Last : boolean);
+begin
+	OptHold := Trim(OptHold + ' ' + Opt);
+	if Last then 
+		Option(OptHold)
+	else if OptHold <> '' then begin
+		if (OptHold[1] <> '"') or 
+		((Length(OptHold) > 1) and (OptHold[Length(OptHold)] = '"')) then
+			begin
+				Option(OptHold);
+				OptHold := '';
+			end;
+	end;
+end;
+
+procedure ParseFile(FileName : String); 
+var
+	F : TFile;
+	E : integer;
+	Line, Opt : String;
+begin
+	OptHold := '';
+	if Verbose then 
+		WriteLn('Parse options from ', FileName);
+	F.Create;
+	F.Assign(FileName);
+	F.Reset;
+	E := F.IOResult;
+	if E = 0 then begin
+		Opt := '';
+		while not F.EOF do begin
+			F.ReadLn(Line, Sizeof(Line) - 1);
+			E := F.IOResult;
+			if E <> 0 then begin
+				F.Close;
+				F.Destroy;
+				Abort(E);
+			end;
+			while Line <> '' do begin
+				Opt := Trim(PullStr(' ', Line));
+				if Opt <> '' then  OptionFile(Opt, False);
+			end;
+		end;
+		if OptHold <> '' then OptionFile('', True);
+		F.Close;
+		F.Destroy;		
+	end else begin
+		F.Close;
+		F.Destroy;
+		Abort(E);
 	end;
 end;
 
