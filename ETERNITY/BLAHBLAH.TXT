@@ -39,9 +39,10 @@ Building PGME from source requires:
 	Borland BCC Make (included with TP7)
 	Run BUILD.BAT
 	
-By default all QuickCRT based programs (These maybe changed in a custom KMP file):
+By default, QuickCRT based programs: 
+(These maybe changed in a custom KMP file)
 
-	Alt-W closes a window and if it the main window it will close the program.
+	Alt-W closes a window and if it the main window the program will close.
 	Alt-Q quits the program.
 	Alt-H Shows a help screen.
 	Alt-H, then Alt-H to Show Program's main Help Screen.
@@ -94,15 +95,15 @@ By default all QuickCRT based programs (These maybe changed in a custom KMP file
 	TEMPLATE.*		All files the start with TEMPLATE regardless of there
 					extension.
 					
-					These are auto-generated at compile time using the defaults
-					that are built into their respective programs. For *.THM
-					(Theme) and *.LNG (Language) files, you should remove any
-					item you do not wish to override. This can help speed up
-					performance when the program starts. *.KMP (Keyboard
-					Mapping) files are a little different. If it is present,
-					all items you wish to work in the ASSIMILATE and COMMAND
-					sections must be present. Other sections in a KMP file can
-					be removed.
+					These are auto-generated at compile time using the
+					defaults that are built into their respective programs. 
+					For *.THM (Theme) and *.LNG (Language) files, you should 
+					remove any item you do not wish to override. This can help
+					speed up performance when the program starts. *.KMP 
+					(Keyboard Mapping) files are a little different. If it is
+					present, all items you wish to work in the ASSIMILATE and
+					COMMAND sections must be present. Other sections in a KMP
+					file can be removed.
 			
 					Also, the * section should be included. But, at present is
 					not required.
@@ -115,8 +116,8 @@ By default all QuickCRT based programs (These maybe changed in a custom KMP file
 					+= adds a line to the previous value. Only value's that
 					support multi-line entries will use the extra lines.
 					
-					One more general note on these files. In the * section is a
-					MERGE entry. If it has a value, then that file is merged
+					One more general note on these files. In the * section is 
+					a MERGE entry. If it has a value, then that file is merged
 					over the current and any values in the new file will
 					override previous values. There is no limit on how many
 					merges can take place. I don't recommend doing more than a
@@ -138,10 +139,9 @@ By default all QuickCRT based programs (These maybe changed in a custom KMP file
 		table. You probably shouldn't mess with it unless you have a weird
 		keyboard. Anyhow, all keys should translate to their basic value. For
 		example take the letter a has the scancode of $0061. All possible
-		combinations of Shift, Control and Alt must be mapped to $0061. So, the
-		line $0061=$0041:A,$0001:C+$0104,$1E00:A does just that. Broken down
-		 
-		like this:
+		combinations of Shift, Control and Alt must be mapped to $0061. So, 
+		the line $0061=$0041:A,$0001:C+$0104,$1E00:A does just that. Broken
+		down like this:
 		
 			target=original:mode+shiftcode,....
 			
@@ -184,8 +184,8 @@ By default all QuickCRT based programs (These maybe changed in a custom KMP file
 			default behavior of the program. It works like the key mapping
 			Assimilate section. But, it is for direct key to command mapping.
 			For example you could use this section to change the Quit from
-			using Alt+Q to use Alt+X. FYI, for best result use the +M for exact
-			matching. 
+			using Alt+Q to use Alt+X. FYI, for best result use the +M for
+			exact matching. 
 			
 	EVENTS Section
 			
@@ -213,7 +213,7 @@ By default all QuickCRT based programs (These maybe changed in a custom KMP file
 
 	Formatted strings are Formatting data ; then string to display.
 	
-	Example '0[Z2.1,C10]{One,Two,Three},1[U,C10,X1-10,T],0[L5,Z3];Hi %2 %1 %0!'
+	Example '0[Z2.1,C10]{One,Two,Three},1[U,C10,X1-10,T],0[L5,Z3];Hi %2%1%0!'
 
 		0-9 Value to use
 		[] Formating Options
@@ -284,7 +284,8 @@ By default all QuickCRT based programs (These maybe changed in a custom KMP file
 	
 		CLEAR,	Clear the screen prior to program drawing.
 	
-		USE_DAC, Use the VGA color DAC pallet. (May have compatiblility issues)
+		USE_DAC, Use the VGA color DAC pallet. (May have compatiblility 
+		issues)
 		
 		USE_FADER, When USE_DAC is also true, fades the color pallete in and
 		out at startup and shutdown of the program.
@@ -297,8 +298,8 @@ By default all QuickCRT based programs (These maybe changed in a custom KMP file
 		false, you can only launch other programs and return to PGME. You will
 		not be able to exit PGME to a command prompt.
 		
-	READONLY, This option is probably only usefull for a KIOSK as well. If PGME
-		is running in readonly mode, menus cannot be modified.
+	READONLY, This option is probably only usefull for a KIOSK as well. If 
+		PGME is running in readonly mode, menus cannot be modified.
 		
 	PATH.MENU, Like the DOS PATH environment variable, this is the locations
 		that PGME will search for and include menus from. If left blank, only

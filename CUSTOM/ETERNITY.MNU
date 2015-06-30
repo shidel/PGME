@@ -74,3 +74,28 @@
 	TITLE.SPANISH=Retire el defecto "Men£ Eterna"
 	TONE=200:3,0:2,250:3,0:5,200:3,0:5,150:18
 
+[KIOSKON]
+	CLASS=PROGRAM
+	COMMANDS=
+		
+		+=QCNFTOOL.EXE /F KIOSKON
+
+	FILE=QCNFTOOL.EXE
+	GROUP=ETERNITY
+	SIMPLE=FALSE
+	TITLE=Switch to KIOSK Mode Demo
+	TITLE.EN_US=Switch to KIOSK Mode Demo
+	TITLE.SPANISH=Cambiar al modo de pantalla completa Demostraci¢n
+
+[KIOSKOFF]
+	CLASS=PROGRAM
+	COMMANDS=
+		
+		+=QCNFTOOL.EXE /F KIOSKOFF
+
+	GROUP=ETERNITY
+	FILE=QCNFTOOL.EXE
+	SIMPLE=FALSE
+	TITLE=Switch out of KIOSK Mode demo
+	TITLE.EN_US=Switch out of KIOSK Mode demo
+	TITLE.SPANISH=Interruptor de modo de pantalla de demostraci¢n
