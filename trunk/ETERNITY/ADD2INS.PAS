@@ -127,6 +127,8 @@ begin
 	AppendAll('*' + LanguageExt, igLanguages);
 	AppendAll('*' + ThemeExt, igEternity);  
 	AppendAll('*' + InfoExt, igSupplement);
+	AppendAll('KIOSKON', igSupplement);
+	AppendAll('KIOSKOFF', igSupplement);
 	AppendAll('*' + ESaverExt, igSavers);
 	AppendAll('*.EXE', igTools);
 	AppendAll('*.TXT', igTextFiles );

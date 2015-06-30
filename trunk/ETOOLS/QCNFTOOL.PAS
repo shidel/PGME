@@ -375,7 +375,7 @@ var
 	S : String;
 	TempFlag, State : boolean;
 begin
-	if Trim(Opt) = '' then exit;
+	{if Trim(Opt) = '' then exit; }
 	if (FlagValue <> flNone) or ((Length(Opt) > 1) and (Opt[1] <> Switch)) then begin
 		if FlagValue = flOutname then begin
 			Opt := UCase(Opt);
@@ -514,10 +514,12 @@ begin
 	if Last then 
 		Option(OptHold)
 	else if OptHold <> '' then begin
-		if (OptHold[1] <> '"') or 
-		((Length(OptHold) > 1) and (OptHold[Length(OptHold)] = '"')) then
-			begin
+		if (OptHold[1] <> '"') then begin
 				Option(OptHold);
+				OptHold := '';		
+		end else if ((Length(OptHold) > 1) and (OptHold[Length(OptHold)] = '"')) then
+			begin
+				Option(Copy(OptHold, 2, Length(OptHold) - 2));
 				OptHold := '';
 			end;
 	end;
