@@ -55,6 +55,7 @@ const
 	ExecName	  : String = 'PGME.EXE';
 	RunName	  	  : String = 'PGMEGORN.BAT';
 	IGOR		  : String = '';
+	GoodState	  : boolean = false;
 
 procedure SetInstallSize;
 var
@@ -115,6 +116,7 @@ begin
 		Write(' Sorry, but the installer appears corrupted.');
 		TextAttr := $07;
 		WriteLn;
+		ErrorsOnExit := False;
 		Halt;		
 	end; 
 	{ Find and set path/filename for Igor. }
@@ -743,6 +745,7 @@ begin
 				PThanks^.ShowModal;
 				PutCommand(cmQuit, nil);
 				ClearEvent(AEvent);
+			   	GoodState := True;
 			end;
 			cmError : begin
 				D.ID := fmtString;
@@ -855,10 +858,27 @@ begin
 		Execute;
 		Destroy;
 	end;
-	TextAttr := $0B;
-	GotoXY(1,WhereY);
-	Write('Goodbye.');
-	ClrEol;	
-	TextAttr := $07;
-	WriteLn;
+	if GoodState then begin
+		TextAttr := $0B;
+		GotoXY(1,WhereY);
+		TextAttr := $07;
+		ClrEol;	
+		WriteLn;
+		WriteLn('The Program Manager Eternity has been installed.');
+		WriteLn('It may be launched by entering "PGM.BAT" from the command line.');
+		WriteLn;
+		TextAttr := $0B;
+		Write('Goodbye.');
+		TextAttr := $07;
+		WriteLn;
+	end else begin
+		TextAttr := $4F;
+		GotoXY(1,WhereY);
+		Write(' The Program Manager Eternity installation program has been aborted.');
+		ClrEol;	
+		TextAttr := $07;
+		WriteLn;
+		ErrorsOnExit := False;
+		Halt(1);
+	end;
 end.
