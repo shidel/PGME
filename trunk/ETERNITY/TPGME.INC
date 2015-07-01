@@ -1649,8 +1649,7 @@ begin
 				GetGornError;
 				FGornError^.ShowModal;
 			end;
-			CallBack('', '', '', False); { if can quit is false, was set to return }
-			
+			CallBack('', '', '', False); { if can quit is false, was set to return }			
 		end;
 	end;
 end;
