@@ -10,12 +10,13 @@ Maybe Eventual Improvements:
 	Restore all paths on exit.
 	Do QDETUNE. 
 	Import of PMI from within PGME.
+	Improve Install Size Accuracy.
 
 Todo (No Particular Order): 
 		
 	Add prompting and parsing for custom options in menu launchers.
 	Add PGME Value as Formatting to Options like %E for eternity path... for launchers.
-	Add Autodetect of CD/DVD insertion.
+	Add Auto-detect of CD/DVD insertion.
 	Implement searching.
 	Implement Move Menu Entry.
 	Add more custom themes.
