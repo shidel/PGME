@@ -92,16 +92,20 @@ begin
 	FMenus := PDropList(New(PDropList, Create(@Self, 'TARGET.LIST')));
 	with FMenus^ do begin
 		SetBounds(T);
+		SetHelpText('Use the "Target Menu" drop down list to select the menu where');
+		AddHelpText('you wish to copy or move the programs menu entry.');
 	end;
 	TextAttr := ColorCheck;
 	Inc(T.Top, 2);
 	T.Height := 1;
-	FCheck := PCheckBox(New(PCheckBox, Create(@Self, 'NAME.TEXT')));
+	FCheck := PCheckBox(New(PCheckBox, Create(@Self, 'CHECKBOX.MOVE')));
 	with FCheck^ do begin
 		SetBounds(T);
 		SetCaption('Move instead of copy.');
 		SetAnchors(abTop or abRight or abLeft);
 		FHAlign := alignLeft;
+		SetHelpText('Use the "Move" checkbox to move the programs menu entry');
+		AddHelpText('instead of duplicating it.');
 	end;
 	TextAttr := ColorOK;
 	FOK := New(PButton, Create(@Self, 'BUTTON.OK'));
