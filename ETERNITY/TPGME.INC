@@ -102,6 +102,7 @@ type
 		procedure AddProgram; virtual;
 		procedure ModifyMenu; virtual;
 		procedure ModifyProgram; virtual;
+		procedure MoveProgram; virtual;
 		procedure UpdateProgram(AMenu : TConfigFile; ADlg : PDialog); virtual;
 	end;   
 
@@ -779,7 +780,6 @@ begin
 	FBtnPEdit^.SetEnabled(FWritable and Assigned(FMenus^.FCurrent) and Assigned(FPrograms^.FCurrent));
 	FBtnPDel^.SetEnabled(FWritable and Assigned(FMenus^.FCurrent) and Assigned(FPrograms^.FCurrent));
 	FBtnPMove^.SetEnabled(FWritable and Assigned(FMenus^.FCurrent) and Assigned(FPrograms^.FCurrent));
-	FBtnPMove^.SetEnabled(False);
 	FBtnMAdd^.SetEnabled((Not FReadOnly));
 	FBtnMEdit^.SetEnabled(FWritable and Assigned(FMenus^.FCurrent));
 	FBtnMDel^.SetEnabled(FWritable and Assigned(FMenus^.FCurrent));
@@ -938,6 +938,7 @@ begin
 		FDlgMove := New(PDlgMove, Create(@Self));
 		ApplySettings(FDlgMove);
 	end;
+	
 	GetDlgMove := FDlgMove;
 end;
 
@@ -1922,6 +1923,10 @@ begin
 	FinishDrawing;
 end;
 
+procedure TPGME.MoveProgram;
+begin
+end;
+
 procedure TPGME.CheckLocal(var AEvent : TEvent); 
 var
 	R : integer;
@@ -2046,6 +2051,13 @@ begin
 				R := PDialog(FDlgPDel)^.ShowModal;
 				if R = mrOK then 
 					DeleteProgram;
+			end;
+			cmProgMove : begin
+				ClearEvent(AEvent);
+				GetDlgMove;
+				R := PDialog(FDlgMove)^.ShowModal;
+				if R = mrOK then 
+					MoveProgram;
 			end;
 		end; 
 
