@@ -41,3 +41,5 @@ install.exe
 cd ..
 
 call make -S notemplates install
+
+if exist ARCHIVE call distarch.bat
