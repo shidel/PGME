@@ -99,13 +99,13 @@ begin
 		SetHelpText('Use the "Theme File" drop down list to select the theme you wish');
 		AddHelpText('PGME to use.');
 		SetBounds(D);
-		SetCaption('DEFAULT.THM');
 		FindFirst(GetExePath + '*' + ThemeExt, faAnyFile, SRec);
 		while (DosError = 0) do begin
 			if SRec.Attr and faDirectory <> faDirectory then
 				AddItem(SRec.Name);
 			FindNext(SRec);
 		end;
+		SetCaption('DEFAULT.THM');
 	end;
 	Inc(B.Top);	
 	Inc(B.Top);	
@@ -145,13 +145,13 @@ begin
 		AddHelpText('and when exit PGME.');
 		D.Top := B.Top;
 		SetBounds(D);
-		SetCaption('DEFAULT.FNT');
 		FindFirst(GetExePath + '*' + FontExt, faAnyFile, SRec);
 		while (DosError = 0) do begin
 			if SRec.Attr and faDirectory <> faDirectory then
 				AddItem(SRec.Name);
 			FindNext(SRec);
 		end;
+		SetCaption('DEFAULT.FNT');
 	end;
 	Inc(B.Top);	
 	Inc(B.Top);	
@@ -173,13 +173,13 @@ begin
 		Dec(D.Height,2);
 		if Self.GetShadow = false then Dec(D.Height);
 		SetBounds(D);
-		SetCaption('DEFAULT.SCR');
 		FindFirst(GetExePath + '*' + ESaverExt, faAnyFile, SRec);
 		while (DosError = 0) do begin
 			if SRec.Attr and faDirectory <> faDirectory then
 				AddItem(SRec.Name);
 			FindNext(SRec);
 		end;
+		SetCaption('DEFAULT.SCR');
 	end;
 	Inc(B.Top);	
 	Inc(B.Top);	
