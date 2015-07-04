@@ -17,7 +17,10 @@ type
 	PDlgMove = ^TDlgMove;
 	TDlgMove = object (TDialog)
     public { protected }
-{    	FOK : PButton;}
+    	FName  : PLabel;
+    	FCheck : PCheckBox;
+    	FMenus : PDropList;
+    	FOK : PButton;
 		function  ObjectClass ( AName : String ) : String; virtual;
     public { protected }
 		procedure CheckLocal(var AEvent : TEvent); virtual;
@@ -39,22 +42,68 @@ begin
 end;
 
 constructor TDlgMove.Create;
-{const
-	ColorOK = $2E;}
+const
+	ColorLabel = $70;
+	ColorName = $71;
+	ColorCheck = $70;
+	ColorDrop = $1E;
+	ColorOK = $2E;
 var
-	B : TBounds;
+	B, T : TBounds;
 begin	
 	inherited Create(AParent, 'DIALOG.MOVE');
-	Bounds(1,1,50,16, B);
-	SetStyle(bxSingle);
+	Bounds(1,1,50,14, B);
+{	SetStyle(bxSingle);}
 	SetBounds(B);
 	FAutoEndModal := True;
-	SetTitle('Move Program');
-	SetHelpText('The "Move" dialog box.');
+	SetTitle('Duplicate or Move Program');
+	SetHelpText('The "Duplicate or Move" dialog box.');
 	AddHelpText('');
 	AddHelpText('This is dialog box provides a means to copy or move a menu entry from');
-	AddHelpText('menu onto another.');
-{	TextAttr := ColorOK;
+	AddHelpText('one menu onto another.');
+	TextAttr := ColorLabel;
+	Bounds(3, 2, B.Width - 8, 1, T);
+	with PLabel(New(PLabel, Create(@Self, 'NAME.LABEL')))^ do begin
+		SetBounds(T);
+		SetCaption('Program Title:');
+		SetAnchors(abTop or abRight or abLeft);
+		FHAlign := alignLeft;
+	end;
+	TextAttr := ColorName;
+	Inc(T.Top);
+	FName := PLabel(New(PLabel, Create(@Self, 'NAME.TEXT')));
+	with FName^ do begin
+		SetBounds(T);
+		SetCaption('a program');
+		SetAnchors(abTop or abRight or abLeft);
+		FHAlign := alignLeft;
+	end;
+	TextAttr := ColorLabel;
+	Inc(T.Top, 2);
+	with PLabel(New(PLabel, Create(@Self, 'TARGET.LABEL')))^ do begin
+		SetBounds(T);
+		SetCaption('Target Menu:');
+		SetAnchors(abTop or abRight or abLeft);
+		FHAlign := alignLeft;
+	end;
+	TextAttr := ColorDrop;
+	Inc(T.Top);
+	T.Height := 10;
+	FMenus := PDropList(New(PDropList, Create(@Self, 'TARGET.LIST')));
+	with FMenus^ do begin
+		SetBounds(T);
+	end;
+	TextAttr := ColorCheck;
+	Inc(T.Top, 2);
+	T.Height := 1;
+	FCheck := PCheckBox(New(PCheckBox, Create(@Self, 'NAME.TEXT')));
+	with FCheck^ do begin
+		SetBounds(T);
+		SetCaption('Move instead of copy.');
+		SetAnchors(abTop or abRight or abLeft);
+		FHAlign := alignLeft;
+	end;
+	TextAttr := ColorOK;
 	FOK := New(PButton, Create(@Self, 'BUTTON.OK'));
 	with PButton(FOK)^ do begin
 		Bounds(B.Left + (B.Width - 5) div 2 - 6 , B.Height - 4, 14, 1, B);
@@ -62,8 +111,9 @@ begin
 		SetAnchors(abLeft or abRight or abBottom);
 		SetCaption('OK');
 		SetCommand(cmOK);		
-		SetHelpText('5;Use the "%0" button to close the dialog box.');
-	end;}
+		SetHelpText('5;Use the "%0" button to copy or move the program');
+		AddHelpText('and close the dialog box.');
+	end;
 end;
 
 destructor TDlgMove.Destroy;
