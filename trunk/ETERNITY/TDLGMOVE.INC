@@ -19,8 +19,9 @@ type
     public { protected }
     	FName  : PLabel;
     	FCheck : PCheckBox;
-    	FMenus : PDropList;
+    	FMenuDrop : PDropList;
     	FOK : PButton;
+    	
 		function  ObjectClass ( AName : String ) : String; virtual;
     public { protected }
 		procedure CheckLocal(var AEvent : TEvent); virtual;
@@ -52,7 +53,7 @@ var
 	B, T : TBounds;
 begin	
 	inherited Create(AParent, 'DIALOG.MOVE');
-	Bounds(1,1,50,14, B);
+	Bounds(1,1,50,15, B);
 {	SetStyle(bxSingle);}
 	SetBounds(B);
 	FAutoEndModal := True;
@@ -89,9 +90,11 @@ begin
 	TextAttr := ColorDrop;
 	Inc(T.Top);
 	T.Height := 10;
-	FMenus := PDropList(New(PDropList, Create(@Self, 'TARGET.LIST')));
-	with FMenus^ do begin
+	FMenuDrop := PDropList(New(PDropList, Create(@Self, 'TARGET.LIST')));
+	with FMenuDrop^ do begin
 		SetBounds(T);
+		SetSorted(True);
+		FEdit.SetReadOnly(True);
 		SetHelpText('Use the "Target Menu" drop down list to select the menu where');
 		AddHelpText('you wish to copy or move the programs menu entry.');
 	end;
@@ -131,7 +134,27 @@ begin
 end;
 
 procedure TDlgMove.BeforeShow;
+var
+	D, M, I : PListItem;
 begin
 	inherited BeforeShow;
+	FCheck^.SetState(0);
+	FName^.SetCaption(PGME.FPrograms^.FCurrent^.GetNameID);
+	FMenuDrop^.BeginUpdate;
+	FMenuDrop^.ClearItems;
+	D := PMenuCache(PGME.FMenuCache)^.FCache^.First;
+	while Assigned(D) do begin
+		M := D^.First;
+		while Assigned(M) do begin
+			if PCacheMenu(M)^.Available and PCacheMenu(M)^.Writable then begin
+				I := FMenuDrop^.AddItem(PCacheMenu(M)^.ShortTitle);
+				I^.Data := M;
+			end;
+			M := M^.Next;
+		end;
+		D := D^.Next;
+	end;
+	FMenuDrop^.SetCaption(PGME.FMenus^.FCurrent^.GetNameID);
+	FMenuDrop^.EndUpdate;
 end;
 {$ENDIF}
