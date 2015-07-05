@@ -326,6 +326,9 @@ begin
 		FBtnSearch := New(PButton, Create(FProgramWindow, 'BUTTON.SEARCH'));
 		with FBtnSearch^ do begin
 			SetCaption('Search');
+			SetHelpText('5;"%0" Button: This will focus the "Find" field ');
+			AddHelpText('to input test for searching. Or, if that field');
+			AddHelpText('already contains text, it will search again.');
 			SetCommand(cmFind);
 			SetAnchors(alBottom);
 			SetBounds(B);	
@@ -477,6 +480,8 @@ begin
 		Bounds(7, 1, P^.Width - B.Width - B.Left - 1, 1, B);
 		FFind.FEdit := New(PEdit, Create(P, 'SEARCH.EDIT'));
 		with FFind.FEdit^ do begin
+			SetHelpText('Use the "Find" edit field to enter text for searching.');
+			AddHelpText('By default, pressing "Alt+F" will automatically focus this field.');
 			SetBounds(B);
 			SetAnchors(alRight or alBottom);
 			SetRespond(cmSearch);
@@ -2077,9 +2082,12 @@ begin
 			end;
 			cmFind : begin
 				ClearEvent(AEvent);
-				if Trim(FFind.FEdit^.GetCaption) <> '' then 
-					Search(Trim(FFind.FEdit^.GetCaption))
-				else
+				if AEvent.InfoPtr = FBtnSearch then begin
+					if Trim(FFind.FEdit^.GetCaption) <> '' then 
+						Search(Trim(FFind.FEdit^.GetCaption))
+					else
+						PutCommand(cmSearch, @Self);
+				end else
 					PutCommand(cmSearch, @Self);
 			end;
 			cmNextMenu : begin
