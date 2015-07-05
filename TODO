@@ -14,11 +14,7 @@ Maybe Eventual Improvements:
 	Add prompting and parsing for custom options in menu launchers.
 	Add PGME Value as Formatting to Options like %E for eternity path... for launchers.
 
-Todo (No Particular Order): 
-		
-	Implement searching.
-	
-Todo (while in beta):
+Todo:
 
 	Add Auto-detect of CD/DVD insertion.
 	Add more custom themes.
