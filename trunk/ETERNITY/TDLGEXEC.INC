@@ -82,7 +82,7 @@ begin
 	FCmdLine := New(PEdit, Create(@Self, 'EDIT.CMDLN'));
 	with PEdit(FCmdLine)^ do begin
 		SetHelpText('The "Command Line" edit allows you to enter optional command');
-		AddHelpText('command line parameters to use when a specific program is.');
+		AddHelpText('command line parameters to use when a specific program is');
 		AddHelpText('executed.');
 		SetBounds(T);
 		SetAnchors(abLeft or abRight or abTop);
