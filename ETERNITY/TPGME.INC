@@ -2012,16 +2012,12 @@ procedure TPGME.Search(AValue : String);
 var
 	CM, FM : PListItem;
 	CP, FP : PCacheApp;
-	F : TFile;
-	S : String;
 
 	function CompareStr(AStr : String) : boolean;
 	begin
 		CompareStr := False;
 		AStr := SearchStr(AStr);
-		S := AValue + ':' + AStr;
 		if Pos(AValue, AStr) > 0 then begin
-			S := S + ' Passed';
 			StartDrawing;
 			SelectMenu(PCacheDir(PCacheMenu(CM^.Data)^.Parent)^.GetNameID + 
 				PCacheMenu(CM^.Data)^.GetNameID);
@@ -2030,17 +2026,12 @@ var
 			FinishDrawing;
 			CompareStr := True;
 		end;
-		F.Writeln(S);
 	end;
 	
 begin
 {	FFind.FEdit^.SetCaption(AValue); }
 	AValue := SearchStr(AValue);
 	if Not Assigned(FMenus^.FCurrent) then Exit;
-
-	F.Create;
-	F.Assign('TEMP.TXT');
-	F.Rewrite;
 
 	FM := FMenus^.FCurrent;
 	FP := nil;
@@ -2049,7 +2040,6 @@ begin
 	CM := FM;
 	CP := FP;
 
-	F.WriteLn(AValue);
 	repeat
 		if Assigned(CP) then
 			CP := PCacheApp(CP^.Next)
@@ -2068,8 +2058,6 @@ begin
 			if CompareStr(PCacheMenu(CM^.Data)^.LongTitle) then Exit;
 		end;
 	until (CM = FM) and (CP = FP);
-	F.Close;
-	F.Destroy;
 end;
 
 procedure TPGME.CheckLocal(var AEvent : TEvent); 

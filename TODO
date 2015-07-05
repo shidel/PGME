@@ -13,6 +13,7 @@ Maybe Eventual Improvements:
 	Improve Install Size Accuracy.
 	Add prompting and parsing for custom options in menu launchers.
 	Add PGME Value as Formatting to Options like %E for eternity path... for launchers.
+	Change searching to search programs in order of appearance, not order of ID.
 
 Todo:
 
