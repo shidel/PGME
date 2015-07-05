@@ -1925,27 +1925,74 @@ end;
 
 procedure TPGME.CopyOrMove(AMove : Boolean);
 var
+	I : Integer;
 	M : TConfigFile;
-	CMenu, CProg : String;
+	Hold , P : PListItem;
+	OMenu, NMenu,
+	OProg, NProg,
+	Title : String;
 begin
 	if not Assigned(FMenuCache) then exit;
 	if not (Assigned(FMenus) and Assigned(FMenus^.FCurrent) and 
 	Assigned(FPrograms) and Assigned(FPrograms^.FCurrent)) then exit;
 	with PCacheApp(FPrograms^.FCurrent^.Data)^ do begin
-		CMenu := PCacheDir(Parent^.Parent)^.GetNameID + PCacheMenu(Parent)^.GetNameID; 
-		CProg := GetNameID;
+		OMenu := PCacheDir(Parent^.Parent)^.GetNameID + PCacheMenu(Parent)^.GetNameID; 
+		OProg := GetNameID;
+		NMenu := PCacheDir(PCacheMenu(PDlgMove(FDlgMove)^.Destination)^.Parent)^.GetNameID +
+			PCacheMenu(PDlgMove(FDlgMove)^.Destination)^.GetNameID;
+		NProg := OProg;
 	end;
+	{ Read Source Item }
 	M.Create('TEMP');
-	M.SetFileName(CMenu);
+	M.SetFileName(OMenu);
 	M.Read;
-	M.OpenSection(CProg);
-	UpdateProgram(M, FDlgPEdit);
+	M.OpenSection(OProg);
+	Hold := M.FSectionKey;
+	M.FList.Remove(Hold);
+
+	{ Write to Destination }
+	M.SetFileName(NMenu);
+	M.Read;	
+	Title := '';
+	if Assigned(Hold) then begin
+		P := Hold^.FindID('TITLE');
+		if Assigned(P) and Assigned(P^.First) then
+			Title := Trim(P^.First^.GetNameID);
+	end;
+	if Title = '' then
+		Title := 'FAILED TO LOCATE TITLE';
+
+	NProg := ReduceStr(Title, 10);
+	if M.FList.FindID(NProg) <> nil then begin
+		I := 0;
+		while M.FList.FindID(NProg + '-' + HexStr(I)) <> nil do Inc(I);
+		NProg := NProg + '-' + HexStr(I);
+	end;
+
+	M.OpenSection(NProg);
+	while Assigned(Hold^.First) do begin
+		P := Hold^.First;
+		Hold^.Remove(P);
+		M.FSectionKey^.Add(P);
+	end;
 	M.Write;
+	
+	{ free left over bits }
+	Dispose(Hold, Destroy);
+
+	{ Dete Source Item }
+	if AMove then begin
+		M.SetFileName(OMenu);
+		M.Read;
+		M.OpenSection(OProg);
+		M.DeleteSection;
+		M.Write;
+	end;
 	M.Destroy;
 	StartDrawing;
 	UpdateMenuCache;
-	SelectMenu(CMenu);
-	SelectProg(CProg);
+	SelectMenu(NMenu);
+	SelectProg(NProg);
 	FMenus^.Update;
 	FinishDrawing;
 end;
