@@ -29,8 +29,10 @@ type
 	public
 		constructor Create(AParent : PControl);
 		destructor Destroy; virtual;
+		function Origin : Pointer; virtual;
+		function Destination : Pointer; virtual;
+		function MoveItem : boolean;
 	end;   
-
 {$ENDIF}
 
 {$IFDEF IMPLEMENTATION}
@@ -156,5 +158,20 @@ begin
 	end;
 	FMenuDrop^.SetCaption(PGME.FMenus^.FCurrent^.GetNameID);
 	FMenuDrop^.EndUpdate;
+end;
+
+function TDlgMove.Origin : Pointer;
+begin
+	Origin := PMenuCache(PGME.FMenus^.FCurrent^.Data);
+end;
+
+function TDlgMove.Destination : Pointer;
+begin
+	Destination := PMenuCache(FMenuDrop^.FList.FList.FCurrent^.Data);
+end;
+
+function TDlgMove.MoveItem : boolean;
+begin
+	MoveItem := FCheck^.Checked;
 end;
 {$ENDIF}

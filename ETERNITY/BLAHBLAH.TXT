@@ -85,10 +85,35 @@ By default, QuickCRT based programs:
 	QSCROLL.EXE		Smooth scrolling text file viewer. Supporting, various
 					character heights and DOS/UNIX line endings. Any keypress
 					other than UP, Down, PageUp or PageDown quits the program.
+	QCNFTOOL.EXE	Command line utility for manipulating PGME text based data
+					files. Such as the MNU, CFG, THM, LNG, KMP and PMI files.
+					These files are similar to, but very different from, a
+					Windows INI file and this tool should not be used on 
+					those types of files. For basic usage of QCNFTOOL see
+					below. 
 
 ** FONT FILES **
 
 	*.FNT			All Files ending in the *.FNT extension.
+	
+** QCNFTOOL.EXE **
+					Basic usage of QCNFTOOL. First, please note that if you
+					do not issue a /W or /X (/WRITE or /EXPORT) command, no
+					changes or files will be written to disk.
+					
+					The output file. When this utility starts, the output 
+					filename is unassigned and if a /W or /X comand is 
+					issued the "NONAME.CFG" filename will be used. However,
+					the first file you /READ will set the output name
+					to the same filename that is read. Any future changes to
+					the output filename will reguire setting it using the 
+					/OUTPUT switch.
+					
+					Also to issue many or extremely long commands, us the
+					/FILE option. The file will be process the same as one
+					single set of commands. See the incleuded KIOSK.OFF and 
+					KIOSK.ON files for an example. 
+					
 	
 ** TEMPLATE and Config files files***
 
