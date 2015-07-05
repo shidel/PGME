@@ -326,7 +326,7 @@ begin
 		FBtnSearch := New(PButton, Create(FProgramWindow, 'BUTTON.SEARCH'));
 		with FBtnSearch^ do begin
 			SetCaption('Search');
-			SetCommand(cmSearch);
+			SetCommand(cmFind);
 			SetAnchors(alBottom);
 			SetBounds(B);	
 {			SetVisible(False);}
@@ -479,6 +479,7 @@ begin
 		with FFind.FEdit^ do begin
 			SetBounds(B);
 			SetAnchors(alRight or alBottom);
+			SetRespond(cmSearch);
 {			SetVisible(False)}
 		end;
 	
@@ -2029,7 +2030,6 @@ var
 	end;
 	
 begin
-{	FFind.FEdit^.SetCaption(AValue); }
 	AValue := SearchStr(AValue);
 	if Not Assigned(FMenus^.FCurrent) then Exit;
 
@@ -2074,6 +2074,13 @@ begin
 			cmEdit : if AEvent.InfoPtr = FFind.FEdit then begin
 				ClearEvent(AEvent);
 				Search(Trim(FFind.FEdit^.GetCaption));
+			end;
+			cmFind : begin
+				ClearEvent(AEvent);
+				if Trim(FFind.FEdit^.GetCaption) <> '' then 
+					Search(Trim(FFind.FEdit^.GetCaption))
+				else
+					PutCommand(cmSearch, @Self);
 			end;
 			cmNextMenu : begin
 				ClearEvent(AEvent);
