@@ -51,7 +51,7 @@ type
 			FBtnPAdd, FBtnPEdit, FBtnPDel, FBtnPMove,
 			FBtnMAdd, FBtnMEdit, FBtnMDel,
 			FBtnPGMOpt, FBtnPGMCfg : PButton;
-			FResumeText : String;
+			FResumeText, FReqSearch : String;
 		procedure BeforeShow; virtual;
 		procedure Configure; virtual;
 		procedure CheckLocal(var AEvent : TEvent); virtual;		
@@ -104,6 +104,8 @@ type
 		procedure ModifyProgram; virtual;
 		procedure CopyOrMove(AMove : boolean); virtual;
 		procedure UpdateProgram(AMenu : TConfigFile; ADlg : PDialog); virtual;
+		function  SearchStr(AValue : String) : String; virtual;
+		procedure Search(AValue : String); virtual;
 	end;   
 
 { Some Global Variables }	
@@ -1112,6 +1114,7 @@ var
 	O, V : String;
 begin
 	FResumeText := '';
+	FReqSearch := '';
 	for I := 1 to ParamCount do begin
 		V := Trim(ParamStr(I));
 		if FResumeText <> '' then
@@ -1130,7 +1133,8 @@ begin
 				FReqProg := UCase(V)
 			else if O = '/T' then
 				FResumeText := V			
-		end;
+		end else 
+			FReqSearch := Trim(FReqSearch + ' ' + V);
 	end;
 {	FBatLoop := True; }
 	FInSound := True;
@@ -1182,6 +1186,7 @@ begin
 	ClrEOL;
 	if FReqMenu <> '' then SelectMenu(FReqMenu);
 	if FReqProg <> '' then SelectProg(FReqProg);
+	if FReqSearch <> '' then Search(FReqSearch);
 	UpdateButtons;
 end;
 
@@ -1997,6 +2002,76 @@ begin
 	FinishDrawing;
 end;
 
+function TPGME.SearchStr(AValue :String) : String;
+begin
+	AValue := FilterChar(AValue, ' ');
+	SearchStr := UCase(AValue);
+end;
+
+procedure TPGME.Search(AValue : String);
+var
+	CM, FM : PListItem;
+	CP, FP : PCacheApp;
+	F : TFile;
+	S : String;
+
+	function CompareStr(AStr : String) : boolean;
+	begin
+		CompareStr := False;
+		AStr := SearchStr(AStr);
+		S := AValue + ':' + AStr;
+		if Pos(AValue, AStr) > 0 then begin
+			S := S + ' Passed';
+			StartDrawing;
+			SelectMenu(PCacheDir(PCacheMenu(CM^.Data)^.Parent)^.GetNameID + 
+				PCacheMenu(CM^.Data)^.GetNameID);
+			if Assigned(CP) then 
+				SelectProg(CP^.GetNameID);
+			FinishDrawing;
+			CompareStr := True;
+		end;
+		F.Writeln(S);
+	end;
+	
+begin
+{	FFind.FEdit^.SetCaption(AValue); }
+	AValue := SearchStr(AValue);
+	if Not Assigned(FMenus^.FCurrent) then Exit;
+
+	F.Create;
+	F.Assign('TEMP.TXT');
+	F.Rewrite;
+
+	FM := FMenus^.FCurrent;
+	FP := nil;
+	if Assigned(FPrograms^.FCurrent) then
+		FP := PCacheApp(FPrograms^.FCurrent^.Data);
+	CM := FM;
+	CP := FP;
+
+	F.WriteLn(AValue);
+	repeat
+		if Assigned(CP) then
+			CP := PCacheApp(CP^.Next)
+		else
+			CP := PCacheApp(PCacheMenu(CM^.Data)^.First);
+		if Assigned(CP) then begin
+			if CompareStr(CP^.GetNameID) then Exit;
+			if CompareStr(CP^.Title) then Exit;
+			if CompareStr(CP^.GroupName) then Exit;
+		end else begin
+			CM := CM^.Next;
+			if not Assigned(CM) then 
+				CM := FMenus^.FItems.First;
+			if CompareStr(PCacheMenu(CM^.Data)^.GetNameID) then Exit;
+			if CompareStr(PCacheMenu(CM^.Data)^.ShortTitle) then Exit;
+			if CompareStr(PCacheMenu(CM^.Data)^.LongTitle) then Exit;
+		end;
+	until (CM = FM) and (CP = FP);
+	F.Close;
+	F.Destroy;
+end;
+
 procedure TPGME.CheckLocal(var AEvent : TEvent); 
 var
 	R : integer;
@@ -2007,6 +2082,10 @@ begin
 			cmListViewDouble : if AEvent.InfoPtr = FPrograms then begin
 				ClearEvent(AEvent);
 				PutCommand(cmExecute, @Self);
+			end;
+			cmEdit : if AEvent.InfoPtr = FFind.FEdit then begin
+				ClearEvent(AEvent);
+				Search(Trim(FFind.FEdit^.GetCaption));
 			end;
 			cmNextMenu : begin
 				ClearEvent(AEvent);
@@ -2149,6 +2228,5 @@ begin
 			end;
 		end; 
 end;
-
 
 {$ENDIF}
