@@ -678,6 +678,7 @@ begin
 			Bounds(1,1,Width, 1, B);
 			FBtnPAdd := New(PButton, Create(FEditMenu, 'BTN.PROG.ADD'));
 			with PButton(FBtnPAdd)^ do begin
+				SetAnchors(abLeft or abRight or abTop);
 				SetHelpText('5;"%0" Option: Select this to add a program to the current menu.');
 				AddHelpText('The default keyboard shortcut is "A".');
 				SetCaption('Add Program...');
@@ -690,6 +691,7 @@ begin
 			Inc(B.Top);
 			FBtnPEdit := New(PButton, Create(FEditMenu, 'BTN.PROG.EDIT'));
 			with PButton(FBtnPEdit)^ do begin
+				SetAnchors(abLeft or abRight or abTop);
 				SetHelpText('5;"%0" Option: Select this to edit the selected programs information or');
 				AddHelpText('its execution process. The default keyboard shortcut is "E".');
 				SetCaption('Edit Program...');
@@ -702,6 +704,7 @@ begin
 			Inc(B.Top);
 			FBtnPMove := New(PButton, Create(FEditMenu, 'BTN.PROG.MOVE'));
 			with PButton(FBtnPMove)^ do begin
+				SetAnchors(abLeft or abRight or abTop);
 				SetHelpText('5;"%0" Option: Select move or copy the currently selected program.');
 				AddHelpText('The default keyboard shortcut is "X".');
 				SetCaption('Move Program...');
@@ -714,6 +717,7 @@ begin
 			Inc(B.Top);
 			FBtnPDel := New(PButton, Create(FEditMenu, 'BTN.PROG.DELETE'));
 			with PButton(FBtnPDel)^ do begin
+				SetAnchors(abLeft or abRight or abTop);
 				SetHelpText('5;"%0" Option: Select delete the currently selected program from the menu.');
 				AddHelpText('The default keyboard shortcut is "D".');
 				SetCaption('Delete Program...');
@@ -726,6 +730,7 @@ begin
 			Inc(B.Top, 2);
 			FBtnMAdd := New(PButton, Create(FEditMenu, 'BTN.MENU.ADD'));
 			with PButton(FBtnMAdd)^ do begin
+				SetAnchors(abLeft or abRight or abTop);
 				SetHelpText('5;"%0" Option: Select this to add a new menu.');
 				AddHelpText('The default keyboard shortcut is "N".');
 				SetCaption('Add Menu...');
@@ -738,6 +743,7 @@ begin
 			Inc(B.Top);
 			FBtnMEdit := New(PButton, Create(FEditMenu, 'BTN.MENU.EDIT'));
 			with PButton(FBtnMEdit)^ do begin
+				SetAnchors(abLeft or abRight or abTop);
 				SetHelpText('5;"%0" Option: Select this to edit the current menus information.');
 				AddHelpText('The default keyboard shortcut is "N".');
 				SetCaption('Edit Menu...');
@@ -750,6 +756,7 @@ begin
 			Inc(B.Top);
 			FBtnMDel := New(PButton, Create(FEditMenu, 'BTN.MENU.DELETE'));
 			with PButton(FBtnMDel)^ do begin
+				SetAnchors(abLeft or abRight or abTop);
 				SetHelpText('5;"%0" Option: Select this to delete the current menu.');
 				AddHelpText('The default keyboard shortcut is "K".');
 				SetCaption('Delete Menu...');
@@ -762,6 +769,7 @@ begin
 			Inc(B.Top, 2);
 			FBtnPGMOpt := New(PButton, Create(FEditMenu, 'BTN.OPTIONS'));
 			with PButton(FBtnPGMOpt)^ do begin
+				SetAnchors(abLeft or abRight or abTop);
 				SetHelpText('5;"%0" Option: Select this modify PGME display options.');
 				AddHelpText('The default keyboard shortcut is "O".');
 				SetCaption('Display Options...');
@@ -773,6 +781,7 @@ begin
 			Inc(B.Top);
 			FBtnPGMCfg := New(PButton, Create(FEditMenu, 'BTN.CONFIG'));
 			with PButton(FBtnPGMCfg)^ do begin
+				SetAnchors(abLeft or abRight or abTop);
 				SetHelpText('5;"%0" Option: Select this modify PGME behavior options.');
 				AddHelpText('The default keyboard shortcut is "P".');
 				SetCaption('Config Settings...');
