@@ -102,7 +102,7 @@ type
 		procedure AddProgram; virtual;
 		procedure ModifyMenu; virtual;
 		procedure ModifyProgram; virtual;
-		procedure MoveProgram; virtual;
+		procedure CopyOrMove(AMove : boolean); virtual;
 		procedure UpdateProgram(AMenu : TConfigFile; ADlg : PDialog); virtual;
 	end;   
 
@@ -1923,8 +1923,31 @@ begin
 	FinishDrawing;
 end;
 
-procedure TPGME.MoveProgram;
+procedure TPGME.CopyOrMove(AMove : Boolean);
+var
+	M : TConfigFile;
+	CMenu, CProg : String;
 begin
+	if not Assigned(FMenuCache) then exit;
+	if not (Assigned(FMenus) and Assigned(FMenus^.FCurrent) and 
+	Assigned(FPrograms) and Assigned(FPrograms^.FCurrent)) then exit;
+	with PCacheApp(FPrograms^.FCurrent^.Data)^ do begin
+		CMenu := PCacheDir(Parent^.Parent)^.GetNameID + PCacheMenu(Parent)^.GetNameID; 
+		CProg := GetNameID;
+	end;
+	M.Create('TEMP');
+	M.SetFileName(CMenu);
+	M.Read;
+	M.OpenSection(CProg);
+	UpdateProgram(M, FDlgPEdit);
+	M.Write;
+	M.Destroy;
+	StartDrawing;
+	UpdateMenuCache;
+	SelectMenu(CMenu);
+	SelectProg(CProg);
+	FMenus^.Update;
+	FinishDrawing;
 end;
 
 procedure TPGME.CheckLocal(var AEvent : TEvent); 
@@ -2056,8 +2079,8 @@ begin
 				ClearEvent(AEvent);
 				GetDlgMove;
 				R := PDialog(FDlgMove)^.ShowModal;
-				if R = mrOK then 
-					MoveProgram;
+				if R = mrOK then
+					CopyOrMove(PDlgMove(FDlgMove)^.MoveItem);
 			end;
 		end; 
 
