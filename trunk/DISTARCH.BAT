@@ -1,5 +1,6 @@
 @echo off
 
+exit 
 echo Creating Program Manager Eternity distribution archives.
 
 if exist ARCHIVE\DEFAULTS.ZIP del ARCHIVE\DEFAULTS.ZIP
