@@ -10,7 +10,7 @@
 {$I ETOOLS.DEF}
 program Eternity_Config_File_Toolkit; { X Series }
 
-uses QObjects, QStrings, QErrors, QDos, QFiles;
+uses QObjects, QStrings, QErrors, QDos, QFiles, QCrt;
 
 {$I ..\ETERNITY\LICENSE.INC}
 
@@ -42,15 +42,24 @@ const
 	flExport    = 12;
 	flAppend 	= 13;
 	flList		= 14;
-	flFile		= 15; 
+	flFile		= 15;
+	flHelp		= 16;
+	flComment	= 17;
+	flStop		= 18;
+	flPause		= 19;
 	
 	NoFileName : Str12 = 'NONAME.CFG';
 	Switch 	   : Str1 = '/';
-	MaxOptions = 17;
+	MaxOptions = 22;
 	Options : array[0..MaxOptions] of TOption = (
 		( Flag:flNone;    SPM:False; Short:''; Long:''; Desc:''),
 		( Flag:flVerbose; SPM:True;  Short:'V'; Long:'VERBOSE'; 
 			Desc:'+/- set verbose level.'),
+		( Flag:flHelp; SPM:False;  Short:'H'; Long:'HELP'; 
+			Desc:'Display this help screen.'),
+		( Flag:flComment; SPM:False;  Short:'#'; Long:'COMMENT'; 
+			Desc:'Mostly only useful in files for commenting.'),
+		( Flag:flNone;    SPM:False; Short:''; Long:''; Desc:''),
 		( Flag:flMerge;   SPM:False; Short:'R'; Long:'READ';   
 			Desc:'Read/merge FILENAME into the current data.'),
 		( FLag:flSave; 	  SPM:False; Short:'W'; Long:'WRITE'; 	
@@ -80,29 +89,57 @@ const
 			Desc:'List sections, keys or values.'),		
 		( Flag:flNone;    SPM:False; Short:''; Long:''; Desc:''),
 		( Flag:flFile; SPM:False; Short:'F'; Long:'FILE';  
-			Desc:'Process FILENAME line command line options.')
+			Desc:'Process FILENAME line command line options.'),
+		( Flag:flPause; SPM:False; Short:''; Long:'PAUSE';  
+			Desc:'Pause processing and wait for keypress.'),		
+		( Flag:flStop; SPM:False; Short:''; Long:'STOP';  
+			Desc:'Stop processing and quit.')		
 	);
 		
 
 var
 	Config : TConfigFile;
 	Export : TFile;
+	OptFile : TFile;
 	Verbose : boolean;
 	FlagValue : integer;
 	StateValue : boolean;
 	Section : string;
 	Key : String;
+	CommentFlag : boolean;
 		
-procedure Help;
+procedure DoAPause;
+begin
+	Write('press a key to continue');
+	pause;
+	GotoXY(1,WhereY);
+	ClrEol;
+end;
+
+procedure Help(Term : boolean);
 var
 	I : integer;
 	M1, M2 : integer;
+	S : String;
+	
+	procedure WriteHelp(Line : String);
+	const 
+		Count : integer = 0;
+	begin
+		Inc(Count);
+		if Count = Hi(WindMax) then begin
+			DoAPause;
+			Count := 1;
+		end;
+		WriteLn(Line);
+	end;
+	
 begin
-	WriteLn('Usage: ', AppID, ' FILE [options...]');
-	WriteLn;
-	WriteLn(AppTitle, ' (', AppID, ') is for manipulating PGME');
-	Writeln('text based data files. These files are similar to windows INI files and');
-	WriteLn('may also be edited using a simple text editor.');
+	WriteHelp('Usage: ' + AppID + ' FILE [options...]');
+	WriteHelp('');
+	WriteHelp(AppTitle + ' (' + AppID + ') is for manipulating PGME');
+	WriteHelp('text based data files. These files are similar to windows INI files and');
+	WriteHelp('may also be edited using a simple text editor.');
 	M1 := 0;
 	M2 := 0;
 	for I := 0 to MaxOptions do begin
@@ -112,24 +149,29 @@ begin
 			M2 := Length(Options[I].Long);
 	end;
 	if M1 < 4 then M1 := 4;
+	S := ' ';
 	for I := 0 to MaxOptions do 
 		if Options[I].Flag <> flNone then begin
-			Write(LSpace(Options[I].Short, M1 + 1));
+			S := LSpace(Options[I].Short, M1 + 1);
 			if (Options[I].Short <> '') and (Options[I].Long <> '') then
-				Write(', ')
+				S := S + ', '
 			else 
-				Write('  ');
-			Write(RSpace(Options[I].Long, M2));
-			WriteLn(' ', Options[I].Desc);
-		end else
-			WriteLn;
-	Halt(0);
+				S := S + '  ';
+			S := S + RSpace(Options[I].Long, M2);
+			S := S + ' ' + Options[I].Desc;
+			WriteHelp(S);
+		end else if S <> '' then begin
+			WriteHelp('');
+			S := '';
+		end;
+	if Term then Halt(0);
 end;
 
 procedure Abort(Code : integer);
 begin
 	Config.Destroy;
 	Export.Destroy;
+	OptFile.Destroy;
 	Halt(Code);
 end;
 
@@ -167,6 +209,7 @@ begin
 	StateValue := True;
 	Section := '';
 	Key := '';
+	CommentFlag := False;
 end;
 
 procedure Save;
@@ -391,6 +434,15 @@ begin
 					WriteLn('Select section "', Section, '"');
 			end;
 			Config.OpenSection(Section);
+		end else if FlagValue = flComment then begin
+			if Verbose then begin
+				if Not CommentFlag then begin
+					WriteLn;
+					WriteLn('Comment: ', Opt);
+				end else 
+					WriteLn('         ', Opt);
+				CommentFlag := True;
+			end;
 		end else if FlagValue = flKey then begin
 			Key := UCase(Opt);
 			if Verbose then begin
@@ -441,9 +493,13 @@ begin
 		FlagValue := flNone;
 	end else if (Opt[1] = Switch) then begin
 			TestSwitches(Opt);
+
 			if FlagValue = flNone then 
 				Abort(erParamError);
 			
+			if FlagValue <> flComment then
+				CommentFlag := False;
+				
 			if (FlagValue = flDelete) then begin
 				FlagValue := flNone;
 				if Key <> '' then begin
@@ -468,6 +524,12 @@ begin
 					PrintSection(Section)
 				else 
 					PrintAll;
+			end else if FlagValue = flHelp then begin
+				FlagValue := flNone;
+				if Verbose then begin
+					WriteLn('Print help text.');
+				end;
+				Help(False);
 			end else if (FlagValue = flList) then begin
 					FlagValue := flNone;
 				if Key <> '' then 
@@ -488,6 +550,14 @@ begin
 				FlagValue := flNone;
 				WriteLn('Verbose ', BoolStr(StateValue));
 				Verbose := StateValue;
+			end else if (FlagValue = flPause) then begin
+				FlagValue := flNone;
+				DoAPause;
+			end else if (FlagValue = flStop) then begin
+				FlagValue := flNone;
+				if Verbose then Write('***** ');
+				WriteLn('Stop command issued.');
+				Abort(0);
 			end else if (FlagValue = flUnSelect) then begin
 				InitVars;
 				FlagValue := flNone;
@@ -527,25 +597,22 @@ end;
 
 procedure ParseFile(FileName : String); 
 var
-	F : TFile;
 	E : integer;
 	Line, Opt : String;
 begin
 	OptHold := '';
 	if Verbose then 
 		WriteLn('Parse options from ', FileName);
-	F.Create;
-	F.Assign(FileName);
-	F.Reset;
-	E := F.IOResult;
+	OptFile.Assign(FileName);
+	OptFile.Reset;
+	E := OptFile.IOResult;
 	if E = 0 then begin
 		Opt := '';
-		while not F.EOF do begin
-			F.ReadLn(Line, Sizeof(Line) - 1);
-			E := F.IOResult;
+		while not OptFile.EOF do begin
+			OptFile.ReadLn(Line, Sizeof(Line) - 1);
+			E := OptFile.IOResult;
 			if E <> 0 then begin
-				F.Close;
-				F.Destroy;
+				OptFile.Close;
 				Abort(E);
 			end;
 			while Line <> '' do begin
@@ -554,11 +621,9 @@ begin
 			end;
 		end;
 		if OptHold <> '' then OptionFile('', True);
-		F.Close;
-		F.Destroy;		
+		OptFile.Close;
 	end else begin
-		F.Close;
-		F.Destroy;
+		OptFile.Close;
 		Abort(E);
 	end;
 end;
@@ -571,6 +636,7 @@ begin
 	Verbose := False;
 	Config.Create('');
 	Export.Create;
+	OptFile.Create;
 	Config.Clear;
 	Config.FFileName := '';
 	Config.FAutoClear := False;
@@ -597,12 +663,15 @@ begin
 		Writeln('Warning there changes to not saved.');
 	Config.Destroy;
 	Export.Destroy;
+	OptFile.Destroy;
 end;
 
 begin
+	TurnMouseOff;
+	DirectVideo := False;
 	ErrorClrScr := False;
 	if ParamCount = 0 then 
-		Help
+		Help(True)
 	else
 		Parse;
 end.

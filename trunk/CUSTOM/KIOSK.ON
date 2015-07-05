@@ -1,3 +1,5 @@
+/# "This is a QCNFTOOL command file."
+/# "It is used to switch PGME into KIOSK Demo Mode"
 ETERNITY.CFG
 /S PGM /K CANQUIT /D FALSE 
 /K READONLY /D TRUE
