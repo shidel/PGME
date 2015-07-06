@@ -24,6 +24,10 @@ type
 		Line : PString;
 	end; 
 	
+const 
+	Smooth : boolean = True;
+	MousePage = 10;
+	
 var
 	Top, Bottom, First, Last : PLine;
 	
@@ -135,51 +139,65 @@ var
 	I : byte;
 	P : Pointer;
 begin
-	P := GetVideoPtr;
-	ScreenMax := ScreenMax + $100;
-	WindMax := ScreenMax;
-	GotoXY(1,1);
-	WaitSync;
-	ScanStart(FontHeight);
+	if Smooth then begin
+		P := GetVideoPtr;
+		ScreenMax := ScreenMax + $100;
+		WindMax := ScreenMax;
+		GotoXY(1,1);
+		WaitSync;
+		ScanStart(FontHeight);
+	end;
 	GotoXY(1,1);
 	InsLine;
 	FWrite(PtrStr(Top^.Line));
 	ClrEol;
-	Stepping := 1 shl Stepping;
-	I := 0;
-	while (I < FontHeight) and (Stepping > 0) do begin
-		Inc(I, Stepping);
-		if I > FontHeight then I := FontHeight;
-		ScanStart(FontHeight - I);
-		WaitSync;
-	end;
-	GotoXY(1,1);
-	ScreenMax := ScreenMax - $100;
+	if Smooth then begin
+		Stepping := 1 shl Stepping;
+		I := 0;
+		while (I < FontHeight) and (Stepping > 0) do begin
+			Inc(I, Stepping);
+			if I > FontHeight then I := FontHeight;
+			ScanStart(FontHeight - I);
+			WaitSync;
+		end;
+		GotoXY(1,1);
+		ScreenMax := ScreenMax - $100;
+	end else
+		GotoXY(1,1);
 end;
 
 procedure ScrollDown( Stepping : integer );
 var
 	I : byte;
 begin
-	ScreenMax := ScreenMax + $100;
-	WindMax := ScreenMax;
-	GotoXY(1,Hi(ScreenMax) + 1);
-	FWrite(PtrStr(Bottom^.Line));
-	ClrEol;
-	WaitSync;
-	I := 0;
-	Stepping := 1 shl Stepping;
-	while (I < FontHeight) and (Stepping > 0) do begin
-		Inc(I, Stepping);
-		if I > FontHeight then I := FontHeight;
-		ScanStart(I);
+	if Smooth then begin
+		ScreenMax := ScreenMax + $100;
+		WindMax := ScreenMax;
+		GotoXY(1,Hi(ScreenMax) + 1);
+		FWrite(PtrStr(Bottom^.Line));
+		ClrEol;
 		WaitSync;
+		I := 0;
+		Stepping := 1 shl Stepping;
+		while (I < FontHeight) and (Stepping > 0) do begin
+			Inc(I, Stepping);
+			if I > FontHeight then I := FontHeight;
+			ScanStart(I);
+			WaitSync;
+		end;
+		GotoXY(1,1);
+		ScanStart(0);
+		DelLine;
+		ScreenMax := ScreenMax - $100;
+		WindMax := ScreenMax;
+	end else begin
+		GotoXY(1,1);
+		DelLine;
+		GotoXY(1,Hi(ScreenMax) + 1);
+		FWrite(PtrStr(Bottom^.Line));
+		ClrEol;
+		GotoXY(1,1);
 	end;
-	GotoXY(1,1);
-	ScanStart(0);
-	DelLine;
-	ScreenMax := ScreenMax - $100;
-	WindMax := ScreenMax;
 end;
 
 procedure MoveUp(Count : integer);
@@ -234,6 +252,7 @@ end;
 procedure Viewer;
 var
 	E : TEvent;
+	Y, B : integer;
 begin
 	HideCursor;
 	CheckScroll := False;
@@ -244,12 +263,29 @@ begin
 	Top := First;
 	Redraw;
 	PurgeEvents;
+	if MouseAvail then SetMousePos(MouseHomeX, MouseHomeY);
 	repeat
 		GotoXY(1,Hi(ScreenMax)+1);
 		ClearEvent(E);
 		While E.What = evNothing do GetEvent(E);
-		if E.What = evCommand then
-			Case E.Command of
+		if E.What and evMouseMove <> evNothing then begin
+			ClearEvent(E);
+			B := E.Where.Y - MouseHomeY;
+			SetMousePos(MouseHomeX, MouseHomeY);
+			if ABS(B) > MousePage then begin
+				if ABS(B) = B then 
+					MoveDown(Hi(ScreenMax))
+				else
+					MoveUp(Hi(ScreenMax));
+			end else begin
+				if ABS(B) = B then 
+					MoveDown(ABS(B))
+				else
+					MoveUp(ABS(B));
+			end;
+		end;
+		if E.What = evCommand then 
+			case E.Command of
 				cmUp : begin
 					PurgeEvents;
 					ClearEvent(E);
@@ -269,8 +305,8 @@ begin
 					MoveDown(Hi(ScreenMax));
 				end;
 			end;
-	until (E.What = evCommand) or (E.What = evKeyboard);
-	if DirectVideo then begin
+	until (E.What = evCommand) or (E.What = evKeyboard) or (E.What and evMouseDown <> evNothing);
+	if DirectVideo and Smooth then begin
 		ScreenMax := ScreenMax + $100;
 		WindMax := ScreenMax;
 		GotoXY(1,Hi(ScreenMax) + 1);
