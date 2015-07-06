@@ -1,9 +1,8 @@
 [*]
-	ID=DEFAULT
+	ID=KIOSK
 	NAME=Default Built-in English
 	TYPE=THEME
 	LANGUAGE=DEFAULT.LNG
-
 
 [PGM]
 	PALETTE.00=$00,$00,$09
