@@ -2,6 +2,7 @@
 
 2015-07-09
 	
+	Added Whatsnew.txt (this file)
 	QScroll Added Line to separate multiple files when loading more than one.
 	QScroll Added command line switch /S- to set smooth scrolling to off.
 		(/S and /S+ turn it on which is the default for now);
@@ -13,3 +14,4 @@
 2015-07-05 
 
 	Initial Beta Version. Mostly Functional.
+	
