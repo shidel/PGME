@@ -84,23 +84,44 @@ procedure LoadFiles;
 const
 	Max = 80;
 var
-	J : integer;
+	J, K : integer;
 	F : File;
 	C : Word;
 	S, T : String;
 begin
+	K := 0;
 	for J := 1 to ParamCount do begin
-		Assign(F, ParamStr(J));
-		Reset(F, 1);
-		S := '';
-		repeat
-			BlockRead(F, T[1], Max,  C);
-			T[0] := Chr(C);
-			S := S + FilterChar(T, #$0D);
-			AddLines(S, False);
-		until (C < Max) or (IOResult <> 0);
-		AddLines(S, True);
-		Close(F);
+		if (UCase(ParamStr(J)) = '/S') or (UCase(ParamStr(J)) = '/S+') then begin
+			Smooth := True
+		end else
+		if UCase(ParamStr(J)) = '/S-' then begin
+			Smooth := False;
+		end else begin
+			Assign(F, ParamStr(J));
+			Reset(F, 1);
+			S := #$0A;
+			Inc(K);
+			if K > 1 then begin
+				AddLines(S, True);
+				S := ' ' + CPad('>' + Copy(ParamStr(J), 1, 70) + '<', '=', 78)  + S;
+				AddLines(S, True);
+				S := #$0A;
+				AddLines(S, True);
+
+			end;
+			S := '';
+			if IOResult = 0 then begin
+				repeat
+					BlockRead(F, T[1], Max,  C);
+					T[0] := Chr(C);
+					S := S + FilterChar(T, #$0D);
+					AddLines(S, False);
+				until (C < Max) or (IOResult <> 0);
+				AddLines(S, True);
+			end else begin
+			end;
+			Close(F);
+		end;
 	end;
 end;
 
@@ -268,7 +289,12 @@ begin
 		GotoXY(1,Hi(ScreenMax)+1);
 		ClearEvent(E);
 		While E.What = evNothing do GetEvent(E);
-		if E.What and evMouseMove <> evNothing then begin
+		if E.What and evKeyboard <> evNothing then begin
+			if UCase(E.CharCode) = 'S' then begin
+				ClearEvent(E);
+				Smooth := not Smooth;
+			end;
+		end else if E.What and evMouseMove <> evNothing then begin
 			ClearEvent(E);
 			B := E.Where.Y - MouseHomeY;
 			SetMousePos(MouseHomeX, MouseHomeY);
@@ -283,8 +309,7 @@ begin
 				else
 					MoveUp(ABS(B));
 			end;
-		end;
-		if E.What = evCommand then 
+		end else if E.What = evCommand then 
 			case E.Command of
 				cmUp : begin
 					PurgeEvents;
