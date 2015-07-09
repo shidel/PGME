@@ -24,7 +24,6 @@ To-Do (Sooner or later, maybe):
 	Custom Color DAC Support.
 	Menu Path Drive Scanning for Disc Insertion.
 	User Interface Support for PGMVars.
-	Searching.
 	Option Sets and Option prompting before launching.
 	Other Utilities.
 	Some Theme and Font stuff.

@@ -1,0 +1,15 @@
+### The Program Manager Eternity What's Up File
+
+2015-07-09
+	
+	QScroll Added Line to separate multiple files when loading more than one.
+	QScroll Added command line switch /S- to set smooth scrolling to off.
+		(/S and /S+ turn it on which is the default for now);
+	QScroll Pressing "S" key toggles smooth scrolling.
+	QScroll Exit on mouse click.
+	QScroll Scroll by mouse movement.
+	Improved compatibility for keyboards without insert lock key.
+
+2015-07-05 
+
+	Initial Beta Version. Mostly Functional.
