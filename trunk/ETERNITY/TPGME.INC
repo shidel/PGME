@@ -327,7 +327,7 @@ begin
 		with FBtnSearch^ do begin
 			SetCaption('Search');
 			SetHelpText('5;"%0" Button: This will focus the "Find" field ');
-			AddHelpText('to input test for searching. Or, if that field');
+			AddHelpText('to input text for searching. Or, if that field');
 			AddHelpText('already contains text, it will search again.');
 			SetCommand(cmFind);
 			SetAnchors(alBottom);
