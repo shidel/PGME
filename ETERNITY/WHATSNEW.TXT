@@ -1,5 +1,7 @@
 ### The Program Manager Eternity What's Up File
 
+2015-07-26
+	Fixed non-FreeDOS/DosBox "Path Not Found" compatibility issue.
 	Some grammer and spelling corrections.
 
 2015-07-09

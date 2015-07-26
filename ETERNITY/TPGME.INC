@@ -1545,7 +1545,6 @@ var
 		FileWrite(Trim(FName + ' ' + Command));
 	end;
 
-	
 begin
 	(* 
 	 * Add Option prompting and parsing
@@ -1554,13 +1553,12 @@ begin
 	
 	if Not Assigned(AItem) then exit;
 	if Not Assigned(AItem^.Data) then exit;	
-
 	FConfig.OpenSection(GetPathID + '.VIEWERS');
 	with PCacheApp(AItem^.Data)^ do begin
 		FDir := PCacheDir(Parent^.Parent)^.GetNameID;
 		FExecDir := '';
 		GetDir(0, FHoldDir);
-		ChDir(FDir);
+		ChDir(NoTailDelim(FDir));
 		FRet := GetReturnStr;
 		if FRet = '' then 
 			FRet := '/M=' + FDir + PCacheMenu(Parent)^.GetNameID + 
@@ -1576,7 +1574,8 @@ begin
 			FName := '';
 		FOpts := '';
 		if not CheckViewer then exit;
-		ChDir(FHoldDir);
+		ChDir(NoTailDelim(FHoldDir));
+		
 		if SimpleExec and (not MaxMemory) and (Count = 0) and (FName <> '') and 
 		(not PGMVars) then begin
 			if PathOf(FName) <> FDir then
@@ -1590,7 +1589,7 @@ begin
 				FOriginalPath := FExecDir;
 			if Tone <> '' then 
 				FEndTone := Tone;
-			ChDir(FExecDir);
+			ChDir(NoTailDelim(FExecDir));
 			SetCurDisk(Ord(FExecDir[1]) - 64);
 			CallBack(FName, FOpts, FRet, ReturnAfter or (not FCanQuit));
 			Terminate;
