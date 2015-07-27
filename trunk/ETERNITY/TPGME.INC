@@ -1626,7 +1626,7 @@ begin
 			FileWrite('');
 			FileWrite('REM Begin by setting current dir and drive to menu directory.');
 			FileWrite(Copy(FDir, 1, 2));
-			FileWrite('CD ' + Copy(FDir, 3, Length(FDir)));
+			FileWrite('CD ' + NoTailDelim(Copy(FDir, 3, Length(FDir))));
 			FileWrite('');
 			FileWrite('REM Continue by running complex launching processes.');
 
@@ -1638,7 +1638,10 @@ begin
 				if Not assigned(P) then begin
 					FileWriteExec(FName + ' ' + FOpts);
 				end else while Assigned(P) and OK do begin
-					FileWriteExec(P^.GetNameID);
+					if (Length(P^.GetNameID) > 4) and (UCase(Copy(P^.GetNameID, 1, 4)) = 'CD \') then
+						FileWriteExec(NoTailDelim(P^.GetNameID))
+					else
+						FileWriteExec(P^.GetNameID);
 					P := PCacheProc(P^.Next);
 				end;
 			end;
