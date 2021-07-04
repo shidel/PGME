@@ -1,0 +1,50 @@
+{ QuickCrt Turbo Pascal 7.0 Default Compiler Directive Definition File }
+
+{$G+}       (* Not 8086/8087 compatible *)
+{$A+,B-}    (* Byte alignment, short-circut boolean *)
+{$E-,N-}    (* Emulation, coprocessor *)
+{$F-,O-}    (* Farcalls, and no overlays *)
+{$R-,Q-,S-} (* No range, overflow or stack checking *)
+{$I-}       (* No I/O checking *)
+{$D-,L-,Y-} (* No Debug, label or symbol information *)
+{$P-,V+}    (* OpenString parameters, with strict type-checking *)
+{$T-}       (* No type-checked pointers *)
+{$X+}       (* Enable extended syntax *)
+
+{ D+,L+,Y+,R+,S+}
+{$S+}
+
+{$I TEMPLATE.DEF}	{ DEFINE TEMPLATES}	{ Creates and saves all TConfigFile values and 
+					defaults for creating custom themes, not defined then it is the app.}
+
+{ DEFINE DEVLOG}	{ Enables development logging/debugging system }
+
+{ DEFINE DEVINFO}
+
+{$IFDEF TEMPLATES}
+	{$DEFINE DEVINFO}
+	{$DEFINE ONDISK}
+{$ENDIF}
+
+{$IFDEF DEVINFO}
+	{$DEFINE MEMINFO}
+{$ENDIF}
+
+{$IFDEF DEVLOG}
+	{$DEFINE DEVLOG_CLEAN}		{ Cleans out log file on each execution }
+	{ DEFINE DEVLOG_CREATE} 	{ Creation and destruction of objects }
+	{ DEFINE DEVLOG_CREATEINDENT} { Mostly Pointless since Indents on Create, 
+									un-indents on destroy }
+	{ DEFINE DEVLOG_BOUNDS} 	{ Bounds, position changes }
+	{ DEFINE DEVLOG_ADJUST} 	{ size adjustments }
+	{ DEFINE DEVLOG_DRAW} 		{ Some Control Drawing  }
+	{ DEFINE DEVLOG_THEMES} 	{ Theme applications }
+	{ DEFINE DEVLOG_LANGUAGES}	{ Language applications }
+	{ DEFINE DEVLOG_KEYBOARDS}	{ Keyboard applications }
+	{ DEFINE DEVLOG_CONFIG}		{ Begin/end of TConfigFile Read/Writes }
+	{ DEFINE DEVLOG_FONTLOAD}   { Log font loading }
+	{ DEFINE DEVLOG_LISTITEMS}	{ Log List Create and Destroy }
+	{ DEFINE DEVLOG_EVENTS}		{ Log every event }
+{$ENDIF}
+
+{$DEFINE STRINGPTRS}

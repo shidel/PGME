@@ -1,0 +1,54 @@
+Things TO-DO on QCrt & PGME:
+
+
+Current Build Instructions:
+
+	requires Turbo Pascal 7 and TP7's BCC make utility (included in TP7 bin dir)
+
+	make
+
+Bugs and Known Issues:
+
+	KeyPressed and Readkey are currently broken due to command translations.
+	Get/Set File Time/Attr in QDos not working.
+	Prevent TConfigFile AutoMerge getting from stuck in a loop if merging a previously
+		merged file.
+	Draw behind other windows, prob requires QCrt 9.
+	
+Maybe Eventual Improvements:
+	
+	Extention Component.
+	Make KeyPressed and ReadKey translate Commands into Keypresses for backwards compatibility.	
+	Buffered File I/O, mainly reading in TAbstractFile. Maybe buffered writes to.
+	QCRT Get/Put Window, convert to optimized assembly.
+	UI Window, resize and dragging	
+	Move Non-visual stuff from TControl into TComponent.
+	Error Dialog in TPathDialog when MakeDir fails.
+	UN/Tab UI Navigation and other stuff for Mouseless systems. 
+	Text Typing and special unhandled commands over Edit controls starts editing.
+	Other general perfomance enhancements.
+	Make PGM_Call into QIPC
+	Add KeyValue Lookups to THelp.
+	Enhance TTextView with Line Wrapping and Horizontal Scrolling.
+	Add to TControl AdjustSize method for Aligning to Bottom when Anchored at Top. 
+	Same goes for Aligning to Left when Anchored at Right.
+	Also, change aligning method to align to sibling controls not just parent.
+	
+	Develop QCRT 9: (Would/Will be a major undertaking)
+		Window drawing, not just screen drawing. 
+		Better mouse Antiflicker that will test position and only hide if needed.
+
+Todo PGME & QCrt: 
+
+	Needed Controls.
+		Tree View
+		File Tree View
+		Scroll Window
+		Memo Edit
+		Binary Tree
+		MOTD
+
+	More Special Effects
+
+	Verify FileMode is Read/Write for ReadOnly Access.
+	Verify Update or Refresh when Control changes.
