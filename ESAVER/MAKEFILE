@@ -8,25 +8,25 @@ BINDIR = ..\BIN
 
 TPC = TPC -M -L -E$(BINDIR) -I..\QUICKCRT -U$(BINDIR);..\QUICKCRT
 
-all: blanker.scr atom.scr
+all: blanker.scr atom.scr conway.scr
 
-templates: blanker.pmi atom.pmi
-	
+templates: blanker.pmi atom.pmi conway.pmi
+
 .pas.pmi:
     @if not exist $(BINDIR) mkdir $(BINDIR)
 	$(TPC) $*.pas
 	$(BINDIR)\$*.EXE
 	del $(BINDIR)\$*.EXE
 
-.pas.tpu: 
+.pas.tpu:
     @if not exist $(BINDIR) mkdir $(BINDIR)
 	$(TPC) $*.pas
 
-.pas.exe: 
+.pas.exe:
     @if not exist $(BINDIR) mkdir $(BINDIR)
 	$(TPC) $*.pas
-	
-.pas.scr: 
+
+.pas.scr:
     @if not exist $(BINDIR) mkdir $(BINDIR)
 	$(TPC) $*.pas
 	copy $(BINDIR)\$*.EXE $(BINDIR)\$*.SCR
