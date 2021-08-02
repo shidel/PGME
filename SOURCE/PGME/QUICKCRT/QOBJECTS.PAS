@@ -1,10 +1,10 @@
 { Copyright 2015 Jerome Shidel }
 
-(* 
-		
+(*
+
 	This project and related files are subject to either the terms
 	specified in the included LICENSE.TXT file or the GNU GPLv2.0.
-	
+
 *)
 
 unit QObjects; { QuickCRT Objects }
@@ -14,10 +14,10 @@ interface
 
 {$DEFINE INTERFACE}
 
-uses 
-   {$IFDEF DEVLOG} QLog, {$ENDIF} 
+uses
+   {$IFDEF DEVLOG} QLog, {$ENDIF}
 	QCrt, QStrings, QClass, QBIOS;
-	
+
 const { Anchor Bounds and Align Control Constants. Anchors can override Alignments }
 	abNone   = $0000;
 	abLeft   = $0001;
@@ -37,7 +37,7 @@ const { TListItem Compare Results }
 	cmpLessThan    = -1;
 	cmpEqual       =  0;
 	cmpGreaterThan = +1;
-	
+
 const { Modal Results and Button options }
 	mrNoResult	= -1;
 	mrNone		= 0;
@@ -45,10 +45,10 @@ const { Modal Results and Button options }
 	mrCancel	= 2;
 	mrAbort		= 4;
 	mrRetry		= 8;
-	{ Define more if needed, any valid integer, ie 16=Skip, 17=Revert... 
+	{ Define more if needed, any valid integer, ie 16=Skip, 17=Revert...
 		Defaults are used as bitmapped to create buttons only. if Setbuttons is Not
 		used in a Dialog, then any integer other than -1 can be used. }
-	
+
 const { Default File Extensions }
     ConfigExt 	= '.CFG';
     LanguageExt = '.LNG';
@@ -67,23 +67,23 @@ const { Text Config File ID Tags }
     ftInfo 		= 'INFORMATION';
     ftESaver 	= 'ESAVER';
     ftProgram	= 'PROGRAM';
-    	
-type 
+
+type
 	{ Strictly Text Justification }
 	THorizontalAlign = (AlignLeft, AlignCenter, AlignRight);
 	TVerticalAlign = (AlignTop, AlignMiddle, AlignBottom);
-	
+
 	{ X, Y Point}
 	TPoint = record
 		X, Y : integer;
 	end;
-	
+
 	TBounds = record
 		Left, Top, Width, Height : integer;
-	end; 
+	end;
 	TMargins = record
 		Left, Top, Right, Bottom : integer;
-	end; 
+	end;
 	TTextAttrs = record
 	   Normal, Disabled, Hover, Click, Focused : integer;
 	end;
@@ -94,22 +94,22 @@ type
             1: (CharCode: Char;
                 ScanCode: Byte);
     end;
-    
+
 {$I TListItem.inc}
 {$I TComponent.inc}
 {$I TConfigFile.inc}
 {$I TFont.inc}
-		
+
 var
 	BufferedVideo : boolean; { Buffered Video Drawing; Leave it alone its for debugging! }
-			
+
 	{ Procedure to Set a Bounds Record }
 	procedure Bounds(ALeft, ATop, AWidth, AHeight : integer; var AValue : TBounds);
-	
+
 	{  These should only be used in Control Development }
 	procedure StartDrawing;
 	procedure FinishDrawing;
-	
+
 {$UNDEF INTERFACE}
 
 implementation
@@ -139,7 +139,7 @@ uses QErrors, QDos, QFiles, QFmtStr;
 		AValue.Width := AWidth;
 		AValue.Height := AHeight;
 	end;
-	
+
 	procedure StartDrawing;
 	begin
 		Inc(DrawCounter);
@@ -157,13 +157,13 @@ uses QErrors, QDos, QFiles, QFmtStr;
 		PSize := GetVideoSize;
 		if Not Assigned(PBuffer) then
 			begin
-				if not MemCheck( PSize ) then Halt(erInsufficient_Memory); 
+				if not MemCheck( PSize ) then Halt(erInsufficient_Memory);
 				GetMem(PBuffer, PSize);
 			end;
 		SetVideoPtr(PBuffer);
 		CopyFromVideo;
 	end;
-	
+
 	procedure FinishDrawing;
 	begin
 		Dec(DrawCounter);
@@ -174,7 +174,7 @@ uses QErrors, QDos, QFiles, QFmtStr;
 			CopyToVideo;
 		SetVideoPtr(PCurrent);
 	end;
-	
+
 	procedure ExitQObjects; far;
 	begin
 		ExitProc := OldExitProc;
@@ -211,18 +211,18 @@ uses QErrors, QDos, QFiles, QFmtStr;
 			WriteLn;
 		end;
 		{$IFDEF TEMPLATES}
-			if MemAvail <> FirstMemAvail then 
+			if MemAvail <> FirstMemAvail then
 				Delay(5000)
 			else
 				Delay(1500);
 		{$ENDIF}
 	end;
-	
+
 	procedure InitQObjects;
 	begin
 		{$IFDEF TEMPLATES}
 			BufferedVideo := False;
-		{$ELSE}		
+		{$ELSE}
 			BufferedVideo := True;
 		{$ENDIF}
 		DrawCounter := 0;
@@ -234,7 +234,7 @@ uses QErrors, QDos, QFiles, QFmtStr;
 		ExitProc := @ExitQObjects;
 		InitQCrtMaps;
 	end;
-	
+
 {$I TListItem.inc}
 {$I TComponent.inc}
 {$I TConfigFile.inc}
