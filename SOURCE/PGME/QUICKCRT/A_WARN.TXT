@@ -1,0 +1,10 @@
+This is a HEADS-UP warning!
+
+This version of QuickCRT is based on an older version. This version was also
+"built-out" with a complete Object-Oriented User Interface Framework.
+
+This is not the newest, fastest or best version of QuickCRT (aka QCrt).
+However, it is presently the only version that has a complete OO-UI Framework.
+
+For the latest version of QuickCRT, please see https://github.com/LoopZ/QCrt
+
