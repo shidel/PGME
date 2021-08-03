@@ -188,8 +188,11 @@ goto DoneMake
     if exist etools\bin\EFNTDSGN.exe move etools\bin\*.EXE bin
     if exist esaver\bin\blanker.scr move esaver\bin\*.scr bin
     xcopy /y /d eternity\*.txt bin\
-    xcopy /y /d custom\*.* bin\
-    xcopy /y /d fonts\*.* bin\
+
+    xcopy /y /d custom\language\*.* bin\
+    xcopy /y /d custom\fonts\*.* bin\
+    xcopy /y /d custom\themes\*.* bin\
+    xcopy /y /d custom\menu\*.* bin\
 
 goto DoneMake
 
