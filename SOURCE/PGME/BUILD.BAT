@@ -189,6 +189,7 @@ goto DoneMake
     if exist esaver\bin\blanker.scr move esaver\bin\*.scr bin
     xcopy /y /d eternity\*.txt bin\
 
+    xcopy /y /d custom\config\*.* bin\
     xcopy /y /d custom\language\*.* bin\
     xcopy /y /d custom\fonts\*.* bin\
     xcopy /y /d custom\themes\*.* bin\
