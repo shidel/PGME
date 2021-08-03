@@ -1,10 +1,10 @@
 { Copyright 2015 Jerome Shidel }
 
-(* 
-		
+(*
+
 	This project and related files are subject to either the terms
 	specified in the included LICENSE.TXT file or the GNU GPLv2.0.
-	
+
 *)
 
 {$I ETERNITY.DEF}
@@ -22,7 +22,7 @@ it pushes the command to trigger the next dialog. The last dialog pushes a cmQui
 close the program. There are several other ways to accomplish the same result, but
 this is one of the easiest. }
 
-uses QCrt, QCLass, QStrings, QFmtStr, QFiles, QDos, QErrors, QObjects, QControls, 
+uses QCrt, QCLass, QStrings, QFmtStr, QFiles, QDos, QErrors, QObjects, QControls,
 	QFileDlg;
 
 {$I INSTALL.INC}
@@ -43,14 +43,14 @@ const
 	cmShowInstall = $2004;
 	cmShowThanks  = $2005;
 	cmError		  = $2006;
-	
+
 const
 	InstallSize   : LongInt = 0;
 	InstallFiles  : Word = 0;
 	InstallPath   : String = '';
 	InstallError  : integer = 0;
 	InstallUses	  : LongInt = 512;
-	BatchPath	  : String = '';	
+	BatchPath	  : String = '';
 	BatchName	  : String = 'PGM.BAT';
 	ExecName	  : String = 'PGME.EXE';
 	RunName	  	  : String = 'PGMEGORN.BAT';
@@ -83,12 +83,12 @@ begin
 		F.ReadRecord(R, Sizeof(R));
 		Inc(C);
 		Z := Z + R.Size;
-		if (R.Group <> igInstall) then 
+		if (R.Group <> igInstall) then
 			InstallUses := InstallUses + ((R.Size div 512) + 1) * 512;
 		if F.FilePos + R.Size > F.FileSize then begin
 			F.Destroy;
 			InstallSize := -1;
-			exit;			
+			exit;
 		end;
 		F.Seek(F.FilePos + R.Size);
 	until F.FilePos >= F.FileSize;
@@ -107,8 +107,8 @@ begin
 	BatchPath := '';
 	InstallPath := '';
 
-	{ Verify installer } 
-	SetInstallSize; 
+	{ Verify installer }
+	SetInstallSize;
 	if InstallSize < 0 then begin
 		TextAttr := $4F;
 		GotoXY(1,WhereY);
@@ -117,8 +117,8 @@ begin
 		TextAttr := $07;
 		WriteLn;
 		ErrorsOnExit := False;
-		Halt;		
-	end; 
+		Halt;
+	end;
 	{ Find and set path/filename for Igor. }
 
 	T := GetEnv('TEMP');
@@ -129,18 +129,18 @@ begin
 			T := '%TEMP%\'
 	end else begin
 		T := GetEnv('TMP');
-		if T = '' then 
-			T := Dir(InstallPath) 
+		if T = '' then
+			T := Dir(InstallPath)
 		else begin
 			if T[Length(T)] = '\' then
 				T := '%TMP%'
 			else
 				T := '%TMP%\'
-		end;		
+		end;
 	end;
-	
+
 	IGOR := T + RunName;
-	{ Previous Launcher Batch file if it exists }		
+	{ Previous Launcher Batch file if it exists }
 	T := GetEnv('PATH');
 	while T <> '' do begin
 		S := PullStr(';', T);
@@ -149,7 +149,7 @@ begin
 			T := '';
 		end;
 	end;
-	
+
 	{ Previous installation or default to first fixed drive }
 	if BatchPath <> '' then begin
 		F.Create;
@@ -157,7 +157,7 @@ begin
 		F.Reset;
 		E := F.IOResult;
 		while (E = 0) and (not F.EOF) do begin
-			F.ReadLn(S, Sizeof(S) - 1);	
+			F.ReadLn(S, Sizeof(S) - 1);
 			S := Trim(UCASE(S));
 			E := F.IOResult;
 			if E = 0 then begin
@@ -173,9 +173,9 @@ begin
 		end;
 		F.Close;
 	end;
-	if InstallPath = '' then 
+	if InstallPath = '' then
 		InstallPath := Dir(Char(BootDrive + 64) + ':\ETERNITY');
-	
+
 	F.Destroy;
 end;
 
@@ -196,7 +196,7 @@ type
 		procedure Copy; virtual;
 		procedure SaveBatch; virtual;
 	end;
-	
+
 	PInstaller = ^TInstaller;
 	TInstaller = object(TApplication)
 	public { protected }
@@ -207,7 +207,7 @@ type
 			PLicense,
 			POptions,
 			PInstall,
-			PThanks, 
+			PThanks,
 			PError : PDialog;
 			PDoneBtn : PButton;
 			PInstalling : PInsPanel;
@@ -218,7 +218,7 @@ type
 		destructor Destroy; virtual;
 		procedure Idle; virtual;
 	end;
-	
+
 	POptionDialog = ^TOptionDialog;
 	TOptionDialog = object(TDialog)
 	public { protected }
@@ -230,9 +230,9 @@ type
 	end;
 
 { --- File Installing Panel --- }
-function TInsPanel.ObjectClass(AName : String) : String; 
+function TInsPanel.ObjectClass(AName : String) : String;
 begin
-	if (AName = '') or (AName = class_TInstallPanel) then 
+	if (AName = '') or (AName = class_TInstallPanel) then
 		ObjectClass := class_TInstallPanel
 	else
 		ObjectClass := inherited ObjectClass(AName);
@@ -251,7 +251,7 @@ begin
 		SetCaption('File:');
 		Bounds(3, B.Top, 5, 1, B);
 		FHAlign := AlignLeft;
-		SetBounds(B); 
+		SetBounds(B);
 	end; }
 	TextAttr := $70;
 	PFileName := New(PLabel, Create(@Self, 'Name'));
@@ -260,13 +260,13 @@ begin
 		FHAlign := AlignRight;
 		Bounds(B.Left + B.Width + 1, B.Top, 12, 1, B);
 		SetAnchors(abNone);
-		SetBounds(B); 
+		SetBounds(B);
 	end;
 	TextAttr := $1B;
 	PFProgress := New(PProgressBar, Create(@Self, 'Progress'));
 	with PProgressBar(PFProgress)^ do begin
 		Bounds(B.Left + B.Width + 1, B.Top , 64 - (B.Left + B.Width), 1 , B);
-		SetBounds(B); 
+		SetBounds(B);
 		SetAnchors(abNone);
 	end;
 
@@ -277,13 +277,13 @@ begin
 		FHAlign := AlignRight;
 		SetAnchors(abNone);
 		Bounds(3, B.Top + 2, 12, 1, B);
-		SetBounds(B); 
+		SetBounds(B);
 	end;
 	TextAttr := $1B;
 	PTProgress := New(PProgressBar, Create(@Self, 'Total'));
 	with PProgressBar(PTProgress)^ do begin
 		Bounds(B.Left + B.Width + 1, B.Top , 64 - (B.Left + B.Width), 1 , B);
-		SetBounds(B); 
+		SetBounds(B);
 		SetAnchors(abNone);
 	end;
 	FIn.Create;
@@ -297,7 +297,7 @@ begin
 	Finished := False;
 end;
 
-destructor TInsPanel.Destroy; 
+destructor TInsPanel.Destroy;
 begin
 	FOut.Destroy;
 	FIn.Close;
@@ -351,10 +351,10 @@ begin
 	if Finished then exit;
 	if (CSize = 0) then begin
 		FIn.ReadRecord(Current, Sizeof(Current));
-		if (Current.Group = igInstall) or 
+		if (Current.Group = igInstall) or
 		((Current.Group = igConfig) and FileExists(Dir(InstallPath) + Current.Name)) then begin
 			FIn.Seek(FIn.FilePos + Current.Size);
-			Inc(TSize, Current.Size);		
+			Inc(TSize, Current.Size);
 		end else begin
 			CSize := Current.Size;
 			MakeDir(InstallPath);
@@ -400,10 +400,10 @@ begin
 	if (TSize >= InstallSize) then SaveBatch;
 end;
 
-{ --- Main Installer Application --- }	
-function TInstaller.ObjectClass(AName : String) : String; 
+{ --- Main Installer Application --- }
+function TInstaller.ObjectClass(AName : String) : String;
 begin
-	if (AName = '') or (AName = class_TInstaller) then 
+	if (AName = '') or (AName = class_TInstaller) then
 		ObjectClass := class_TInstaller
 	else
 		ObjectClass := inherited ObjectClass(AName);
@@ -440,7 +440,7 @@ begin
 		AddHelpText ('It shows the approximate amount of space required for a full installation.');
 		Bounds(5,10,60,12, B);
 		SetBounds(B);
-		SetTitle('Program Manager Eternity Installer');	
+		SetTitle('Program Manager Eternity Installer');
 		SetMessage(
 			'0;'#13 +
 			'0;Welcome,'#13 +
@@ -448,7 +448,7 @@ begin
 			'0;This is the Program Manager Eternity Edition'#13 +
 			'0;software installer. It will require approximately' + #13 +
 			'0;%0 bytes for a complete installation.'
-		);	
+		);
 		T.ID := fmtString;
 		T.StringValue := Comma(IntStr(InstallUses));
 		SetFormatData(T, 1);
@@ -458,13 +458,13 @@ begin
 			SetCaption('Continue');
 			SetCommand(cmOk);
 			SetRespond(cmEnter);
-			with PControl(Parent)^ do 
+			with PControl(Parent)^ do
 				Bounds(Width - 18, Height - 4, 12, 1, B);
 			SetAnchors( abRight or abBottom );
-			SetBounds(B); 
+			SetBounds(B);
 		end;
 	end;
-	
+
 	{ Create License Dialog }
 	PLicense := New(PMessageBox, Create(@Self, 'License'));
 	with PMessageBox(PLicense)^ do begin
@@ -478,11 +478,11 @@ begin
 		end;
 		Bounds(5,10,73,11, B);
 		SetBounds(B);
-		SetTitle('Software License Agreement');	
+		SetTitle('Software License Agreement');
 		SetMessage(
 			#13 +
 			SoftwareLicense
-		);	
+		);
 		TextAttr := $3E;
 		P := New(PButton, Create(PLicense, 'Accept'));
 		with PButton(P)^ do begin
@@ -492,13 +492,13 @@ begin
 				SetCaption('Accept');
 			SetCommand(cmOk);
 			SetRespond(cmEnter);
-			with PControl(Parent)^ do 
+			with PControl(Parent)^ do
 				Bounds(Width - 18, Height - 4, 12, 1, B);
 			SetAnchors( abRight or abBottom );
-			SetBounds(B); 
+			SetBounds(B);
 		end;
 	end;
-		
+
 	TextAttr := $07;
 	{ Create Options Dialog }
 	POptions := New(POptionDialog, Create(@Self, 'Options'));
@@ -510,59 +510,59 @@ begin
 		AddHelpText ('it will attempt to configure itself to the same settings.');
 		Bounds(5,10,60,12, B);
 		SetBounds(B);
-		SetTitle('Installation Options');	
+		SetTitle('Installation Options');
 		TextAttr := $1E;
 		P := New(PButton, Create(POptions, 'Install'));
 		with PButton(P)^ do begin
 			SetCaption('Install');
 			SetCommand(cmOk);
 			SetRespond(cmEnter);
-			with PControl(Parent)^ do 
+			with PControl(Parent)^ do
 				Bounds(Width - 19, Height - 4, 13, 1, B);
 			SetAnchors( abRight or abBottom );
-			SetBounds(B); 
+			SetBounds(B);
 		end;
 		TextAttr := $70;
 		P := New(PLabel, Create(POptions, 'PATH'));
 		with PLabel(P)^ do begin
 			SetCaption('Install Destination Path:');
-			with PControl(Parent)^ do 
+			with PControl(Parent)^ do
 				Bounds(3, 2, 25, 1, B);
 			SetAnchors( abLeft or abTop );
-			SetBounds(B); 
+			SetBounds(B);
 		end;
 		TextAttr := $1E;
 		PDest := New(PEdit, Create(POptions, 'PATH.EDIT'));
 		with PEdit(PDest)^ do begin
 			SetCaption(InstallPath);
 			FHAlign := AlignLeft;
-			with PControl(Parent)^ do 
+			with PControl(Parent)^ do
 				Bounds(3, 3, Width - 20, 1, B);
 			SetAnchors( abLeft or abTop or abRight );
-			SetBounds(B); 
+			SetBounds(B);
 		end;
-		
+
 		TextAttr := $2E;
 		P := New(PButton, Create(POptions, 'Browse'));
 		with PButton(P)^ do begin
 			SetCaption('Browse');
 			SetCommand(cmBrowse);
-			with PControl(Parent)^ do 
+			with PControl(Parent)^ do
 				Bounds(Width - 16, 3, 10, 1, B);
 			SetAnchors( abRight or abTop );
-			SetBounds(B); 
+			SetBounds(B);
 		end;
-		
+
 		TextAttr := $70;
 		P := New(PLabel, Create(POptions, 'LAUNCH'));
 		with PLabel(P)^ do begin
-			with PControl(Parent)^ do 
+			with PControl(Parent)^ do
 				Bounds(3, 5, 37, 1, B);
-			SetBounds(B); 
+			SetBounds(B);
 			SetCaption('Location in PATH of PGM.BAT Launcher:');
 			SetAnchors( abLeft or abTop );
 		end;
-		
+
 		TextAttr := $1E;
 		PBatch := New(PDropList, Create(POptions, 'LAUNCH.DROP'));
 		with PDropList(PBatch)^ do begin
@@ -586,19 +586,19 @@ begin
 				if (G = '') or (S[1] < G[1]) or ( (S[1] = G[1]) and (Length(S) < Length(G) )) then
 					G := S;
 			end;
-			if BatchPath <> '' then 
+			if BatchPath <> '' then
 				G := Dir(BatchPath) + BatchName
-			else 
+			else
 				if G = '' then G := Dir('\') + BatchName;
 			SetCaption(G);
 			FEdit.FHAlign := AlignLeft;
-			with PControl(Parent)^ do 
+			with PControl(Parent)^ do
 				Bounds(3, 6, Width - 9, 10, B);
 			SetAnchors( abLeft or abTop or abRight or abBottom );
-			SetBounds(B); 
+			SetBounds(B);
 		end;
 	end;
-			
+
 	{ Create Install Dialog }
 	PInstall := New(PDialog, Create(@Self, 'Install'));
 	with PMessageBox(PInstall)^ do begin
@@ -608,29 +608,29 @@ begin
 		AddHelpText ('Just wait for the "Done" button to appear.');
 		Bounds(5,10,70,10, B);
 		SetBounds(B);
-		SetTitle('Installing Eternity');	
+		SetTitle('Installing Eternity');
 		TextAttr := $1E;
 		PDoneBtn := New(PButton, Create(PInstall, 'Done'));
 		with PButton(PDoneBtn)^ do begin
 			SetCaption('Done');
 			SetCommand(cmOk);
 			SetRespond(cmEnter);
-			with PControl(Parent)^ do 
+			with PControl(Parent)^ do
 				Bounds(Width - 18, Height - 4, 12, 1, B);
 			SetAnchors( abRight or abBottom );
-			SetBounds(B); 
+			SetBounds(B);
 			SetVisible(False);
 		end;
 		TextAttr := $71;
 		PInstalling := New(PInsPanel, Create(PInstall, 'Installing'));
 		with PInstalling^ do begin
-			with PControl(Parent)^ do 
+			with PControl(Parent)^ do
 				Bounds(1,1, Width - 18, Height - 5, B);
-			SetAnchors(alTop or alLeft or alRight or abBottom); 
+			SetAnchors(alTop or alLeft or alRight or abBottom);
 			SetBounds(B);
 		end;
 	end;
-	
+
 	{ Create Thanks Dialog }
 	PThanks := New(PMessageBox, Create(@Self, 'Thanks'));
 	with PMessageBox(PThanks)^ do begin
@@ -640,23 +640,23 @@ begin
 		AddHelpText ('choosing PGME. Why did you need help on this?');
 		Bounds(5,10,60,10, B);
 		SetBounds(B);
-		SetTitle('Thank You');	
+		SetTitle('Thank You');
 		SetMessage(
 			#13  +
 			'Installation is now complete.'#13 +
 			#13 +
 			'Thank You for using the Program Manager Eternity.'
-		);	
+		);
 		TextAttr := $3E;
 		P := New(PButton, Create(PThanks, 'Exit'));
 		with PButton(P)^ do begin
 			SetCaption('Exit');
 			SetCommand(cmOk);
 			SetRespond(cmEnter);
-			with PControl(Parent)^ do 
+			with PControl(Parent)^ do
 				Bounds(Width - 18, Height - 4, 12, 1, B);
 			SetAnchors( abRight or abBottom );
-			SetBounds(B); 
+			SetBounds(B);
 		end;
 	end;
 
@@ -670,26 +670,26 @@ begin
 		SetTextColor($F);
 		Bounds(5,10,60,10, B);
 		SetBounds(B);
-		SetTitle('Oh, No!');	
+		SetTitle('Oh, No!');
 		SetMessage(
 			'0;'#13  +
 			'0;A "%0" error has occured.'#13 +
 			'0;'#13 +
 			'Sorry, but the installation has failed.'
-		);	
+		);
 		TextAttr := $07;
 		P := New(PButton, Create(PError, 'Exit'));
 		with PButton(P)^ do begin
 			SetCaption('Exit');
 			SetCommand(cmOk);
 			SetRespond(cmEnter);
-			with PControl(Parent)^ do 
+			with PControl(Parent)^ do
 				Bounds(Width - 18, Height - 4, 12, 1, B);
 			SetAnchors( abRight or abBottom );
-			SetBounds(B); 
+			SetBounds(B);
 		end;
 	end;
-	
+
 	{ Force first dialog }
 	FUseDac := False;
 	FUseFader := False;
@@ -702,7 +702,7 @@ begin
 	inherited Destroy;
 end;
 
-procedure TInstaller.CheckLocal(var AEvent : TEvent); 
+procedure TInstaller.CheckLocal(var AEvent : TEvent);
 var
 	T : integer;
 	D : TFormatData;
@@ -770,12 +770,12 @@ begin
 	{$ENDIF}
 	inherited Idle;
 	if Assigned(PInstalling) and PInstalling^.GetShown then begin
-	
+
 		if not PInstalling^.Finished then begin
 			PInstalling^.Copy;
 			Exit;
 		end;
-		if Assigned(PDoneBtn) and PDoneBtn^.FVisible = true then exit;		
+		if Assigned(PDoneBtn) and PDoneBtn^.FVisible = true then exit;
 		PInstalling^.GetBounds(B);
 		Dec(B.Height, 2);
 		PInstalling^.SetBounds(B);
@@ -795,13 +795,13 @@ begin
 	inherited BeforeShow;
 	TextAttr := $07;
 	GotoXY(1,WhereY);
-	ClrEol;	
+	ClrEol;
 end;
 
 { --- TOptionDialog --- }
-function TOptionDialog.ObjectClass(AName : String) : String; 
+function TOptionDialog.ObjectClass(AName : String) : String;
 begin
-	if (AName = '') or (AName = class_TInstallOptions) then 
+	if (AName = '') or (AName = class_TInstallOptions) then
 		ObjectClass := class_TInstallOptions
 	else
 		ObjectClass := inherited ObjectClass(AName);
@@ -822,7 +822,7 @@ begin
 		case AEvent.Command of
 			cmEdit : if AEvent.InfoPtr = PInstaller(Application)^.PDest then begin
 				S := Dir(PInstaller(Application)^.PDest^.GetCaption);
-				PInstaller(Application)^.PDest^.SetCaption(S);	
+				PInstaller(Application)^.PDest^.SetCaption(S);
 			end;
 			cmBrowse : begin
 				ClearEvent(AEvent);
@@ -840,7 +840,7 @@ end;
 
 var
 	Installer : TInstaller;
-	
+
 begin
 	{$IFDEF SOUND}
 		NoSound;
@@ -862,7 +862,7 @@ begin
 		TextAttr := $0B;
 		GotoXY(1,WhereY);
 		TextAttr := $07;
-		ClrEol;	
+		ClrEol;
 		WriteLn;
 		WriteLn('The Program Manager Eternity has been installed.');
 		WriteLn('It may be launched by entering "PGM.BAT" from the command line.');
@@ -872,13 +872,15 @@ begin
 		TextAttr := $07;
 		WriteLn;
 	end else begin
+		{$IFNDEF TEMPLATES}
 		TextAttr := $4F;
 		GotoXY(1,WhereY);
 		Write(' The Program Manager Eternity installation program has been aborted.');
-		ClrEol;	
+		ClrEol;
 		TextAttr := $07;
 		WriteLn;
+		{$ENDIF}
 		ErrorsOnExit := False;
 		Halt(1);
 	end;
-end.
+end.

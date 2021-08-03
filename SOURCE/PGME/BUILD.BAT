@@ -2,6 +2,7 @@
 
 if "%1" == "dev" goto TestTPC
 if "%1" == "clean" goto CheckV8PT
+if "%1" == "noclean" goto CheckV8PT
 if not "%1" == "" goto %1
 if "%1" == "" goto CheckV8PT
 goto ErrorExit
@@ -93,11 +94,19 @@ call %SELF% make Collect
 if errorlevel 1 goto ErrorExit
 call %SELF% make Installer
 if errorlevel 1 goto ErrorExit
+
+if "%1" == "noclean" goto Done
 call %SELF% make ReleaseClean
 if errorlevel 1 goto ErrorExit
 goto Done
 
 :DevBuildOnly
+    verrlvl 0
+    call %SELF% make Prepare
+    if errorlevel 1 goto ErrorExit
+	call %SELF% MAKESUB Eternity Second
+    call %SELF% make Collect
+    if errorlevel 1 goto ErrorExit
 goto Done
 
 :DevBuildClean
@@ -141,6 +150,7 @@ goto DoneMake
 
 	if exist BIN\LICENSE.TXT goto MAKE_Prep_HasLic
     if exist LICENSE.TXT copy LICENSE.TXT BIN\LICENSE.TXT
+    if exist VERSION.INC copy VERSION.INC QUICKCRT\
     :MAKE_Prep_HasLic
 
 goto DoneMake
@@ -183,10 +193,12 @@ goto DoneMake
 
 :MAKE_Collect
     verrlvl 0
-    if exist eternity\bin\ETERNITY.bin move eternity\bin\ETERNITY.bin bin
-    if exist eternity\bin\PGME.EXE move eternity\bin\PGME.EXE bin
-    if exist etools\bin\EFNTDSGN.exe move etools\bin\*.EXE bin
-    if exist esaver\bin\blanker.scr move esaver\bin\*.scr bin
+
+    if exist eternity\bin\ETERNITY.bin move /y eternity\bin\ETERNITY.bin bin
+    if exist eternity\bin\PGME.EXE move /y eternity\bin\PGME.EXE bin
+    if exist etools\bin\EFNTDSGN.exe move /y etools\bin\*.EXE bin
+    if exist esaver\bin\blanker.scr move /y esaver\bin\*.scr bin
+
     xcopy /y /d eternity\*.txt bin\
 
     xcopy /y /d custom\config\*.* bin\

@@ -1,10 +1,10 @@
 { Copyright 2015 Jerome Shidel }
 
-(* 
-		
+(*
+
 	This project and related files are subject to either the terms
 	specified in the included LICENSE.TXT file or the GNU GPLv2.0.
-	
+
 *)
 
 {$I ETOOLS.DEF}
@@ -17,20 +17,20 @@ uses QCrt, QStrings;
 
 { --- Global Variables --- }
 
-type 
+type
 	PLine = ^TLine;
 	TLine = record
 		Prev, Next : PLine;
 		Line : PString;
-	end; 
-	
-const 
+	end;
+
+const
 	Smooth : boolean = True;
 	MousePage = 10;
-	
+
 var
 	Top, Bottom, First, Last : PLine;
-	
+
 procedure AddLine(S : String);
 var
 	T : PLine;
@@ -57,8 +57,8 @@ var
 begin
 	Max := Lo(ScreenMax) + 1;
 	while ((S <> '') and All) or (Length(S) > Max) do
-		repeat	
-			{ Expand Tabs before CR }				
+		repeat
+			{ Expand Tabs before CR }
 			I := Pos(#$09, S);
 			while (I > 0) and (I < Max) and (I < Pos(#$0A, S)) do begin
 				Delete(S, I, 1);
@@ -132,18 +132,18 @@ var
 begin
 	Bottom := Top;
 	P := Top;
-	I := 0; 
-	while Assigned(P) and (I <= Hi(ScreenMax)) do begin 
+	I := 0;
+	while Assigned(P) and (I <= Hi(ScreenMax)) do begin
 		Bottom := P;
 		Inc(I);
 		GotoXY(1,I);
-		FWrite(PtrStr(P^.Line)); 
+		FWrite(PtrStr(P^.Line));
 		ClrEol;
 		P := P^.Next;
-	end;	
+	end;
 end;
 
-procedure WaitSync; 
+procedure WaitSync;
 begin
 	while Port[$3da] and $8 <> $8 do;
 	while Port[$3da] and $8 = $8 do;
@@ -178,8 +178,8 @@ begin
 		while (I < FontHeight) and (Stepping > 0) do begin
 			Inc(I, Stepping);
 			if I > FontHeight then I := FontHeight;
-			ScanStart(FontHeight - I);
 			WaitSync;
+			ScanStart(FontHeight - I);
 		end;
 		GotoXY(1,1);
 		ScreenMax := ScreenMax - $100;
@@ -203,8 +203,8 @@ begin
 		while (I < FontHeight) and (Stepping > 0) do begin
 			Inc(I, Stepping);
 			if I > FontHeight then I := FontHeight;
-			ScanStart(I);
 			WaitSync;
+			ScanStart(I);
 		end;
 		GotoXY(1,1);
 		ScanStart(0);
@@ -230,7 +230,7 @@ begin
 		Top := Top^.Prev;
 		Bottom := Bottom^.Prev;
 		Dec(Count);
-		if Top = nil then 
+		if Top = nil then
 			Count := 0
 		else if Top^.Prev = nil then Count := 2;
 		GetEvent(E);
@@ -238,7 +238,7 @@ begin
 			if E.What <> evNothing then PutEvent(E);
 			GotoXY(1,1);
 			InsLine;
-			FWrite(PtrStr(Top^.Line)); 
+			FWrite(PtrStr(Top^.Line));
 			ClrEol;
 		end else
 			ScrollUp(Count);
@@ -254,7 +254,7 @@ begin
 		Top := Top^.Next;
 		Bottom := Bottom^.Next;
 		Dec(Count);
-		if Bottom = nil then 
+		if Bottom = nil then
 			Count := 0
 		else if Bottom^.Next = nil then Count := 1;
 		GetEvent(E);
@@ -263,13 +263,13 @@ begin
 			GotoXY(1,1);
 			DelLine;
 			GotoXY(1,Hi(ScreenMax) +1);
-			FWrite(PtrStr(Bottom^.Line)); 
+			FWrite(PtrStr(Bottom^.Line));
 			ClrEol;
 		end else
 			ScrollDown(Count);
 	end;
 end;
-	
+
 procedure Viewer;
 var
 	E : TEvent;
@@ -299,17 +299,17 @@ begin
 			B := E.Where.Y - MouseHomeY;
 			SetMousePos(MouseHomeX, MouseHomeY);
 			if ABS(B) > MousePage then begin
-				if ABS(B) = B then 
+				if ABS(B) = B then
 					MoveDown(Hi(ScreenMax))
 				else
 					MoveUp(Hi(ScreenMax));
 			end else begin
-				if ABS(B) = B then 
+				if ABS(B) = B then
 					MoveDown(ABS(B))
 				else
 					MoveUp(ABS(B));
 			end;
-		end else if E.What = evCommand then 
+		end else if E.What = evCommand then
 			case E.Command of
 				cmUp : begin
 					PurgeEvents;
@@ -340,7 +340,7 @@ begin
 		WindMax := ScreenMax;
 	end;
 	CheckCursor := True;
-	GotoXY(1,Hi(ScreenMax)+1);		
+	GotoXY(1,Hi(ScreenMax)+1);
 	NormalCursor;
 end;
 
@@ -351,7 +351,7 @@ begin
 	FWriteLn('Usage: QSCROLL filename');
 	FWriteLn('');
 	S := SoftwareLicense;
-	while S <> '' do 
+	while S <> '' do
 		FWriteLn(Space(4) + PullStr(#13, S));
 end;
 
@@ -359,6 +359,6 @@ begin
 	TurnMouseOff;
 	if ParamCount = 0 then
 		ShowHelp
-	else 
+	else
 		Viewer;
-end.
+end.

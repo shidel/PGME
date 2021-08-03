@@ -1,13 +1,13 @@
 { Copyright 2015 Jerome Shidel }
 
-(* 
-		
+(*
+
 	This project and related files are subject to either the terms
 	specified in the included LICENSE.TXT file or the GNU GPLv2.0.
-	
+
 *)
 
-unit QStrings; 
+unit QStrings;
 {$I QCRT.DEF}
 {$D-,Y-,L-}
 
@@ -19,19 +19,19 @@ interface
   { Like Pos function, except starts searching at Startpos Byte. Uses Pos function. }
   function LastPos ( SubStr : String; S : String ) : byte;
   { Like Pos function, except returns the last position of SubStr or zero. }
-  function UCase ( Str : String ) : String; 
+  function UCase ( Str : String ) : String;
   { Converts lowercase letters to uppercase }
-  function LCase ( Str : String ) : String; 
-  { Converts uppercase letters to lowercase }  
-  function WCase ( Str : String ) : String; 
+  function LCase ( Str : String ) : String;
+  { Converts uppercase letters to lowercase }
+  function WCase ( Str : String ) : String;
   { Converts lowercase letters to uppercase }
-  function RTrim ( Str : String ) : String; 
-  { removes trailing spaces and tabs }  
-  function LTrim ( Str : String ) : String; 
+  function RTrim ( Str : String ) : String;
+  { removes trailing spaces and tabs }
+  function LTrim ( Str : String ) : String;
   { removes preceding spaces and tabs }
-  function Trim ( Str : String ) : String; 
+  function Trim ( Str : String ) : String;
   { removes trailing and preceding spaces and tabs }
-  
+
   function LPad( Str : String; C : Char; N : Byte ) : String;
   { Pads a string to the left with a character }
   function RPad( Str : String; C : Char; N : Byte ) : String;
@@ -39,20 +39,20 @@ interface
   function CPad( Str : String; C : Char; N : Byte ) : String;
   { Pads a string to the left and right with a character }
 
-  function Space ( N : byte ) : String; 
+  function Space ( N : byte ) : String;
   { creates a string of N spaces }
-  function LSpace ( Str : String; N : byte ) : String; 
+  function LSpace ( Str : String; N : byte ) : String;
   { pads a string with spaces to the left like "Write (Str:N)" }
-  function RSpace ( Str : String; N : Byte ) : String; 
+  function RSpace ( Str : String; N : Byte ) : String;
   { like LSpace except spaces go to the right }
   function CSpace ( Str : String; N : Byte ) : String;
   { like LSpace except centers inbetween spaces }
-  
+
   function ZPad ( Str : String; N : Byte ) : String;
   { like LSpace except zero's are inserted }
-  function ChrStr ( C : Char; N : byte ) : String; 
+  function ChrStr ( C : Char; N : byte ) : String;
   { creates a string of characters N bytes long }
-  
+
   function CropStr( Str : String; N : Byte ) : String;
   { Insures a string does not exceed a specified max length }
 
@@ -78,45 +78,67 @@ interface
     and formated reals of any size }
 
   function  StrBool(S : String) : Boolean;
-  { Converts a String to a Boolean. True, On, Ok, Yes and Y return true }    
+  { Converts a String to a Boolean. True, On, Ok, Yes and Y return true }
   function  StrInt(S : String) : integer;
   { Converts a String to an Integer. If an error occurs, Zero is returned }
   function StrHex(S : String; PascalStyle : boolean) : String;
   { Converts a Strings to its Hex Values }
-  function HexToStr(AStr : String) : String; 
-  
+  function HexToStr(AStr : String) : String;
+
   function WhichStr (B : boolean; FalseStr, TrueStr : String) : String;
   { Depending on Boolean value, returns either FalseStr or TrueStr }
   function PluralStr(I : LongInt) : String;
   { Tests value and returns 's' if I is any value other than 1 }
-  
-  function FirstChar ( Str : String ) : Byte;  
+
+  function FirstChar ( Str : String ) : Byte;
   { returns the position of the First character }
   function FilterChar ( Str : String; C : Char ) : String;
   { removes matching characters from a string }
-  function ReplaceChar ( Str : String; O, N : Char ) : String; 
+  function ReplaceChar ( Str : String; O, N : Char ) : String;
   { Replaces characters in a string }
   procedure AddChar ( var S : String; C : Char );
   { Adds Character to end of String }
   procedure AddStr ( var S1 : String; S2 : String );
   { Adds Character to end of String }
-  
+
   function PullStr(SubStr : String; var S : String) : String;
   { Returns String up to SubString and removes it from S. If SubStr is
   not present the entire string is "Pulled". SubStr is not returned in
   the result. }
   function PullChars(Count : Integer; var S : String) : String;
-  
+
   function ReduceStr(S : String; Max : integer) : String;
-  
-type 
+
+type
 	PString = ^String;
-	
+
 function  StrPtr(const S : String) : PString;
 function  PtrStr(const P : PString) : String;
 procedure FreeStr(var P : PString);
 
 function PascalStr(const AsciiZ) : String;
+
+function ReplaceStr ( Str : String; O, N : String; All : Boolean ) : String;
+{ Replaces strings within a string }
+function CountStr(SubStr, Str : String) : integer;
+{ Returns total number of occurrences of SubStr within Str }
+function FirstWord(Str : String) : String;
+{ Returns the first "word" in a string, separated by first non-alphanumeric }
+function PullWord(var Str : String) : String;
+{ Returns "FirstWord", removing it and trimming Str }
+
+
+function MatchWildCard ( AWild, AStr : String ) : boolean;
+
+procedure SetLength(var S; NewLen : byte);
+
+function OnlyAlpha(S : String) : string;
+function OnlyAlphaNum(S : String) : string;
+function OnlyChars(S : String; Allowed : String) : string;
+function NotChars(S : String; Allowed : String) : string;
+
+function FlipStr(S : String) : string;
+
 
 implementation
 
@@ -137,7 +159,7 @@ implementation
           NextPos := TPos;
         end;
     end;
-    
+
   function LastPos ( SubStr : String; S : String ) : byte;
   var
   	Temp, P : byte;
@@ -232,7 +254,7 @@ implementation
       @3:
         STOSB
         LOOP    @1
-        
+
       @Done:
       end;
     end;
@@ -330,7 +352,7 @@ implementation
         JE		@2
         CMP 	AL, 09h
         JE		@2
-		MOV		BL, AH        
+		MOV		BL, AH
       @2:
         STOSB
       @3:
@@ -340,9 +362,9 @@ implementation
       	MOV 	ES:[DI], BL
       end;
   end;
-  
+
   function LTrim ( Str : String ) : String;
-  begin 
+  begin
       asm
         CLD
         MOV 	BL, False
@@ -361,7 +383,7 @@ implementation
         CMP 	AL, 20h
         JE		@4
         CMP 	AL, 09h
-        JE		@4	
+        JE		@4
       @2:
       	MOV		BL, True
       @3:
@@ -373,8 +395,8 @@ implementation
       	POP 	DI
       	MOV 	ES:[DI], AH
       end;
-  end; 
-  
+  end;
+
   function Trim ( Str : String ) : String;
   begin
       asm
@@ -395,7 +417,7 @@ implementation
         CMP 	AL, 20h
         JE		@4
         CMP 	AL, 09h
-        JE		@4	
+        JE		@4
       @2:
       	MOV		BL, True
       @3:
@@ -424,7 +446,7 @@ implementation
       end;
    end;
 
-  
+
   function Space ( N : byte ) : String;
     Var
       T : String;
@@ -433,7 +455,7 @@ implementation
       T[0] := Chr(N);
       Space := T;
     end;
-    
+
   function LPad( Str : String; C : Char; N : Byte ) : String;
     begin
       if Length(Str) < N then
@@ -454,7 +476,7 @@ implementation
   begin
       CPad := RPad(ChrStr(C, (N div 2) - (Length(Str) div 2)) + Str, C, N);
   end;
-  
+
   function LSpace ( Str : String; N : byte ) : String;
     begin
       if Length(Str) < N then
@@ -487,7 +509,7 @@ implementation
 
  function CropStr( Str : String; N : Byte ) : String;
  begin
- 	if Length(Str) > N then 		
+ 	if Length(Str) > N then
 	  	if N < 1 then
  			Str := ''
 	 	else
@@ -571,7 +593,7 @@ implementation
       Str ( L, S );
       IntStr := S;
     end;
-    
+
 	function BinStr (D : LongInt ) : String;
 	var
 		Temp : String;
@@ -588,7 +610,7 @@ implementation
 	end;
 
 	function HexStr (I : LongInt) : String;
-	var 
+	var
 		Temp : string;
 	begin
 		Temp := '';
@@ -643,12 +665,12 @@ implementation
           Dec(I);
       Comma := S;
     end;
-    
+
   function  StrBool(S : String) : Boolean;
-  { Converts a String to a Boolean. True, On, Ok, Yes, T and Y return true }    
+  { Converts a String to a Boolean. True, On, Ok, Yes, T and Y return true }
   begin
   	S := UCase(Trim(S));
-  	StrBool := (S = 'TRUE') or (S = 'ON') or (S = 'YES') or (S = 'OK') or 
+  	StrBool := (S = 'TRUE') or (S = 'ON') or (S = 'YES') or (S = 'OK') or
   		(S = 'T') or (S = 'Y');
   end;
 
@@ -660,8 +682,8 @@ implementation
     if Err <> 0 then Temp := 0;
   	StrInt := Temp;
   end;
-  
-function HexToStr(AStr : String) : String; 
+
+function HexToStr(AStr : String) : String;
 var
 	I : integer;
 	S, T, O : String;
@@ -684,7 +706,7 @@ begin
 	HexToStr := O;
 end;
 
-  
+
   function StrHex(S : String; PascalStyle : boolean) : String;
 	var
 		I : integer;
@@ -692,23 +714,23 @@ end;
 	begin
 		T := '';
 		if PascalStyle then begin
-			for I := 1 to Length(S) do 
+			for I := 1 to Length(S) do
 				T := T + '#$' + HexStr(Byte(S[I]));
 		end else begin
-			for I := 1 to Length(S) do 
+			for I := 1 to Length(S) do
 				T := T + '$' + HexStr(Byte(S[I]));
 		end;
 		StrHex := T;
 	end;
-  
+
   function WhichStr (B : boolean; FalseStr, TrueStr : String) : String;
   begin
-  	if B then 
+  	if B then
   		WhichStr := TrueStr
   	else
   		WhichStr := FalseStr;
   end;
-  
+
   function PluralStr(I : LongInt) : String;
   begin
   	PluralStr := WhichStr(I = 1, 's', '');
@@ -729,7 +751,7 @@ end;
       Move ( S2[1], S1[Length(S1) + 1], MoveLen );
       Inc(Byte(S1[0]), MoveLen);
     end;
-    
+
 function StrPtr(const S : String) : PString;
 var
 	P : PString;
@@ -753,7 +775,7 @@ end;
 
 procedure FreeStr(var P : PString);
 begin
-	if Assigned(P) then 
+	if Assigned(P) then
 		FreeMem(P, Length(P^) + 1);
 	P := nil;
 end;
@@ -774,7 +796,7 @@ end;
 
 function PullChars(Count : Integer; var S : String) : String;
 begin
-	if Count = 0 then 
+	if Count = 0 then
 		exit
 	else if Count >= Length(S) then begin
 		PullChars := S;
@@ -820,11 +842,11 @@ begin
 		Inc(I);
 		S := FilterChar(S, Vowels[I]);
 	end;
-	
+
 	{ remove all special chars }
 	I := Length(S);
 	while (I > 0) and (Length(S) > Max) do begin
-		if (S[I] > #$81) or (S[I] < #$20) then 
+		if (S[I] > #$81) or (S[I] < #$20) then
 			Delete(S, I, 1);
 		Dec(I);
 	end;
@@ -832,12 +854,12 @@ begin
 	{ remove all non letters }
 	I := Length(S);
 	while (I > 0) and (Length(S) > Max) do begin
-		if ((UCase(S[I]) > 'Z') or (UCase(S[I]) < 'A')) and 
-		((Pos(S[I], Keepers) < 1) or ((I = 1) or (I = Length(S)))) then 
+		if ((UCase(S[I]) > 'Z') or (UCase(S[I]) < 'A')) and
+		((Pos(S[I], Keepers) < 1) or ((I = 1) or (I = Length(S)))) then
 			Delete(S, I, 1);
 		Dec(I);
 	end;
-	
+
 	{ remove repeating letters }
 	I := Length(S);
 	while (Length(S) > Max) and (I > 1) do begin
@@ -845,7 +867,7 @@ begin
 		if UCase(S[I]) = UCase(S[I + 1]) then
 			Delete(S, I, 1);
 	end;
-	
+
 	{ remove lowercase letters from words one at a time }
 	F := True;
 	while (Length(S) > Max) and F do begin
@@ -863,7 +885,7 @@ begin
 			end;
 		end;
 	end;
-	
+
 	{Strip upper case vowels on at a time}
 	T := UCase(Vowels);
 	I := 0;
@@ -885,8 +907,251 @@ begin
 			end;
 		end;
 	end;
-		
+
 	ReduceStr := Copy(UCase(S), 1, 8);
 end;
+
+function ReplaceStr ( Str : String; O, N : String;  All : boolean ) : String;
+var
+    P : integer;
+begin
+    P := Pos(O, Str);
+    while P > 0 do begin
+        Delete(Str, P, Length(O));
+        Insert(N, Str, P);
+        P :=NextPos(O, Str, P + Length(N));
+        if not All then Break;
+    end;
+    ReplaceStr := Str;
+end;
+
+function SubMatchWC(AWild, AStr :String) : boolean;
+var
+    I : Integer;
+begin
+    SubMatchWC:= False;
+    if Length(AWild) <> Length(AStr) then exit;
+    for I := 1 to Length(AWild) do
+        if (AWild[I] <> AStr[I]) and (AWild[I] <> '?') then exit;
+    SubMatchWC := True;
+end;
+
+function QPos(ASub, AStr : String) : integer;
+var
+    I : integer;
+begin
+    QPos := 0;
+    for I := 1 to Length(AStr) - Length(ASub) + 1 do
+        if SubMatchWC(ASub, Copy(AStr, I, Length(ASub))) then begin
+            QPos := I;
+            Break;
+        end;
+end;
+
+function MatchWildCard ( AWild, AStr : String ) : boolean;
+{ far from perfect, but good enough for now. :-) }
+var
+    PW, PS : integer;
+    X : integer;
+begin
+    X := 0;
+    MatchWildCard := True;
+    if AWild = AStr then Exit;
+    if AWild = '' then begin
+        MatchWildCard := False;
+        Exit;
+    end;
+    repeat
+        Inc(X);
+        if AWild[1] = '*' then begin
+            { WriteLn('[A-',AWild, '/',AStr,']'); }
+            While (AWild<> '') and (AWild[1] = '*') do Delete(AWild, 1,1);
+            if AWild = '' then Exit;
+            PW := Pos('*', AWild);
+            if PW < 1 then PW := Length(AWild)+ 1;
+            { WriteLn(PW, ';', Copy(AWild, 1, PW -1), ';', AStr); }
+            PS := QPos(Copy(AWild, 1, PW -1), AStr);
+            { WriteLn(PS); }
+            if PS < 1 then Break;
+            Delete(AStr, 1, PS - 1);
+        end;
+        { WriteLn('[B-',AWild, '/',AStr,']'); }
+        if SubMatchWC(AWild, AStr) then Exit;
+        PW := Pos('*', AWild) - 1;
+        { WriteLn(PW); }
+        if PW < 1 then PW := Length(AWild) + 1;
+        if not SubMatchWC(Copy(AWild,1, PW), Copy(AStr, 1, PW)) then Break;
+        Delete(AWild, 1, PW);
+        Delete(AStr, 1, PW);
+        { WriteLn('[C-',AWild, '/',AStr,']'); }
+    until (AWild = '') or (AStr = '') or (X = 1000);
+    { WriteLn('[D-',AWild, '/',AStr,']'); }
+    MatchWildCard := ((AWild = '*') or (AWild = '')) and (AStr = '');
+end;
+
+function CountStr(SubStr, Str : String) : integer;
+var
+    I, P : integer;
+begin
+    I := 0;
+    P := 1;
+    if SubStr <> '' then
+        While True do begin
+            P := NextPos(SubStr, Str, P);
+            if P > 0 then begin
+                Inc(I);
+                P := P + Length(SubStr);
+            end else
+                break;
+        end;
+    CountStr := I;
+end;
+
+procedure HexDump(const D; L : word);
+type
+    M = array[0..65534] of byte;
+var
+    I : word;
+begin
+    I := 0;
+    while I <= L do begin
+        Write(HEXbyte(M(D)[I]), ' ');
+        Inc(I);
+        if I mod $10 = 0 then WriteLn;
+
+    end;
+    if I mod $10 <> 0 then WriteLn;
+end;
+
+function OnlyAlpha(S : String) : string;
+var
+    I : integer;
+begin
+    I := 1;
+    while I <= Length(S) do begin
+        if ((S[I] >= 'a') and (S[I] <= 'z')) or
+        ((S[I] >= 'A') and (S[I] <= 'Z')) then
+            Inc(I)
+        else
+            Delete(S,I,1);
+    end;
+    OnlyAlpha := S;
+end;
+
+function OnlyAlphaNum(S : String) : string;
+var
+    I : integer;
+begin
+    I := 1;
+    while I <= Length(S) do begin
+        if ((S[I] >= 'a') and (S[I] <= 'z')) or
+        ((S[I] >= 'A') and (S[I] <= 'Z')) or
+        ((S[I] >= '0') and (S[I] <= '9')) then
+            Inc(I)
+        else
+            Delete(S,I,1);
+    end;
+    OnlyAlphaNum := S;
+end;
+
+function OnlyChars(S : String; Allowed : String) : string;
+var
+    I : integer;
+begin
+    I := 1;
+    while I <= Length(S) do begin
+        if (Pos(S[I], Allowed) > 0) then
+            Inc(I)
+        else
+            Delete(S,I,1);
+    end;
+    OnlyChars := S;
+end;
+
+function NotChars(S : String; Allowed : String) : string;
+var
+    I : integer;
+begin
+    I := 1;
+    while I <= Length(S) do begin
+        if (Pos(S[I], Allowed) = 0) then
+            Inc(I)
+        else
+            Delete(S,I,1);
+    end;
+    NotChars := S;
+end;
+
+function FlipStr(S : String) : string;
+var
+    I : integer;
+    C : Char;
+begin
+    for I := 1 to (Length(S) + 1) div 2 do begin
+        C := S[I];
+        S[I] := S[Length(S) - I + 1];
+        S[Length(S) - I + 1] := C;
+    end;
+    FlipStr:=S;
+
+end;
+
+function PullWord(var Str : String) : String;
+var
+   S : String;
+begin
+    S := FirstWord(Str);
+    Delete(Str, 1, Length(S));
+    PullWord := Trim(S);
+    Str := Trim(Str);
+end;
+
+procedure SetLength(var S; NewLen : byte);
+begin
+    Byte(S) := NewLen;
+end;
+
+function FirstWord(Str : String) : String; assembler;
+{ Returns the first "word" in a string, separated by first non-alphanumeric }
+asm
+    PUSH    DS
+    CLD
+    LES     DI, @Result
+    LEA     SI, Str
+    LDS     SI, SS:[SI]
+    PUSH    DI
+    LODSB
+    SEGES   STOSB
+    XOR     AH, AH
+    XCHG    AX, CX
+    JCXZ    @4
+@1:
+    LODSB
+    CMP     AL, '0'
+    JB      @3
+    CMP     AL, '9'
+    JBE     @2
+    CMP     AL, 'A'
+    JB      @3
+    CMP     AL, 'Z'
+    JBE     @2
+    CMP     AL, 'a'
+    JB      @3
+    CMP     AL, 'z'
+    JA     @3
+@2:
+    INC     AH
+    SEGES   STOSB
+    LOOP    @1
+@3:
+@4:
+    POP     DI
+    MOV     AL, AH
+    SEGES   STOSB
+    POP     DS
+end;
+
+
+
 
 end.

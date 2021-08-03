@@ -1,10 +1,10 @@
 { Copyright 2015 Jerome Shidel }
 
-(* 
-		
+(*
+
 	This project and related files are subject to either the terms
 	specified in the included LICENSE.TXT file or the GNU GPLv2.0.
-	
+
 *)
 
 {$IFDEF INTERFACE}
@@ -24,13 +24,13 @@ type
 		constructor Create(AParent : PControl; AName : String);
 		destructor Destroy; virtual;
 	end;
-	
+
 {$ENDIF}
 
 {$IFDEF IMPLEMENTATION}
-function TInfoDialog.ObjectClass ( AName : String ) : String; 
+function TInfoDialog.ObjectClass ( AName : String ) : String;
 begin
-	if (AName = '') or (AName = class_TInfoDialog) then 
+	if (AName = '') or (AName = class_TInfoDialog) then
 		ObjectClass := class_TInfoDialog
 	else
 		ObjectClass := inherited ObjectClass(AName);
@@ -43,7 +43,7 @@ begin
 	inherited Create(AParent, AName);
 	Bounds(1,1,50,14, B);
 	SetBounds(B);
-	SetTitle('Font Information');	
+	SetTitle('Font Information');
 	SetHelpText('Font Information Dialog.');
 	AddHelpText('');
 	AddHelpText('With this dialog you can view and modify font metadata for the current');
@@ -56,13 +56,13 @@ begin
 		FHAlign := AlignLeft;
 		SetCaption('Font Information Fields:');
 	end;
-	
+
 	TextAttr := $1E;
 	FKeys := New(PDropList, Create(@Self, 'KEYS.DROPLIST'));
 	with FKeys^ do begin
 		SetHelpText('"Fields" Dropdown list. Use to select any of the fonts metadata');
 		AddHelpText('fields to be modified. Also, manually entering text will automatically');
-		AddHelpText('that field to the fonts metadata.');
+		AddHelpText('add that field to the fonts metadata.');
 		Bounds(3, 4, Self.Width - 8, 10, B);
 		SetBounds(B);
 	end;
@@ -74,7 +74,7 @@ begin
 		FHAlign := AlignLeft;
 		SetCaption('Field Value:');
 	end;
-	
+
 	TextAttr := $1E;
 	FValue := New(PEdit, Create(@Self, 'VALUES.EDIT'));
 	with FValue^ do begin
@@ -84,10 +84,10 @@ begin
 		Bounds(3, 7, Self.Width - 8, 1, B);
 		SetBounds(B);
 	end;
-	
+
 	TextAttr := $2E;
 	with PButton(New(PButton, Create(@Self, 'OK')))^ do begin
-		SetHelpText('5;"%0" Button. To accept the changes and modify fonts metadata.');	
+		SetHelpText('5;"%0" Button. To accept the changes and modify fonts metadata.');
 		Bounds((Self.Width - 2) div 2 - 5, Self.Height - 4 , 10, 1, B);
 		SetBounds(B);
 		SetAnchors(abLeft or abBottom);
@@ -105,7 +105,7 @@ begin
 	FList := nil;
 end;
 
-procedure TInfoDialog.CheckLocal(var AEvent : TEvent); 
+procedure TInfoDialog.CheckLocal(var AEvent : TEvent);
 var
 	V : integer;
 	P : PListItem;
@@ -114,31 +114,31 @@ begin
 		case AEvent.Command of
 			cmEdit : begin
 				if AEvent.InfoPtr = FValue then begin
-					{ Value Edited } 
+					{ Value Edited }
 					ClearEvent(AEvent);
 					P := FList^.First;
-					while Assigned(P) and (P^.GetNameID <> FKeys^.GetCaption) do 
+					while Assigned(P) and (P^.GetNameID <> FKeys^.GetCaption) do
 						P := P^.Next;
-					if Assigned(P) and Assigned(P^.First)  then 
+					if Assigned(P) and Assigned(P^.First)  then
 						P^.First^.SetNameID(FValue^.GetCaption)
 					else
-						FValue^.SetCaption('');					
+						FValue^.SetCaption('');
 				end else if AEvent.InfoPtr = FKeys then begin
 					{ Key Edited }
 					FKeys^.SetCaption(Trim(Ucase(FKeys^.GetCaption)));
 					P := FList^.First;
-					while Assigned(P) and (P^.GetNameID <> FKeys^.GetCaption) do 
+					while Assigned(P) and (P^.GetNameID <> FKeys^.GetCaption) do
 						P := P^.Next;
-					if Assigned(P) and Assigned(P^.First)  then 
+					if Assigned(P) and Assigned(P^.First)  then
 						FValue^.SetCaption(P^.First^.GetNameID)
 					else begin
-						FValue^.SetCaption('');					
+						FValue^.SetCaption('');
 						FKeys^.AddItem(FKeys^.GetCaption);
 						P := New(PListItem, Create(FKeys^.GetCaption));
 						FList^.Add(P);
 						P^.Add(New(PListItem, Create('')));
-					end;					
-					
+					end;
+
 					ClearEvent(AEvent);
 				end;
 
@@ -148,15 +148,15 @@ begin
 					{ Change Value To Key's Value }
 					ClearEvent(AEvent);
 					P := FList^.First;
-					while Assigned(P) and (P^.GetNameID <> FKeys^.GetCaption) do 
+					while Assigned(P) and (P^.GetNameID <> FKeys^.GetCaption) do
 						P := P^.Next;
-					if Assigned(P) and Assigned(P^.First)  then 
+					if Assigned(P) and Assigned(P^.First)  then
 						FValue^.SetCaption(P^.First^.GetNameID)
 					else
-						FValue^.SetCaption('');					
+						FValue^.SetCaption('');
 				end;
 			end;
-		end; 
+		end;
 	inherited CheckLocal(AEvent);
 end;
 
