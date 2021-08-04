@@ -1,10 +1,10 @@
 { Copyright 2015 Jerome Shidel }
 
-(* 
-		
+(*
+
 	This project and related files are subject to either the terms
 	specified in the included LICENSE.TXT file or the GNU GPLv2.0.
-	
+
 *)
 
 unit QTimer; { QuickCRT Timer Unit }
@@ -12,12 +12,13 @@ unit QTimer; { QuickCRT Timer Unit }
 
 interface
 
-{$DEFINE INTERFACE}	
+{$DEFINE INTERFACE}
 uses QCrt;
 
 	function ScheduleEvent(Event : TEvent; ms : longInt) : boolean;
 	function ScheduleCommand(Command : word; Sender : Pointer; ms : longInt) : boolean;
 	function ScheduleSystem(Command : word; Sender : Pointer; ms : longInt) : boolean;
+	procedure ClearTimers;
 
 {$UNDEF INTERFACE}
 
@@ -32,11 +33,11 @@ type
 		When : LongInt;
 		Event : TEvent;
 	end;
-	
-var 
-	OldIdleProc : procedure; 
+
+var
+	OldIdleProc : procedure;
 	OldExitProc : pointer;
-	FirstTimer, 
+	FirstTimer,
 	LastTimer : PTimerRec;
 	TimerTick : LongInt absolute $0040:$006c;
 
@@ -101,15 +102,28 @@ var
 begin
 	OldIdleProc;
 	if Assigned(FirstTimer) then begin
-		if TimerTick >= FirstTimer^.When then 
+		if TimerTick >= FirstTimer^.When then
 			begin
 				PutEvent(FirstTimer^.Event);
 				T := FirstTimer^.Next;
 				Dispose(FirstTimer);
 				FirstTimer := T;
-				if not Assigned(T) then 
+				if not Assigned(T) then
 					LastTimer := T;
 			end;
+	end;
+end;
+
+procedure ClearTimers;
+var
+	T : PTimerRec;
+begin
+	While Assigned(FirstTimer) do begin
+        T := FirstTimer^.Next;
+        Dispose(FirstTimer);
+        FirstTimer := T;
+        if not Assigned(T) then
+            LastTimer := T;
 	end;
 end;
 
@@ -117,7 +131,7 @@ procedure ExitTimerUnit; far;
 var
 	T : PTimerRec;
 begin
-	ExitProc := OldExitProc;	
+	ExitProc := OldExitProc;
 	IdleProc := OldIdleProc;
 	While Assigned(FirstTimer) do begin
 		T := FirstTimer^.Next;

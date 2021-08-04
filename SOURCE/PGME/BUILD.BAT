@@ -7,6 +7,10 @@ if not "%1" == "" goto %1
 if "%1" == "" goto CheckV8PT
 goto ErrorExit
 
+:Test
+if exist TEST.BAT Call test.bat
+goto VeryEnd
+
 REM Simple Test that V8Power Tools for DOS is installed
 :CheckV8PT
 verrlvl 0
@@ -102,9 +106,12 @@ goto Done
 
 :DevBuildOnly
     verrlvl 0
-    call %SELF% make Prepare
+    call %SELF% make DevBuildClean Prepare
     if errorlevel 1 goto ErrorExit
 	call %SELF% MAKESUB Eternity Second
+    if errorlevel 1 goto ErrorExit
+	call %SELF% MAKESUB ETools Second
+    if errorlevel 1 goto ErrorExit
     call %SELF% make Collect
     if errorlevel 1 goto ErrorExit
 goto Done
@@ -149,8 +156,8 @@ goto DoneMake
 	if not exist BIN\NUL goto ErrorMAKE
 
 	if exist BIN\LICENSE.TXT goto MAKE_Prep_HasLic
-    if exist LICENSE.TXT copy LICENSE.TXT BIN\LICENSE.TXT
-    if exist VERSION.INC copy VERSION.INC QUICKCRT\
+    if exist LICENSE.TXT copy /y LICENSE.TXT BIN\LICENSE.TXT
+    if exist VERSION.INC copy /y VERSION.INC QUICKCRT\
     :MAKE_Prep_HasLic
 
 goto DoneMake
@@ -299,7 +306,6 @@ REM ***************************************************************************
  	if exist LICENSE.INC del LICENSE.INC>NUL
  	if exist BIN\NUL deltree /y BIN
     if not exist BIN\NUL mkdir BIN
-
 	if not exist INSTALL.INC  copy /y INSTALL.PRE INSTALL.INC
 
     set TPC_OPTS=-M -L -EBIN -UBIN;..\QuickCRT\BIN -I..\QuickCRT

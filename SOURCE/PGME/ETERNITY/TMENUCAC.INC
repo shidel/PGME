@@ -1,18 +1,18 @@
-{ Copyright 2015 Jerome Shidel }
+{ Copyright 2015-2021 Jerome Shidel }
 
-(* 
-		
+(*
+
 	This project and related files are subject to either the terms
 	specified in the included LICENSE.TXT file or the GNU GPLv2.0.
-	
+
 *)
 
-{ ---TMenuCache --- }
+{ --- TMenuCache --- }
 
 {$IFDEF INTERFACE}
 const
 	class_TMenuCache = 'TMenuCache';
-	
+
 type
 	PMenuCache = ^TMenuCache;
 	TMenuCache = object(TPersistent)
@@ -33,7 +33,7 @@ type
 		procedure Purge; virtual;
 
 		procedure ApplyLanguage(AConfig : PConfigFile; APrefix : String); virtual;
-		procedure SetPaths(APaths : String); virtual;		
+		procedure SetPaths(APaths : String); virtual;
 		procedure Update; virtual;
 
 		function Modified : boolean; virtual;
@@ -42,9 +42,9 @@ type
 
 {$IFDEF IMPLEMENTATION}
 
-function TMenuCache.ObjectClass(AName : String) : String; 
+function TMenuCache.ObjectClass(AName : String) : String;
 begin
-	if (AName = '') or (AName = class_TMenuCache) then 
+	if (AName = '') or (AName = class_TMenuCache) then
 		ObjectClass := class_TMenuCache
 	else
 		ObjectClass := inherited ObjectClass(AName);
@@ -83,7 +83,7 @@ var
 	P, N : PListItem;
 begin
 	{$IFNDEF TEMPLATES}
-		if APaths = '' then 
+		if APaths = '' then
 			APaths := GetExePath;
 	{$ENDIF}
 	{ Add new paths }
@@ -91,10 +91,10 @@ begin
 	while APaths <> '' do begin
 		ADir := Dir(PullStr(';', APaths));
 		Hold := Hold + ADir + ';';
-		if FCache^.FindID(ADir) = nil then 
+		if FCache^.FindID(ADir) = nil then
 			FCache^.Add(New(PCacheDir, Create(ADir)));
 	end;
-	
+
 	{ remove dead paths }
 	P := FCache^.First;
 	while Assigned(P) do begin
@@ -105,7 +105,7 @@ begin
 			FModified := True;
 		end;
 		P := N;
-	end; 
+	end;
 end;
 
 procedure TMenuCache.Load;
@@ -120,7 +120,7 @@ begin
 	FModified := False;
 	F.Create;
 	F.Assign(GetExePath + 'ETERNITY.DAT');
-	F.Reset; 
+	F.Reset;
 	OK := IOResult = 0;
 	if OK then begin
 		FillChar(S, Sizeof(S), 0);
@@ -172,7 +172,7 @@ begin
 	{ Search for Menu Files }
 	P := FCache^.First;
 	while Assigned(P) do begin
-	
+
 		{ Scan each directory for files, add if needed }
 		FindFirst(P^.GetNameID + '*' + EMenuExt, faAnyFile, SRec);
 		S := P^.GetNameID;
@@ -190,7 +190,7 @@ begin
 					PCacheMenu(T)^.Available := True;
 					P^.Add(T);
 				end else begin
-					if (PCacheMenu(T)^.LastMod <> SRec.Time) or 
+					if (PCacheMenu(T)^.LastMod <> SRec.Time) or
 					(PCacheMenu(T)^.Fixed <> Fixed) then begin
 						{ Menu File has been modified }
 						FModified := True;
@@ -198,11 +198,11 @@ begin
 						PCacheMenu(T)^.Fixed := Fixed;
 						PCacheMenu(T)^.Available := True;
 					end;
-				end;		
-			end;			
+				end;
+			end;
 			FindNext(SRec);
 		end;
-		
+
 		{ remove missing files, if are on a fixed disk }
 		M := P^.First;
 		while Assigned(M) do begin
@@ -219,7 +219,7 @@ begin
 					Dispose(M, Destroy);
 				end;
 			end else if PCacheMenu(M)^.LastMod = -1 then
-				UpdateMenu(M);				
+				UpdateMenu(M);
 			M := N;
 		end;
 		P := P^.Next;
@@ -241,28 +241,28 @@ begin
 	Temp.OpenSection('*');
 	if Temp.GetValue('TYPE', '') = ftMenu then begin
 		{ Validated that is a menu file }
-		
+
 		{ Set Short Title }
 		S := Trim(Temp.GetValue('TITLE.' + Application^.FLanguageID, ''));
-		if S = '' then 
+		if S = '' then
 			S := Trim(Temp.GetValue('TITLE', ''));
-		if S = '' then 
+		if S = '' then
 			S := Trim(Temp.GetValue('TITLE.EN_US', ''));
-		if S = '' then 
+		if S = '' then
 			S := Copy(SRec.Name, 1, Length(AMenu^.GetNameID) - 4);
 		{PCacheMenu(AMenu)^.ID := Temp.GetValue('ID', AMenu^.GetNameID)); }
 		PCacheMenu(AMenu)^.Writable := StrBool(Temp.GetValue('WRITABLE', 'YES'));
 		PCacheMenu(AMenu)^.SetShortTitle(S);
 		{ Set Long Title }
 		S := Trim(Temp.GetValue('DESCRIPTION.' + Application^.FLanguageID, ''));
-		if S = '' then 
+		if S = '' then
 			S := Trim(Temp.GetValue('DESCRIPTION', ''));
-		if S = '' then 
+		if S = '' then
 			S := Trim(Temp.GetValue('DESCRIPTION.EN_US', ''));
-		if S = '' then 
+		if S = '' then
 			S := PCacheMenu(AMenu)^.ShortTitle;
-		PCacheMenu(AMenu)^.SetLongTitle(S);		
-		
+		PCacheMenu(AMenu)^.SetLongTitle(S);
+
 		{ Read Program Entries }
 		M := Temp.FList.First;
 		while assigned(M) do begin
@@ -277,11 +277,11 @@ begin
 						S := 'unknown'; }
 					SetFileName(Trim(uCase(S)));
 					S := Trim(Temp.GetValue('TITLE.' + Application^.FLanguageID, ''));
-					if S = '' then 
+					if S = '' then
 						S := Trim(Temp.GetValue('TITLE', ''));
-					if S = '' then 
+					if S = '' then
 						S := Trim(Temp.GetValue('TITLE.EN_US', ''));
-					if S = '' then 
+					if S = '' then
 						S := GetNameID;
 					SetTitle(S);
 					SetClassName(Trim(Temp.GetValue('CLASS', '')));

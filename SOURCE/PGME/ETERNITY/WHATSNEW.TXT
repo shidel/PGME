@@ -1,11 +1,13 @@
 ### The Program Manager Eternity What's Up File
 
+    Create menu with wildcard character, bug fix.
+
 2015-07-26
 	Fixed non-FreeDOS/DosBox "Path Not Found" compatibility issue.
 	Some grammer and spelling corrections.
 
 2015-07-09
-	
+
 	Added Whatsnew.txt (this file)
 	QScroll Added Line to separate multiple files when loading more than one.
 	QScroll Added command line switch /S- to set smooth scrolling to off.
@@ -15,7 +17,7 @@
 	QScroll Scroll by mouse movement.
 	Improved compatibility for keyboards without insert lock key.
 
-2015-07-05 
+2015-07-05
 
 	Initial Beta Version. Mostly Functional.
-	
+

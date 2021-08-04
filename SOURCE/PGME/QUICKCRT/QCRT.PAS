@@ -1,16 +1,16 @@
 { Copyright 2015 Jerome Shidel }
 
 
-(* 
-		
+(*
+
 	This project and related files are subject to either the terms
 	specified in the included LICENSE.TXT file or the GNU GPLv2.0.
-	
+
 *)
 
 unit QCrt; { QuickCRT, version 8.40 }
 (*
-	QCrt is the text mode CRT video unit of QuickCrt. 
+	QCrt is the text mode CRT video unit of QuickCrt.
 	When version 9+ of QCrt is begun, it will be removed from the QuickCrt project
 	permanently. It will become an assembly language project with Pascal wrappers and
 	will be hosted at https://github.com/loopz. The intent will be to make QCrt support
@@ -20,9 +20,9 @@ unit QCrt; { QuickCRT, version 8.40 }
 {$I QCrt.def}
 {$F+,O-}
 
-{ 
-NOTE:  
-	
+{
+NOTE:
+
 	This text mode video interface requires an EGA/VGA compatable
     system.  Although many of the routines in this unit have the same
     names as those in Borland's CRT unit, and preform similar functions in
@@ -225,7 +225,7 @@ interface
 	cmAdd			= $010A;
 	cmModify		= $010B;
 	cmRemove		= $010C;
-	
+
   { Predefined Keyboard Navigation Commands }
 	cmLeft			= $0110;
 	cmRight			= $0111;
@@ -242,8 +242,8 @@ interface
 	cmTextStart		= $011C;
 	cmTextEnd		= $011D;
 	cmBefore		= $011E;
-	cmAfter			= $011F;	
-	
+	cmAfter			= $011F;
+
 	cmCut			= $0200;
 	cmCopy			= $0201;
 	cmPaste			= $0202;
@@ -251,9 +251,9 @@ interface
 	cmFindAgain		= $0204;
 	cmReplace		= $0205;
 	cmReplaceAll	= $0206;
-	
+
 	{ Special Commands }
-	cmCharMap		= $0300; 
+	cmCharMap		= $0300;
 	cmMakeDir 		= $0301;
 	cmNewFile		= $0302;
 	cmOpenFile		= $0303;
@@ -263,15 +263,15 @@ interface
 	cmFileInfo		= $0307;
 	cmExecuteFile	= $0308;
 	cmEditFile		= $0309;
-	
+
 	cmAbout			= $0310;
-		
+
 	{ Modal Result Commands }
 	cmOK			= $0400;
 	cmCancel		= $0401;
 	cmAbort			= $0402;
 	cmRetry			= $0403;
-	
+
 	{ TUI Commands }
 	cmScrollbar		= $0500;
 	cmToggle		= $0501;
@@ -283,7 +283,7 @@ interface
 	cmDoDropList	= $0507;
 	cmDropList		= $0508;
 	cmEdit			= $0509;
-		
+
   { User Commands }
     cmUser			= $1000;
 
@@ -305,12 +305,12 @@ interface
     kbNumsDown    = $2000;
     kbCapsDown    = $4000;
     kbInsertDown  = $8000;
-    
+
     { Key Mapping Flags }
     kfAny		  = $0000;
     kfContains	  = $0001;
     kfMatches     = $0002;
-    
+
     { standard keyboard key constants }
     kbNone   = $0000;
     kbEscape = $001B;
@@ -325,12 +325,12 @@ interface
     kbF9     = $4300; kbShiftF9  = $5C00; kbCtrlF9  = $6600; kbAltF9  = $7000;
     kbF10    = $4400; kbShiftF10 = $5D00; kbCtrlF10 = $6700; kbAltF10 = $7100;
     kbHome   = $4700; kbCtrlHome = $7700;
-    kbUp     = $4800; 
+    kbUp     = $4800;
     kbPgUp   = $4900; kbCtrlPgUp = $8400;
     kbLeft   = $4B00;
     kbRight  = $4D00;
     kbEnd    = $4F00; kbCtrlEnd  = $7500;
-    kbDown   = $5000; 
+    kbDown   = $5000;
     kbPgDown = $5100; kbCtrlPgDown = $7600;
     kbInsert = $5200;
     kbDelete = $5300;
@@ -427,8 +427,8 @@ interface
             4: (InfoByte: Byte);
             5: (InfoChar: Char));
     end;
-      
-  DWORD = record 
+
+  DWORD = record
   	case Word of
   		0 : ( Bytes : array[0..3] of byte );
   		1 : ( H, L : word );
@@ -439,7 +439,7 @@ interface
   	case Word of
   		0 : ( Bytes : array[0..7] of byte );
   		1 : ( H, L : DWord );
-  end;  		
+  end;
 
   BYTES = array[0..$FFFE] of byte;
   WORDS = array[0..$7FFE] of word;
@@ -449,7 +449,7 @@ interface
   POINTERS = array[0..$3FFE] of Pointer;
   QWORDS = array[0..$1FFE] of QWORD;
   STRINGS = array[0..$00FE] of String;
-    
+
   TCodeMapEntry = record
     FromCode, ToCode, ShiftCode, Flags : Word;
     Reserved : QWord;
@@ -513,7 +513,7 @@ interface
     BreakCount: Word;       { Number of times CTRL-BREAK has been pressed }
     PrintCount: word;       { Number of times PRINT-SCREEN has been pressed }
     SysReqCount: Word;      { Number of times SYSREQ has been pressed }
-    EventFlag : boolean;	{ True when a event has been received, 
+    EventFlag : boolean;	{ True when a event has been received,
     	good for screen savers. You must set to false after processing. Also,
     	cleared by PurgeEvents. }
     FontHeight: word;       { Height of current defined font }
@@ -531,7 +531,7 @@ interface
     PreWriteProc : procedure;  { Called before a screen write }
     PostWriteProc : procedure; { Called after a screen write }
     ReInitProc : procedure;    { Called after Textmode, and InitQCrt }
-    
+
 	FirstMemAvail, FirstMaxAvail : longInt; { Initial Memory Available }
 	MinMemAvail, MinMaxAvail : LongInt;    { Lowest amount of memory available during execution }
 	KeyboardIgnore : word;     { Keyboard status flags to ignore }
@@ -539,12 +539,12 @@ interface
 { Interface procedures }
   procedure AssignCrt(var F : Text);
 
-{ 
+{
   Currently broken due to recent additions of automatic Keystroke to Command translations.
   I'll Probably fix it later, by adding a switch from legacy to event driven when the
-  first call to GetEvent is made. If no call is made, then will just stay in legacy 
+  first call to GetEvent is made. If no call is made, then will just stay in legacy
   mode and not translate any keys into commands.
-    
+
   function KeyPressed : Boolean;
   function ReadKey : Char;
 
@@ -624,7 +624,7 @@ interface
 
   procedure TurnMouseOff;
   procedure TurnMouseOn;
-  
+
   procedure ReleaseButtons;
 
 { Box and Line Functions }
@@ -639,15 +639,18 @@ interface
   procedure PurgeEvents;
   procedure ClearEvent(var Event : TEvent);
   procedure GetEvent(var Event : TEvent);
-  function  PutEvent(var Event : TEvent) : boolean;	
-  function  PutCommand(AValue : word; ASender : Pointer) : boolean;	
-  function  PutSystem(AValue : word; ASender : Pointer) : boolean;	
+  function  PutEvent(var Event : TEvent) : boolean;
+  function  PutCommand(AValue : word; ASender : Pointer) : boolean;
+  function  PutSystem(AValue : word; ASender : Pointer) : boolean;
 
 { Text input functions }
   function EditLn ( var Dest : String; MaxLen, MaxWide : Byte ) : boolean;
   { High power line editor. And is used internally by System's Read and
-    ReadLn procedures. }    
+    ReadLn procedures. }
+
   function Pause : string;
+  { Pause until mouse is clicked or key is pressed. }
+  function EventPause : string;
   { Pause until event is triggered. }
 
   procedure SetKeyMap(CodeMap : PCodeMap; Count : word);
@@ -658,8 +661,8 @@ interface
   procedure GetKeyMap(var CodeMap : PCodeMap; var Count : word);
   { Just returns pointer and count to current map }
   procedure GetCommandMap(var CodeMap : PCodeMap; var Count : word);
-  
-  procedure InitQCrtMaps; 
+
+  procedure InitQCrtMaps;
 
 { Direct Video Memory Procedures }
   { Returns total bytes of memory required to save current video page }
@@ -675,7 +678,7 @@ interface
     number of bytes may change also, the video read/write pointer is reset to
     video memory. }
   procedure CopyFromVideo;
-  
+
   function MemCheck(AValue : LongInt) : boolean;
   { Check Availible Memory, and update MinMaxAvail/MinMemAvail to new values. }
 
@@ -686,8 +689,8 @@ interface
 { Unit variable reset procedure; Must call if an external procedure changes
   video modes (InitQCrt is called internally by TextMode, and at application
   startup). }
-  procedure InitQCrt;  
-  
+  procedure InitQCrt;
+
 implementation
 {$F+}
 
@@ -787,7 +790,7 @@ implementation
         ( { Vertical }
           { Top }		#$D1#$C2#$B3#$B3#$D5#$D1#$B8#$C6#$D8#$B5#$C6#$D8#$B5#$DA#$C2#$BF +
           				#$C3#$C5#$B4#$C3#$C5#$B4#$D5#$D1#$B8#$C6#$D8#$B5#$C6#$D8#$B5#$DA +
-          				#$C2#$BF#$C3#$C5#$B4#$C3#$C5#$B4#$B3,	
+          				#$C2#$BF#$C3#$C5#$B4#$C3#$C5#$B4#$B3,
           { Middle }	#$D8#$C5#$B3#$B3#$C6#$D8#$B5#$C6#$D8#$B5#$C6#$D8#$B5#$C3#$C5#$B4 +
           				#$C3#$C5#$B4#$C3#$C5#$B4#$C6#$D8#$B5#$C6#$D8#$B5#$C6#$D8#$B5#$C3 +
           				#$C5#$B4#$C3#$C5#$B4#$C3#$C5#$B4#$B3,
@@ -822,50 +825,50 @@ implementation
       )
       )
     );
-    
-  const	
+
+  const
   	DefaultCommandsCount = 41;
   	DefaultCommands : array [0..DefaultCommandsCount - 1] of TCodeMapEntry = (
-	{  0}( FromCode:$0008;  ToCode:$0102;  ShiftCode:$0000;  Flags:$0002 ), 
-	{  1}( FromCode:$0063;  ToCode:$0005;  ShiftCode:$0104;  Flags:$0002 ), 
-	{  2}( FromCode:$0077;  ToCode:$0008;  ShiftCode:$0208;  Flags:$0002 ), 
-	{  3}( FromCode:$0063;  ToCode:$0201;  ShiftCode:$0008;  Flags:$0002 ), 
-	{  4}( FromCode:$0063;  ToCode:$0201;  ShiftCode:$0208;  Flags:$0002 ), 
-	{  5}( FromCode:$0078;  ToCode:$0200;  ShiftCode:$0008;  Flags:$0002 ), 
-	{  6}( FromCode:$0078;  ToCode:$0200;  ShiftCode:$0208;  Flags:$0002 ), 
-	{  7}( FromCode:$0008;  ToCode:$0103;  ShiftCode:$0104;  Flags:$0001 ), 
-	{  8}( FromCode:$0053;  ToCode:$0103;  ShiftCode:$0000;  Flags:$0002 ), 
-	{  9}( FromCode:$5000;  ToCode:$0113;  ShiftCode:$0000;  Flags:$0002 ), 
-	{ 10}( FromCode:$000D;  ToCode:$0105;  ShiftCode:$0000;  Flags:$0002 ), 
-	{ 11}( FromCode:$001B;  ToCode:$0107;  ShiftCode:$0000;  Flags:$0002 ), 
-	{ 12}( FromCode:$5100;  ToCode:$011B;  ShiftCode:$0001;  Flags:$0002 ), 
-	{ 13}( FromCode:$5100;  ToCode:$011B;  ShiftCode:$0002;  Flags:$0002 ), 
-	{ 14}( FromCode:$4900;  ToCode:$011A;  ShiftCode:$0001;  Flags:$0002 ), 
-	{ 15}( FromCode:$4900;  ToCode:$011A;  ShiftCode:$0002;  Flags:$0002 ), 
-	{ 16}( FromCode:$3B00;  ToCode:$0007;  ShiftCode:$0000;  Flags:$0002 ), 
-	{ 17}( FromCode:$5200;  ToCode:$0108;  ShiftCode:$0000;  Flags:$0002 ), 
-	{ 18}( FromCode:$4B00;  ToCode:$0110;  ShiftCode:$0000;  Flags:$0002 ), 
-	{ 19}( FromCode:$4D00;  ToCode:$0117;  ShiftCode:$0008;  Flags:$0002 ), 
-	{ 20}( FromCode:$4B00;  ToCode:$0117;  ShiftCode:$0208;  Flags:$0002 ), 
-	{ 21}( FromCode:$4B00;  ToCode:$0116;  ShiftCode:$0008;  Flags:$0002 ), 
-	{ 22}( FromCode:$4D00;  ToCode:$0116;  ShiftCode:$0208;  Flags:$0002 ), 
-	{ 23}( FromCode:$4D00;  ToCode:$0115;  ShiftCode:$0001;  Flags:$0002 ), 
-	{ 24}( FromCode:$4D00;  ToCode:$0115;  ShiftCode:$0002;  Flags:$0002 ), 
-	{ 25}( FromCode:$0000;  ToCode:$0000;  ShiftCode:$0000;  Flags:$0000 ), 
-	{ 26}( FromCode:$5100;  ToCode:$0119;  ShiftCode:$0000;  Flags:$0002 ), 
-	{ 27}( FromCode:$4900;  ToCode:$0118;  ShiftCode:$0000;  Flags:$0002 ), 
-	{ 28}( FromCode:$0076;  ToCode:$0202;  ShiftCode:$0008;  Flags:$0002 ), 
-	{ 29}( FromCode:$0076;  ToCode:$0202;  ShiftCode:$0208;  Flags:$0002 ), 
-	{ 30}( FromCode:$4B00;  ToCode:$0114;  ShiftCode:$0001;  Flags:$0002 ), 
-	{ 31}( FromCode:$4B00;  ToCode:$0114;  ShiftCode:$0002;  Flags:$0002 ), 
-	{ 32}( FromCode:$0071;  ToCode:$0006;  ShiftCode:$0208;  Flags:$0001 ), 
-	{ 33}( FromCode:$000D;  ToCode:$0106;  ShiftCode:$0004;  Flags:$0001 ), 
-	{ 34}( FromCode:$4D00;  ToCode:$0111;  ShiftCode:$0000;  Flags:$0002 ), 
-	{ 35}( FromCode:$007A;  ToCode:$0104;  ShiftCode:$0104;  Flags:$0001 ), 
-	{ 36}( FromCode:$0009;  ToCode:$0100;  ShiftCode:$0000;  Flags:$0002 ), 
-	{ 37}( FromCode:$5100;  ToCode:$011D;  ShiftCode:$0208;  Flags:$0001 ), 
-	{ 38}( FromCode:$4900;  ToCode:$011C;  ShiftCode:$0208;  Flags:$0001 ), 
-	{ 39}( FromCode:$0009;  ToCode:$0101;  ShiftCode:$0003;  Flags:$0001 ), 
+	{  0}( FromCode:$0008;  ToCode:$0102;  ShiftCode:$0000;  Flags:$0002 ),
+	{  1}( FromCode:$0063;  ToCode:$0005;  ShiftCode:$0104;  Flags:$0002 ),
+	{  2}( FromCode:$0077;  ToCode:$0008;  ShiftCode:$0208;  Flags:$0002 ),
+	{  3}( FromCode:$0063;  ToCode:$0201;  ShiftCode:$0008;  Flags:$0002 ),
+	{  4}( FromCode:$0063;  ToCode:$0201;  ShiftCode:$0208;  Flags:$0002 ),
+	{  5}( FromCode:$0078;  ToCode:$0200;  ShiftCode:$0008;  Flags:$0002 ),
+	{  6}( FromCode:$0078;  ToCode:$0200;  ShiftCode:$0208;  Flags:$0002 ),
+	{  7}( FromCode:$0008;  ToCode:$0103;  ShiftCode:$0104;  Flags:$0001 ),
+	{  8}( FromCode:$0053;  ToCode:$0103;  ShiftCode:$0000;  Flags:$0002 ),
+	{  9}( FromCode:$5000;  ToCode:$0113;  ShiftCode:$0000;  Flags:$0002 ),
+	{ 10}( FromCode:$000D;  ToCode:$0105;  ShiftCode:$0000;  Flags:$0002 ),
+	{ 11}( FromCode:$001B;  ToCode:$0107;  ShiftCode:$0000;  Flags:$0002 ),
+	{ 12}( FromCode:$5100;  ToCode:$011B;  ShiftCode:$0001;  Flags:$0002 ),
+	{ 13}( FromCode:$5100;  ToCode:$011B;  ShiftCode:$0002;  Flags:$0002 ),
+	{ 14}( FromCode:$4900;  ToCode:$011A;  ShiftCode:$0001;  Flags:$0002 ),
+	{ 15}( FromCode:$4900;  ToCode:$011A;  ShiftCode:$0002;  Flags:$0002 ),
+	{ 16}( FromCode:$3B00;  ToCode:$0007;  ShiftCode:$0000;  Flags:$0002 ),
+	{ 17}( FromCode:$5200;  ToCode:$0108;  ShiftCode:$0000;  Flags:$0002 ),
+	{ 18}( FromCode:$4B00;  ToCode:$0110;  ShiftCode:$0000;  Flags:$0002 ),
+	{ 19}( FromCode:$4D00;  ToCode:$0117;  ShiftCode:$0008;  Flags:$0002 ),
+	{ 20}( FromCode:$4B00;  ToCode:$0117;  ShiftCode:$0208;  Flags:$0002 ),
+	{ 21}( FromCode:$4B00;  ToCode:$0116;  ShiftCode:$0008;  Flags:$0002 ),
+	{ 22}( FromCode:$4D00;  ToCode:$0116;  ShiftCode:$0208;  Flags:$0002 ),
+	{ 23}( FromCode:$4D00;  ToCode:$0115;  ShiftCode:$0001;  Flags:$0002 ),
+	{ 24}( FromCode:$4D00;  ToCode:$0115;  ShiftCode:$0002;  Flags:$0002 ),
+	{ 25}( FromCode:$0000;  ToCode:$0000;  ShiftCode:$0000;  Flags:$0000 ),
+	{ 26}( FromCode:$5100;  ToCode:$0119;  ShiftCode:$0000;  Flags:$0002 ),
+	{ 27}( FromCode:$4900;  ToCode:$0118;  ShiftCode:$0000;  Flags:$0002 ),
+	{ 28}( FromCode:$0076;  ToCode:$0202;  ShiftCode:$0008;  Flags:$0002 ),
+	{ 29}( FromCode:$0076;  ToCode:$0202;  ShiftCode:$0208;  Flags:$0002 ),
+	{ 30}( FromCode:$4B00;  ToCode:$0114;  ShiftCode:$0001;  Flags:$0002 ),
+	{ 31}( FromCode:$4B00;  ToCode:$0114;  ShiftCode:$0002;  Flags:$0002 ),
+	{ 32}( FromCode:$0071;  ToCode:$0006;  ShiftCode:$0208;  Flags:$0001 ),
+	{ 33}( FromCode:$000D;  ToCode:$0106;  ShiftCode:$0004;  Flags:$0001 ),
+	{ 34}( FromCode:$4D00;  ToCode:$0111;  ShiftCode:$0000;  Flags:$0002 ),
+	{ 35}( FromCode:$007A;  ToCode:$0104;  ShiftCode:$0104;  Flags:$0001 ),
+	{ 36}( FromCode:$0009;  ToCode:$0100;  ShiftCode:$0000;  Flags:$0002 ),
+	{ 37}( FromCode:$5100;  ToCode:$011D;  ShiftCode:$0208;  Flags:$0001 ),
+	{ 38}( FromCode:$4900;  ToCode:$011C;  ShiftCode:$0208;  Flags:$0001 ),
+	{ 39}( FromCode:$0009;  ToCode:$0101;  ShiftCode:$0003;  Flags:$0001 ),
 	{ 40}( FromCode:$4800;  ToCode:$0112;  ShiftCode:$0000;  Flags:$0002 )
 	);
 
@@ -921,17 +924,17 @@ implementation
 
     HandlerMask   : word;     { Mouse Handler Event Mask }
     HandlerProc   : pointer;  { Mouse Handler Procedure }
-    
+
     KeyMap,   CommandMap  : PCodeMap;
-    KeyCount, CommandCount : word; 
- 
+    KeyCount, CommandCount : word;
+
 function MemCheck(AValue : LongInt) : boolean;
 begin
 	if MemAvail < MinMemAvail then MinMemAvail := MemAvail;
 	if MaxAvail < MinMaxAvail then MinMaxAvail := MaxAvail;
 	MemCheck := MaxAvail > AValue;
 end;
-   
+
 (* Key mapper for events and Keypresses *)
 function MapKeyCode(Map : pointer; Count, ShiftCode, KeyCode : word) : word; assembler;
 asm
@@ -962,12 +965,12 @@ asm
 @@ContainsCode:
 	MOV   DX, DS:[DI + 4]		{ Get ShiftCode }
 	AND   CX, DX
-	CMP   CX, DX	
+	CMP   CX, DX
 	JE	  @@Found
 	JMP   @@ContinueSearch
 @@ExactOnly:
 	MOV   DX, DS:[DI + 4]		{ Get ShiftCode }
-	CMP   CX, DX	
+	CMP   CX, DX
 	JE	  @@Found
 	JMP   @@ContinueSearch
 @@Found:
@@ -1007,12 +1010,12 @@ asm
 @@ContainsCode:
 	MOV   DX, DS:[DI + 4]		{ Get ShiftCode }
 	AND   CX, DX
-	CMP   CX, DX	
+	CMP   CX, DX
 	JE	  @@Found
 	JMP   @@ContinueSearch
 @@ExactOnly:
 	MOV   DX, DS:[DI + 4]		{ Get ShiftCode }
-	CMP   CX, DX	
+	CMP   CX, DX
 	JE	  @@Found
 	JMP   @@ContinueSearch
 @@Found:
@@ -1036,7 +1039,7 @@ begin
 	if not MemCheck(Count * Sizeof(TCodeMapEntry)) then halt(8);
 	KeyCount := Count;
 	GetMem(Keymap, KeyCount * Sizeof(TCodeMapEntry));
-	Move(CodeMap^, KeyMap^, KeyCount * Sizeof(TCodeMapEntry)); 
+	Move(CodeMap^, KeyMap^, KeyCount * Sizeof(TCodeMapEntry));
 end;
 
 procedure SetCommandMap(CodeMap : PCodeMap; Count : word);
@@ -1050,7 +1053,7 @@ begin
 	if not MemCheck(Count * Sizeof(TCodeMapEntry)) then halt(8);
 	CommandCount := Count;
 	GetMem(CommandMap, CommandCount * Sizeof(TCodeMapEntry));
-	Move(CodeMap^, CommandMap^, CommandCount * Sizeof(TCodeMapEntry)); 
+	Move(CodeMap^, CommandMap^, CommandCount * Sizeof(TCodeMapEntry));
 end;
 
 procedure GetKeyMap(var CodeMap : PCodeMap; var Count : word);
@@ -1143,7 +1146,7 @@ end;
           		Event.InfoPtr := nil;
           		Event.What := evCommand;
           		Event.Command := Temp;
-          	end;          	
+          	end;
           end;
           Buf^[Tail] := Event;
           Inc(Tail);
@@ -1154,7 +1157,7 @@ end;
       else
         PutEvent := False;
     end;
-    
+
   function PutCommand(AValue : word; ASender : pointer) : boolean;
   var
   	Temp : TEvent;
@@ -1176,7 +1179,7 @@ end;
   	Temp.Command := AValue;
   	PutSystem := PutEvent(Temp);
   end;
-  
+
 (* Internal Keyboard Routines *)
   function ReadKeyboardStd : word; assembler;
     asm
@@ -1222,7 +1225,7 @@ end;
       MOV  AL, True
     @@Done:
     end;
-    
+
 (* Internal Mouse Routines *)
   function ResetMouse(var Found : boolean; var Buttons : integer) : Boolean; assembler;
     asm
@@ -1521,7 +1524,7 @@ end;
       WMax,
       Cursor : word;
     begin
-      if @IdleProc <> @NullProc then 
+      if @IdleProc <> @NullProc then
       	begin
 		  Cursor := GetCursor;
 		  X := WhereX;
@@ -1541,7 +1544,7 @@ end;
 
   const
   	PreMouse : boolean = false;
-  	
+
   procedure PreWriteMouseProc; far;
     begin
       PreMouse := MouseAvail and (VideoPtr = OrigVideoPtr);
@@ -1952,7 +1955,7 @@ end;
     @@Done:
       CALL InitQCrt
     end;
-    
+
   procedure Window(X1,Y1,X2,Y2: Byte); assembler;
     asm
       MOV  AL, X1
@@ -2755,7 +2758,7 @@ end;
       OR   AL, AH
       MOV  TextAttr, AL
     end;
-    
+
   procedure Color(Fore, Back : byte);
   begin
   	TextColor(Fore);
@@ -2863,7 +2866,7 @@ end;
       IN   AL, DX
       { AND  AL, 11111111b
       OR   AL, 00000011b }
-      MOV	AL, 03h 
+      MOV	AL, 03h
       OUT  DX, AL
     end;
 
@@ -3055,7 +3058,7 @@ end;
       CALL Return
     end;
 
-  procedure FWriteAttr; 
+  procedure FWriteAttr;
   var
   	HoldScroll : boolean;
   	X, Y : integer;
@@ -3586,7 +3589,7 @@ end;
       MouseBuf.Purge;
       repeat
       	GetEvent(Temp);
-      until Temp.What = evNothing; 
+      until Temp.What = evNothing;
       EventFlag := False;
     end;
 
@@ -3636,7 +3639,7 @@ end;
       if Not MouseBuf.GetEvent(Event)   then
         IdleMouseProc;
       if Event.What <> evNothing then
-      	EventFlag := True;      
+      	EventFlag := True;
     end;
 
   function PutEvent(var Event : TEvent) : boolean;
@@ -3855,18 +3858,18 @@ end;
           end;
         DisplayStr;
       end;
-	
+
     procedure HandleKeyboard;
       begin
       	{ Fix Key Case and what not }
       	case Event.KeyCode of
-      		$0041..$005A : 	if Event.ShiftCode and (kbEitherShift or kbCapsLock) = 0 then 
-				Event.KeyCode := Event.Keycode + $0020;    		
-      		$0061..$007A : 	if Event.ShiftCode and (kbEitherShift or kbCapsLock) <> 0 then 
-				Event.KeyCode := Event.Keycode - $0020;    		
+      		$0041..$005A : 	if Event.ShiftCode and (kbEitherShift or kbCapsLock) = 0 then
+				Event.KeyCode := Event.Keycode + $0020;
+      		$0061..$007A : 	if Event.ShiftCode and (kbEitherShift or kbCapsLock) <> 0 then
+				Event.KeyCode := Event.Keycode - $0020;
       	end;
 
-		
+
         Case Event.KeyCode of
           $0000..$00FF : case InsertMode of
             True : if (Length(RTrim(Dest)) < MaxLen) and (CurX + OfsX <= MaxLen) then begin
@@ -4004,11 +4007,11 @@ end;
         VerifyPosition;
       repeat
         DoneFlag := False;
-        EditCursor; 
+        EditCursor;
         repeat
           GetEvent(Event);
         until Event.What <> evNothing;
-        HideCursor; 
+        HideCursor;
         if Event.What and evCommand = evCommand then HandleCommand else { Command is in evSystem }
         if Event.What and evSystem <> evNothing then DoneFlag := True else
         if Event.What and evMouse  <> evNothing then HandleMouse else
@@ -4017,20 +4020,20 @@ end;
       SetCursor(Cursor);
       GotoXY(OrgX, OrgY);
       DoEditLn := (Event.What = evCommand) and (
-      	(Event.Command = cmEnter) or (Event.Command = cmReturn) or 
+      	(Event.Command = cmEnter) or (Event.Command = cmReturn) or
       	(Event.Command = cmTab) or (Event.Command = cmUnTab)
       );
     end;
-    
+
   function EditLn( var Dest : String; MaxLen, MaxWide : Byte) : boolean;
-  var 
+  var
   	Event : TEvent;
   begin
   	ReleaseButtons;
   	PurgeEvents;
   	ClearEvent(Event);
   	EditLn := DoEditLn(Dest, true, MaxLen, MaxWide, Event);
-  	if (Event.What = evCommand) and 
+  	if (Event.What = evCommand) and
   	(Event.Command <> cmEnter) and (Event.Command <> cmReturn) then begin
   		if Event.InfoPtr = nil then
   			PutCommand(Event.Command, EditSender)
@@ -4076,32 +4079,60 @@ end;
       Move(TempStr[1], BufPtr^[0], Length(TempStr));
       ReadLn := Length(TempStr);
     end;
-    
+
   function IntStr( I : integer) : String;
-  var 
+  var
     temp : String;
   begin
   	Str(I, temp);
   	IntStr := temp;
   end;
-    
-  function Pause : string;
-  var	
+
+  function PauseProc(CheckEvents:boolean) : string;
+  var
   	X, Y, B : integer;
   	temp : string;
+  	E : TEvent;
   begin
   	temp := '';
-  	ReleaseButtons;
-  	repeat
-  		GetMousePos(X, Y, B);
-  		if (B <> 0) then
-  			temp := 'Mouse X' + IntStr(X) + ', Y' + IntStr(Y) + ', B' + IntStr(B)
-  		else if KeyPressed then
-  			temp := ReadKey;
-  	until temp <> '';
-  	ReleaseButtons;
-  	Pause := temp;
+  	if CheckEvents then begin
+  	    PurgeEvents;
+  	    repeat
+  	        repeat
+          	    IdleProc;
+  	            GetEvent(E);
+            until E.What <> evNothing;
+  	        if (E.What = evCommand) and (E.Command = cmTimer) then
+  	            temp:='Timer'
+  	        else if E.What = evMouseDown then
+  	            temp :='Mouse'
+  	        else if E.What = evKeyDown then
+  	            temp :='Keypress';
+  	    until temp <> '';
+  	    PurgeEvents;
+  	 end else begin
+      	ReleaseButtons;
+      	repeat
+            GetMousePos(X, Y, B);
+            if (B <> 0) then
+                temp := 'Mouse X' + IntStr(X) + ', Y' + IntStr(Y) + ', B' + IntStr(B)
+            else if KeyPressed then
+                temp := ReadKey;
+        until temp <> '';
+      	ReleaseButtons;
+    end;
+  	PauseProc := temp;
   end;
+
+function EventPause: string;
+begin
+    EventPause := PauseProc(True);
+end;
+
+function Pause : string;
+begin
+    Pause := PauseProc(False);
+end;
 
 { Redirection of System's Read, ReadLn, Write, and WriteLn procedures }
   function InOutCRT( var F ) : integer;
@@ -4185,7 +4216,7 @@ end;
           Move(CrtName, Name, Sizeof(Name));
         end;
     end;
-    
+
 { Procedures to preserve and restore settings in QCrt }
   procedure GetQCrtState(var ASettings : TQCrtSettings);
   begin
@@ -4219,7 +4250,7 @@ end;
     ASettings.X := WhereX;
     ASettings.Y := WhereY;
   end;
-  
+
   procedure SetQCrtState(var ASettings : TQCrtSettings);
   begin
     if ASettings.LastMode <> LastMode then TextMode(ASettings.LastMode);
@@ -4229,14 +4260,14 @@ end;
     	Window(Lo(WindMin) + 1, Hi(WindMin) + 1, Lo(WindMax) + 1, Hi(WindMax) + 1);
     if (ASettings.X <> WhereX) or (ASettings.Y <> WhereY) then
     	GotoXY(ASettings.X, ASettings.Y);
-    if GetCursor <> ASettings.Cursor then SetCursor(ASettings.Cursor);    
+    if GetCursor <> ASettings.Cursor then SetCursor(ASettings.Cursor);
     if ASettings.Blink <> GetBlink then SetBlink(ASettings.Blink);
 
     if (CheckCursor <> ASettings.CheckCursor) then
     begin
       CheckCursor := ASettings.CheckCursor;
 	  if CheckCursor then MoveCursor;
-    end;    
+    end;
 	CheckBreak := ASettings.CheckBreak;
     CheckPrint := ASettings.CheckPrint;
     CheckSysReq := ASettings.CheckSysReq;
@@ -4257,7 +4288,7 @@ end;
     MouseHomeX := ASettings.MouseHomeX;
     MouseHomeY := ASettings.MouseHomeY;
   end;
-  
+
 function GetShiftCode : word;
 begin
 	GetShiftCode := MemW[Seg0040:$0017];
@@ -4267,7 +4298,7 @@ procedure SetShiftCode(AValue : word);
 begin
 	MemW[Seg0040:$0017] := AValue;
 end;
-    
+
 begin
-	InitQCrtUnit; 
+	InitQCrtUnit;
 end.

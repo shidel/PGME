@@ -1,10 +1,10 @@
-{ Copyright 2015 Jerome Shidel }
+{ Copyright 2015-2021 Jerome Shidel }
 
-(* 
-		
+(*
+
 	This project and related files are subject to either the terms
 	specified in the included LICENSE.TXT file or the GNU GPLv2.0.
-	
+
 *)
 
 { --- TApplication --- }
@@ -12,7 +12,7 @@
 {$IFDEF INTERFACE}
 const
 	class_TApplication = 'TApplication';
-	
+
 type
 	PApplication = ^TApplication;
 	TApplication = object(TControl)
@@ -34,16 +34,16 @@ type
 	{ User Config Stuff }
 		FClrScr,
 		FUseFader,
-		FUseDAC, 
+		FUseDAC,
 		FUseSound, FInSound, FOutSound : boolean;
 		FFileDateFmt, FFileTimeFmt : String;
 		FStartTone, FEndTone : String;
-		
+
 	public
 		constructor Create(AParent : PControl; AName : String);
-		destructor Destroy; virtual;		
+		destructor Destroy; virtual;
 		procedure Execute; virtual;
-		procedure Terminate; virtual;	
+		procedure Terminate; virtual;
 		function GetClearScreen : boolean; virtual;
 		procedure SetClearScreen(AValue : boolean); virtual;
 		function GetConfigName : string; virtual;
@@ -51,10 +51,13 @@ type
 		procedure ApplyLanguage( AConfig : PConfigFile ); virtual;
 		procedure ApplyKeyboard( AConfig : PConfigFile ); virtual;
 		procedure ApplyTheme( AConfig : PConfigFile ); virtual;
-		
-		procedure ApplySettings( AControl : PControl ); virtual;
 
-		procedure CreateAllDialogs(ConserveMemory : boolean); virtual; 
+		procedure ApplySettings( AControl : PControl ); virtual;
+		procedure AfterConfig; virtual;
+		procedure AtStartup; virtual;
+		procedure AtShutdown; virtual;
+
+		procedure CreateAllDialogs(ConserveMemory : boolean); virtual;
 		{ Only used when making Templates, Slow and major memory hog when not given true. }
 		procedure FreeDialog( var ADialog : PDialog ); virtual;
 		procedure FreeAllDialogs; virtual;
@@ -73,9 +76,9 @@ type
 {$ENDIF}
 
 {$IFDEF IMPLEMENTATION}
-function TApplication.ObjectClass(AName : String) : String; 
+function TApplication.ObjectClass(AName : String) : String;
 begin
-	if (AName = '') or (AName = class_TApplication) then 
+	if (AName = '') or (AName = class_TApplication) then
 		ObjectClass := class_TApplication
 	else
 		ObjectClass := inherited ObjectClass(AName);
@@ -129,7 +132,7 @@ begin
 	FEndTone := '500:1,100:1,300:1';
 end;
 
-destructor TApplication.Destroy; 
+destructor TApplication.Destroy;
 begin
 	if Assigned(FDefaultDAC) then
 		begin
@@ -141,13 +144,13 @@ begin
 			FreeMem(FUserDAC, Sizeof(TDac));
 			FUserDAC := nil;
 		end;
-		
+
 	FTheme.Destroy;
 	FLanguage.Destroy;
 	FConfig.Destroy;
 	FKeyboard.Destroy;
 	FFont.Destroy;
-	
+
 	if Application = @Self then begin
 		{$I-}
 		Chdir(NoTailDelim(FOriginalPath));
@@ -170,10 +173,10 @@ begin
 	{$IFDEF TEMPLATES}
 		OnDisk(ADialog);
 	{$ENDIF}
-	if Assigned(ADialog^.Parent) then 
+	if Assigned(ADialog^.Parent) then
 		PListItem(ADialog^.Parent)^.Remove(ADialog);
 	Dispose(ADialog, Destroy);
-	ADialog := nil;	
+	ADialog := nil;
 end;
 
 procedure TApplication.FreeAllDialogs;
@@ -272,19 +275,19 @@ begin
 
 	Configure;
 	ApplySettings(@Self);
-
+    AfterConfig;
 	if FUseDac then begin
-		if Not MemCheck(Sizeof(TDac)) then Halt(erInsufficient_Memory);				
+		if Not MemCheck(Sizeof(TDac)) then Halt(erInsufficient_Memory);
 		if not Assigned(FDefaultDAC) then
 			GetMem(FDefaultDAC, Sizeof(TDac));
 		ReadDac(0,256,FDefaultDAC^);
-		if Not MemCheck(Sizeof(TDac)) then Halt(erInsufficient_Memory);				
+		if Not MemCheck(Sizeof(TDac)) then Halt(erInsufficient_Memory);
 		if not Assigned(FUserDAC) then begin
 			GetMem(FUserDAC, Sizeof(TDac));
 			Move(FDefaultDAC^, FUserDAC^, Sizeof(TDac));
 		end;
 	end;
-	
+
 	{$IFDEF TEMPLATES}
 		CreateAllDialogs(True);
 	{$ENDIF}
@@ -293,15 +296,16 @@ begin
 		CheckScroll := False;
 		CheckCursor := False;
 		HideCursor;
+        AtStartup;
 
 		{ Same as TWindow.ShowModal but this the application version }
-		if Not FShown then 
+		if Not FShown then
 			begin
-				if FUseDAC and FUseFader then 
+				if FUseDAC and FUseFader then
 					FadeOutDAC(0,256,FDefaultDAC^);
 			end;
-		
-		if (FFont.GetFileName <> '') and (not FClrScr) then 
+
+		if (FFont.GetFileName <> '') and (not FClrScr) then
 			begin
 				Size := GetVideoSize;
 				Temp := GetVideoPtr;
@@ -312,7 +316,7 @@ begin
 				SetVideoPtr(Temp);
 			end;
 
-		if FFont.GetFileName <> '' then 
+		if FFont.GetFileName <> '' then
 			begin
 				FFont.SetEnabled(True);
 				HideCursor;
@@ -323,10 +327,10 @@ begin
 			ClrScr;
 		end;
 
-		if Not FShown then 
+		if Not FShown then
 			begin
 				if FUseDAC and FUseFader then begin
-					if Not MemCheck(Sizeof(TDac)) then Halt(erInsufficient_Memory);				
+					if Not MemCheck(Sizeof(TDac)) then Halt(erInsufficient_Memory);
 					GetMem(TempDac, Sizeof(TDac));
 					FillChar(TempDac^, Sizeof(TDac), 0);
 					WriteDAC(0,256,TempDAC^);
@@ -336,9 +340,9 @@ begin
 				AdjustSize;
 				Show;
 				if FUseDAC then begin
-					if FUseFader then 
+					if FUseFader then
 						FadeInDAC(0,256,FUserDAC^);
-					WriteDAC(0,256,FUserDAC^)					
+					WriteDAC(0,256,FUserDAC^)
 				end;
 			end;
 			{$IFDEF DEVLOG}
@@ -347,9 +351,9 @@ begin
 			{$ENDIF}
 			if FInSound and (FStartTone <> '') then SpeakerPlay(FStartTone);
 			repeat
-				ClearEvent(Event);		
+				ClearEvent(Event);
 				while Event.What = evNothing do begin
-					GetEvent(Event);			
+					GetEvent(Event);
 					if (Event.What = evNothing) then Idle;
 				end;
 				{$IFDEF DEVLOG_EVENTS}
@@ -359,7 +363,7 @@ begin
 						evNone : TempStr := TempStr + 'evNone';
 						evKeyboard :  begin
 							TempStr := TempStr + 'evKeyboard ';
-							TempStr := TempStr + ZPad(BinStr(Event.ShiftCode), 16) + ':' + 
+							TempStr := TempStr + ZPad(BinStr(Event.ShiftCode), 16) + ':' +
 								ZPad(HexStr(Event.KeyCode), 4);
 							if Event.Original <> 0 then
 								TempStr := TempStr + ' (' + ZPad(HexStr(Event.Original), 4) + ')';
@@ -367,13 +371,13 @@ begin
 						evCommand : begin
 							TempStr	:= TempStr + ' evCommand ' + Application^.GetCommandName(Event.Command);
 						end;
-					end;		
+					end;
 					WriteLog(TempStr);
 				end;
-				{$ENDIF}			
-				if (Event.What <> evCommand) or (Event.Command <> cmQuit) then 
+				{$ENDIF}
+				if (Event.What <> evCommand) or (Event.Command <> cmQuit) then
 					CheckEvent(Event);
-			until (FTerminator) or (Not FShown) or 
+			until (FTerminator) or (Not FShown) or
 			(FCanQuit and (Event.What = evCommand) and (Event.Command = cmQuit));
 			if FOutSound and (FEndTone <> '') then begin
 				PurgeEvents;
@@ -393,8 +397,8 @@ begin
 				WriteLog('End Execution Loop');
 			{$ENDIF}
 
-		if FUseDAC and FUseFader then 
-			FadeOutDAC(0,256,FUserDAC^); 
+		if FUseDAC and FUseFader then
+			FadeOutDAC(0,256,FUserDAC^);
 
 		Hide;
 	{$ENDIF}
@@ -405,12 +409,12 @@ begin
 		FLanguage.Write;
 		FConfig.Write;
 	{$ENDIF}
-	
+
 	{$IFNDEF TEMPLATES}
 		FFont.SetEnabled(False);
 	{$ENDIF}
-	
-	SetQCrtState(QCrtSettings);	
+
+	SetQCrtState(QCrtSettings);
 	if Assigned(Screen) then
 		begin
 			Temp := GetVideoPtr;
@@ -420,13 +424,14 @@ begin
 			FreeMem(Screen, Size);
 		end;
 	if FUseDAC and Assigned(FDefaultDac) then begin
-		if FUseFader and (Not FClrScr) then 
+		if FUseFader and (Not FClrScr) then
 			FadeInDAC(0,256,FDefaultDAC^);
 		WriteDac(0,256,FDefaultDAC^);
 	end;
+	AtShutdown;
 end;
 
-function TApplication.GetClearScreen : boolean; 
+function TApplication.GetClearScreen : boolean;
 begin
 	GetClearScreen := FClearWindow;
 end;
@@ -439,31 +444,31 @@ begin
 	Reshow := FShown;
 	if Reshow then Hide;
 	FClearWindow := AValue;
-	if Reshow then Hide;	
+	if Reshow then Hide;
 end;
 
-function TApplication.GetConfigName : string; 
+function TApplication.GetConfigName : string;
 var
 	T : String;
 begin
 	T := GetExeName;
     T := Copy(T, 1, LastPos('.', T) - 1 );
-    if T = '' then 
+    if T = '' then
     	GetConfigName := ''
     else
     	GetConfigName := GetExePath + T + ConfigExt;
 end;
 
-procedure TApplication.ApplyLanguage( AConfig : PConfigFile );	
+procedure TApplication.ApplyLanguage( AConfig : PConfigFile );
 var
 	I : integer;
 	Key, Str, Temp : String;
-	
+
 begin
 	inherited ApplyLanguage(AConfig);
 
 	AConfig^.OpenSection('KEYNAMES');
-	
+
 	for I := $61 to $7A do begin
 		Temp := AConfig^.GetValue('$' + ZPad(HexStr(I),4), UCase(Char(I)));
 	end;
@@ -490,8 +495,8 @@ var
 	PMap : PCodeMap;
 begin
 	inherited ApplyKeyboard(AConfig);
-	
-	{ Key Code Mapping } 
+
+	{ Key Code Mapping }
 	AConfig^.OpenSection('ASSIMILATE');
 	{$IFNDEF TEMPLATES}
 	if not AConfig^.IsValid then
@@ -503,7 +508,7 @@ begin
 			Temp := AConfig^.GetValue(Key, Temp);
 			{ WriteLog(Key + '+' + Temp); }
 		end;
-	
+
 	{ Count them }
 	VCount := 0;
 	if Assigned(AConfig^.FSectionKey) then begin
@@ -515,7 +520,7 @@ begin
 				T := T^.Next;
 			end;
 			P := P^.Next;
-		end; 
+		end;
 	end;
 
 	{ Create KeyMap  }
@@ -535,7 +540,7 @@ begin
 					I := Pos(',', Str);
 					If I = 0 then I := Length(Str) + 1;
 					Temp := Copy(Str, 1, I - 1);
-					Str := Copy(Str, I + 1, Length(Str)); 
+					Str := Copy(Str, I + 1, Length(Str));
 					I := Pos(':', Temp);
 					if I > 0 then begin
 						Flag := Ucase(Temp[I + 1]); { I don't care if user messes it up }
@@ -549,9 +554,9 @@ begin
 					TCodeMap(PMap^)[VCount].ToCode := StrInt(Key);
 					TCodeMap(PMap^)[VCount].FromCode := StrInt(Temp);
 					TCodeMap(PMap^)[VCount].ShiftCode := StrInt(Scan);
-					if Flag = 'C' then 
+					if Flag = 'C' then
 						TCodeMap(PMap^)[VCount].Flags := $0001
-					else if Flag = 'M' then 
+					else if Flag = 'M' then
 						TCodeMap(PMap^)[VCount].Flags := $0002
 					else
 						TCodeMap(PMap^)[VCount].Flags := $0000;
@@ -561,7 +566,7 @@ begin
 				T := T^.Next;
 			end;
 			P := P^.Next;
-		end; 
+		end;
 	end;
 	if Assigned(PMap) then begin
 		SetKeyMap(PMap, VCount);
@@ -569,7 +574,7 @@ begin
 	end else begin
 		SetKeyMap(nil, 0);
 	end;
-	
+
 	{ Command Mapping, very similar to key map }
 	AConfig^.OpenSection('COMMANDS');
 	{$IFNDEF TEMPLATES}
@@ -592,7 +597,7 @@ begin
 		{ WriteLog(Key + '=' + Temp); }
 	end;
 	{$ENDIF}
-	
+
 	{ Count them }
 	VCount := 0;
 	if Assigned(AConfig^.FSectionKey) then begin
@@ -604,7 +609,7 @@ begin
 				T := T^.Next;
 			end;
 			P := P^.Next;
-		end; 
+		end;
 	end;
 
 	{ Create Command Map }
@@ -624,7 +629,7 @@ begin
 					I := Pos(',', Str);
 					If I = 0 then I := Length(Str) + 1;
 					Temp := Copy(Str, 1, I - 1);
-					Str := Copy(Str, I + 1, Length(Str)); 
+					Str := Copy(Str, I + 1, Length(Str));
 					I := Pos(':', Temp);
 					if I > 0 then begin
 						Flag := Ucase(Temp[I + 1]); { I don't care if user messes it up }
@@ -638,9 +643,9 @@ begin
 					TCodeMap(PMap^)[VCount].ToCode := StrInt(Key);
 					TCodeMap(PMap^)[VCount].FromCode := StrInt(Temp);
 					TCodeMap(PMap^)[VCount].ShiftCode := StrInt(Scan);
-					if Flag = 'C' then 
+					if Flag = 'C' then
 						TCodeMap(PMap^)[VCount].Flags := $0001
-					else if Flag = 'M' then 
+					else if Flag = 'M' then
 						TCodeMap(PMap^)[VCount].Flags := $0002
 					else
 						TCodeMap(PMap^)[VCount].Flags := $0000;
@@ -655,7 +660,7 @@ begin
 				T := T^.Next;
 			end;
 			P := P^.Next;
-		end; 
+		end;
 	end;
 	if Assigned(PMap) then begin
 		SetCommandMap(PMap, VCount);
@@ -664,8 +669,20 @@ begin
 		SetCommandMap(nil, 0);
 	end;
 end;
-	
-function TApplication.GetCommandName( ACode : word ) : String; 
+
+procedure TApplication.AfterConfig;
+begin
+end;
+
+procedure TApplication.AtStartup;
+begin
+end;
+
+procedure TApplication.AtShutdown;
+begin
+end;
+
+function TApplication.GetCommandName( ACode : word ) : String;
 var
 	I : integer;
 	T, S : String;
@@ -696,7 +713,7 @@ begin
 		end;
 	end;
 end;
-	
+
 procedure TApplication.SetFocused(AControl : PControl);
 begin
 	if AControl = FFocused then exit;
@@ -725,7 +742,7 @@ var
 	Dac : TDac;
 	I	: integer;
 	RGB : TRGB;
-	IRGB : record 
+	IRGB : record
 		R, G, B : integer;
 	end;
 {$IFNDEF TEMPLATES}
@@ -733,7 +750,7 @@ var
 {$ENDIF}
 begin
 	inherited ApplyTheme(AConfig);
-	FStartTone := AConfig^.GetValue('TONE.START', FStartTone);	
+	FStartTone := AConfig^.GetValue('TONE.START', FStartTone);
 	FEndTone := AConfig^.GetValue('TONE.END', FEndTone);
 	ReadDac(0, 256, Dac);
 	GetPalette(Pal);
@@ -743,7 +760,7 @@ begin
 			IRGB.R := RGB.R;
 			IRGB.G := RGB.G;
 			IRGB.B := RGB.B;
-			AConfig^.SetInts('PALETTE.' + HexStr(I), IRGB, 3);		
+			AConfig^.SetInts('PALETTE.' + HexStr(I), IRGB, 3);
 		end;
 	{$ELSE}
 		Flag := False;
@@ -752,7 +769,7 @@ begin
 			IRGB.R := RGB.R;
 			IRGB.G := RGB.G;
 			IRGB.B := RGB.B;
-			AConfig^.GetInts('PALETTE.' + HexStr(I), IRGB, 3);		
+			AConfig^.GetInts('PALETTE.' + HexStr(I), IRGB, 3);
 			RGB.R := IRGB.R and $3F;
 			RGB.G := IRGB.G and $3F;
 			RGB.B := IRGB.B and $3F;
@@ -770,7 +787,7 @@ begin
 	{$ENDIF}
 end;
 
-function TApplication.GetKeyName( ACode : TKeyValue ) : String; 
+function TApplication.GetKeyName( ACode : TKeyValue ) : String;
 begin
 	GetKeyName := ''; { Later Maybe }
 end;
@@ -784,7 +801,7 @@ end;
 		{$IFDEF ONDISK}
 			N := PListItem(AObject)^.First;
 			while Assigned(N) do begin
-				OnDisk(N);	
+				OnDisk(N);
 				N := N^.Next;
 			end;
 			Section := AObject^.GetPathId;

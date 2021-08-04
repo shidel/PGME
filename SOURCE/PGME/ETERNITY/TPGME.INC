@@ -1,22 +1,22 @@
-{ Copyright 2015 Jerome Shidel }
+{ Copyright 2015-2021 Jerome Shidel }
 
-(* 
-		
+(*
+
 	This project and related files are subject to either the terms
 	specified in the included LICENSE.TXT file or the GNU GPLv2.0.
-	
+
 *)
 
-{ ---TMemo --- }
+{ --- TPGME --- }
 
 {$IFDEF INTERFACE}
-type 
+type
 	TPGME = object (TApplication)
 	public { protected }
 			FIdleCount : integer;
 			FTimeOut : integer;
 			FReadOnly : boolean;
-			FEditing, 
+			FEditing,
 			FWritable,
 			FBatLoop, FInitRun : boolean;
 			FReqMenu, FReqProg : String;
@@ -36,11 +36,11 @@ type
 			FDlgPAdd, FDlgPEdit, FDlgPDel,
 			FDlgMAdd, FDlgMEdit, FDlgMDel,
 			FDlgPGMOpt, FDlgPGMCfg,
-			FDlgLaunch, 
+			FDlgLaunch,
 			FDlgFindExec, FDlgOptExec,
 			FDlgChangeLang, FDlgChangeTheme,
 			FDlgAbout, FDlgDosCommand,
-			FDlgMove : PDialog;			
+			FDlgMove : PDialog;
 			FFind : record
 				FLabel : PLabel;
 				FEdit : PEdit;
@@ -51,10 +51,11 @@ type
 			FBtnPAdd, FBtnPEdit, FBtnPDel, FBtnPMove,
 			FBtnMAdd, FBtnMEdit, FBtnMDel,
 			FBtnPGMOpt, FBtnPGMCfg : PButton;
-			FResumeText, FReqSearch : String;
+			FResumeText, FPauseText, FReqSearch : String;
+			FRetError, FRetWait : integer;
 		procedure BeforeShow; virtual;
 		procedure Configure; virtual;
-		procedure CheckLocal(var AEvent : TEvent); virtual;		
+		procedure CheckLocal(var AEvent : TEvent); virtual;
 		procedure UpdateButtons; virtual;
 		procedure UpdateMenuCache; virtual;
 		procedure OpenCurrentMenu; virtual;
@@ -64,6 +65,7 @@ type
 		destructor Destroy; virtual;
 		procedure ApplyConfig( AConfig : PConfigFile ); virtual;
 		procedure ApplyTheme( AConfig : PConfigFile ); virtual;
+		procedure AtStartup; virtual;
 		procedure Idle; virtual;
 		procedure ExecuteItem(AItem : PListItem); virtual;
 		function GetChangeLang(ATheme, ALang: String) : PDialog; virtual;
@@ -79,7 +81,7 @@ type
 		function GetDlgMAdd : PControl; virtual;
 		function GetDlgMEdit : PControl; virtual;
 		function GetDlgMDelete : PControl; virtual;
-		function GetDlgPGMOpt : PControl; virtual;		
+		function GetDlgPGMOpt : PControl; virtual;
 		function GetDlgPGMCfg : PControl; virtual;
 		function GetDlgLaunch : PControl; virtual;
 		function GetDlgFindExec : PControl; virtual;
@@ -87,7 +89,7 @@ type
 		function GetDlgAbout : PControl; virtual;
 		function GetDlgMove : PControl; virtual;
 		function GetDlgDosCommand : PControl; virtual;
-		function GetReturnStr : String; virtual;		
+		function GetReturnStr : String; virtual;
 		procedure CreateAllDialogs(ConserveMemory : boolean); virtual;
 		procedure Restart; virtual;
 		procedure ScreenSaver; virtual;
@@ -95,9 +97,9 @@ type
 		procedure DeleteProgram; virtual;
 		procedure DeleteCache; virtual;
 		procedure SelectMenu(AValue : String); virtual;
-		procedure SelectProg(AValue : String); virtual;	
-		procedure CheckLanguage(ATheme : String);	
-		procedure CheckTheme(ALanguage : String);	
+		procedure SelectProg(AValue : String); virtual;
+		procedure CheckLanguage(ATheme : String);
+		procedure CheckTheme(ALanguage : String);
 		procedure AddMenu; virtual;
 		procedure AddProgram; virtual;
 		procedure ModifyMenu; virtual;
@@ -106,9 +108,9 @@ type
 		procedure UpdateProgram(AMenu : TConfigFile; ADlg : PDialog); virtual;
 		function  SearchStr(AValue : String) : String; virtual;
 		procedure Search(AValue : String); virtual;
-	end;   
+	end;
 
-{ Some Global Variables }	
+{ Some Global Variables }
 var
 	PGME : TPGME;
 
@@ -150,7 +152,7 @@ begin
 		if Hour = 0 then Hour := 12;
 		FD[1].ID := FmtInteger;
 		FD[1].IntegerValue := Hour;
-		AValue := FormatStr(PGME.FTime^.GetCaption, FD, 5); 
+		AValue := FormatStr(PGME.FTime^.GetCaption, FD, 5);
 	end;
 end;
 
@@ -183,12 +185,13 @@ end;
 { --- TPGME --- }
 
 constructor TPGME.Create;
-const 
+const
 	Split = 27;
 var
 	P : PControl;
 	B : TBounds;
-begin	
+	I : integer;
+begin
 	inherited Create(nil, 'PGM');
 	FBatLoop := False;
 	FIdleCount := 0;
@@ -228,13 +231,20 @@ begin
 	FDlgDosCommand := nil;
 	FDlgMove := nil;
 	FTimeOut := 0;
+	FRetError := 0;
+	FRetWait := 0;
 	OldIdleProc := QCrt.IdleProc;
 	QCrt.IdleProc := PGMIdleProc;
-	
+
 	ParseCommandLine;
-	
+	{
+	For I := 0 to ParamCount do
+	    WriteLn(I, '="', ParamStr(I), '"');
+	Pause;
+	}
+
 	FMenuCache := New(PMenuCache, Create);
-	
+
 	FInfo.SetFileName('PGM.EXE');
 	FInfo.SetTitle('Program Manager Eternity');
 	SetHelpText('Program Manager Eternity Edition Help System');
@@ -246,7 +256,7 @@ begin
 	AddHelpText('Generating a Exit program command (Alt+Q) will close help and exit');
 	AddHelpText('the program. This assumes that the configuration option for CANCLOSE');
 	AddHelpText('is not set to FALSE. ');
-	
+
 	{ Left Pane }
 	TextAttr := $06;
 	Bounds(1,1,Application^.Width - Split,5, B);
@@ -261,13 +271,13 @@ begin
 		SetShadow(False);
 		SetTitle(FInfo.Title);
 	end;
-	
+
 		{ Top Line }
 		Bounds(0, 2, FProgramWindow^.Width, 1, B);
 		with PLine(New(PLine, Create(FProgramWindow, 'LINE.TOP')))^ do begin
 			SetStyle(lnDouble or lnHorizontal);
 			SetAllowedOutside(True);
-			SetAnchors(abTop or abLeft or abRight); 
+			SetAnchors(abTop or abLeft or abRight);
 			SetBounds(B);
 		end;
 
@@ -279,7 +289,7 @@ begin
 			SetAnchors(abLeft or abBottom or abRight);
 			SetBounds(B);
 		end;
-			
+
 		{  Quit Button }
 		TextAttr := $1E;
 		Bounds(1, 1, 8, 1, B);
@@ -292,9 +302,9 @@ begin
 			SetCaption('Quit');
 			SetCommand(cmQuit);
 			SetAnchors(alBottom or alRight);
-			SetBounds(B);	
+			SetBounds(B);
 		end;
-		
+
 		{  Execute Button }
 		Bounds(1, 1, 11, 1, B);
 		FBtnRun := New(PButton, Create(FProgramWindow, 'BUTTON.RUN'));
@@ -304,9 +314,9 @@ begin
 			SetCaption('Execute');
 			SetCommand(cmExecute);
 			SetAnchors(alBottom or alLeft);
-			SetBounds(B);	
+			SetBounds(B);
 		end;
-		
+
 		{  Help Button }
 		TextAttr := $1A;
 		Bounds(B.Left + B.Width + 2, 1, 8, 1, B);
@@ -317,9 +327,9 @@ begin
 			SetCaption('Help');
 			SetCommand(cmHelp);
 			SetAnchors(alBottom);
-			SetBounds(B);	
+			SetBounds(B);
 		end;
-		
+
 		TextAttr := $1B;
 		{  Search Button }
 		Bounds(B.Left + B.Width + 1, 1, 10, 1, B);
@@ -331,10 +341,10 @@ begin
 			AddHelpText('already contains text, it will search again.');
 			SetCommand(cmFind);
 			SetAnchors(alBottom);
-			SetBounds(B);	
+			SetBounds(B);
 {			SetVisible(False);}
 		end;
-		
+
 		TextAttr := $1C;
 		{  Edit Button }
 		Bounds(B.Left + B.Width + 1, 1, 8, 1, B);
@@ -343,11 +353,11 @@ begin
 			SetCaption('Edit');
 			SetCommand(cmEditFile);
 			SetAnchors(alBottom);
-			SetBounds(B);	
+			SetBounds(B);
 			SetHelpText('5;"%0" Button: This will display the edit popup menu.');
 {			AddHelpText('The default keyboard shortcut is "ALT+E".');}
 		end;
-		
+
 		TextAttr := $02;
 		Bounds(1, 1, 13, 1, B);
 		with PLabel(New(PLabel, Create(FProgramWindow, 'TITLE.LABEL')))^ do begin
@@ -365,7 +375,7 @@ begin
 			SetEnabled(False);
 		end;
 
-		TextAttr := $03;		
+		TextAttr := $03;
 		Bounds(2, 4, FProgramWindow^.Width - 4, FProgramWindow^.Height - 8, B);
 		FPrograms := New(PListView, Create(FProgramWindow, 'PROGRAMS'));
 		with FPrograms^ do begin
@@ -374,7 +384,7 @@ begin
 			SetScrollEdge(True);
 			SetSorted(True);
 		end;
-		
+
 	{ Title Pane }
 	TextAttr := $06;
 	Bounds(1,1, Split,3,B);
@@ -394,7 +404,7 @@ begin
 			SetAnchors(alClient);
 			SetCommand(cmAbout);
 		end;
-	
+
 	{ Right Pane }
 	TextAttr := $06;
  	Bounds(1, P^.Height + 1, P^.Width, Application^.Height - P^.Height, B);
@@ -404,7 +414,7 @@ begin
 		SetBounds(B);
 		SetShadow(False);
 	end;
-	
+
 		{ Clock }
 		TextAttr := $1F;
 		Bounds(1,1,P^.Width - 2, 1, B);
@@ -426,8 +436,8 @@ begin
 			(*  SetCaption('0[X3.2],1[L2],2[Z2];%1/%2/%0'); *)
 			{ Medium Day }
 			SetCaption('0[Z4],1{Null,Jan,Feb,Mar,Apr,May,Jun,Jul,Aug,Sep,Oct,Nov,Dec},2,' +
-			'3{Sun,Mon,Tues,Wed,Thurs,Fri,Sat};%3 %1 %2, %0'); 
-			
+			'3{Sun,Mon,Tues,Wed,Thurs,Fri,Sat};%3 %1 %2, %0');
+
 		end;
 
 		TextAttr := $06;
@@ -456,7 +466,7 @@ begin
 			SetCaption('Available Menus:');
 		end;
 
-		TextAttr := $04;		
+		TextAttr := $04;
 		Bounds(2, 6, P^.Width - 4, P^.Height - 10, B);
 		FMenus := New(PListView, Create(P, 'MENUS'));
 		with FMenus^ do begin
@@ -466,8 +476,8 @@ begin
 			SetAllowEmpty(False);
 			SetSorted(True);
 		end;
-		
-		TextAttr := $08;		
+
+		TextAttr := $08;
 		Bounds(1, 1, 6, 1, B);
 		FFind.FLabel := New(PLabel, Create(P, 'SEARCH.LABEL'));
 		with FFind.FLabel^ do begin
@@ -476,7 +486,7 @@ begin
 			SetCaption(' Find>');
 {			SetVisible(False) }
 		end;
-		TextAttr := $0F;		
+		TextAttr := $0F;
 		Bounds(7, 1, P^.Width - B.Width - B.Left - 1, 1, B);
 		FFind.FEdit := New(PEdit, Create(P, 'SEARCH.EDIT'));
 		with FFind.FEdit^ do begin
@@ -487,14 +497,14 @@ begin
 			SetRespond(cmSearch);
 {			SetVisible(False)}
 		end;
-	
+
 	FClrScr := True;
 end;
 
 destructor TPGME.Destroy;
 begin
 	QCrt.IdleProc := OldIdleProc;
-	if Assigned(FMenuCache) then 
+	if Assigned(FMenuCache) then
 		Dispose(FMenuCache, Destroy);
 	inherited Destroy;
 end;
@@ -518,8 +528,8 @@ begin
 			AppendMessage('Unfortunately, the system has no TEMP directory defined.');
 			AppendMessage('So, I am unable to execute that program at this time.');
 			AppendMessage(' ');
-			AppendMessage('Maybe, try adding SET TEMP=C:\TEMP to the AUTOEXEC.BAT file.'); 
-			AppendMessage('(That assumes you have a directory called C:\TEMP somewhere)'); 
+			AppendMessage('Maybe, try adding SET TEMP=C:\TEMP to the AUTOEXEC.BAT file.');
+			AppendMessage('(That assumes you have a directory called C:\TEMP somewhere)');
 			SetHelpText('This is an error dialog box.');
 			AddHelpText('');
 			AddHelpText('It means what it says. You do not have a TEMP directory setup.');
@@ -542,7 +552,7 @@ begin
 			SetBackground(4);
 			SetTextAttr($4F);
 			Bounds(1,1,66,10, B);
-			SetBounds(B);					
+			SetBounds(B);
 			FAutoEndModal := True;
 			SetTitle('Oh, NO! Me so sorry! :(');
 			SetMessage(' ');
@@ -551,7 +561,7 @@ begin
 			AppendMessage('PGM.BAT and PGME can only perform simple launching at');
 			AppendMessage('this time.');
 			AppendMessage(' ');
-			AppendMessage('Maybe, next time start PGME using the PGM.BAT launcher.'); 
+			AppendMessage('Maybe, next time start PGME using the PGM.BAT launcher.');
 			SetHelpText('This is an error dialog box.');
 			AddHelpText('');
 			AddHelpText('It means what it says. You ran PGME directly. When you');
@@ -577,7 +587,7 @@ begin
 			SetBackground(4);
 			SetTextAttr($4F);
 			Bounds(1,1,66,10, B);
-			SetBounds(B);					
+			SetBounds(B);
 			FAutoEndModal := True;
 			SetTitle('Oh, NO! Me so sorry! :(');
 			SetMessage(' ');
@@ -586,7 +596,7 @@ begin
 			AppendMessage('temporary file. The file may be locked, readonly or just');
 			AppendMessage('unaccessible at this time.');
 			AppendMessage(' ');
-			AppendMessage('Maybe, if you delete the file manually it will fix it.'); 
+			AppendMessage('Maybe, if you delete the file manually it will fix it.');
 			SetHelpText('This is an error dialog box.');
 			AddHelpText('');
 			AddHelpText('PGME encountered an error while trying to create a temporary');
@@ -597,7 +607,7 @@ begin
 			AddHelpText('PGME can only perform simple launching. You may be able');
 			AddHelpText('to resolve the issue by deleting it manually, rebooting the');
 			AddHelpText('computer or standing on one leg, hopping up and down and');
-			AddHelpText('spelling your full name backwards three times.'); 
+			AddHelpText('spelling your full name backwards three times.');
 		end;
 		ApplySettings(FGornError);
 	end;
@@ -615,7 +625,7 @@ begin
 			SetBackground(4);
 			SetTextAttr($4F);
 			Bounds(1,1,66,9, B);
-			SetBounds(B);					
+			SetBounds(B);
 			FAutoEndModal := True;
 			SetTitle('Oh, NO! Me so sorry! :(');
 			SetMessage(' ');
@@ -623,7 +633,7 @@ begin
 			AppendMessage('PGME was unable to locate a required executable item and');
 			AppendMessage('can not run that menu entry at this time.');
 			AppendMessage(' ');
-			AppendMessage('Maybe, verify that the program has not been relocated.'); 
+			AppendMessage('Maybe, verify that the program has not been relocated.');
 			SetHelpText('This is an error dialog box.');
 			AddHelpText('');
 			AddHelpText('PGME was unable to locate a program file needed to launch');
@@ -638,14 +648,14 @@ begin
 			AddHelpText('available. Finally, the main file is associated with a viewer');
 			AddHelpText('helper in the ETERNITY.CFG file and the viewer could not');
 			AddHelpText('be found.');
-			
+
 		end;
 		ApplySettings(FExecMissing);
 	end;
 	GetExecMissing := FExecMissing;
 end;
 
-function TPGME.GetEditMenu : PControl; 
+function TPGME.GetEditMenu : PControl;
 var
 	B : TBounds;
 begin
@@ -657,7 +667,7 @@ begin
 			SetHelpText('A note regarding the edit button popup menu shortcut keys.');
 			AddHelpText('They will only work when popup menu is visible.');
 			SetShadow(False);
-			SetBounds(B);	
+			SetBounds(B);
 			SetAnchors(abBottom or abRight);
 			Bounds(0,5,Width, 1, B);
 			with PLine(New(PLine, Create(FEditMenu, 'LINE.UPPER')))^ do begin
@@ -765,7 +775,7 @@ begin
 				SetCommand(cmMenuDel);
 				SetKeycode(kbK, 0, kfMatches);
 			end;
-			TextAttr := $0B; 
+			TextAttr := $0B;
 			Inc(B.Top, 2);
 			FBtnPGMOpt := New(PButton, Create(FEditMenu, 'BTN.OPTIONS'));
 			with PButton(FBtnPGMOpt)^ do begin
@@ -802,7 +812,7 @@ begin
 	FBtnMDel^.SetEnabled(FWritable and Assigned(FMenus^.FCurrent));
 	FBtnPGMOpt^.SetEnabled(Not FReadOnly);
 	FBtnPGMCfg^.SetEnabled(Not FReadOnly);
-	GetEditMenu := FEditMenu;	
+	GetEditMenu := FEditMenu;
 end;
 
 function TPGME.GetDlgPAdd : PControl;
@@ -814,7 +824,7 @@ begin
 	GetDlgPAdd := FDlgPAdd;
 end;
 
-function TPGME.GetDlgPEdit : PControl; 
+function TPGME.GetDlgPEdit : PControl;
 begin
 	if Not Assigned(FDlgPEdit) then begin
 		FDlgPEdit := New(PDlgPEdit, Create(@Self));
@@ -832,7 +842,7 @@ begin
 	GetDlgPDelete := FDlgPDel;
 end;
 
-function TPGME.GetDlgMAdd : PControl; 
+function TPGME.GetDlgMAdd : PControl;
 begin
 	if Not Assigned(FDlgMAdd) then begin
 		FDlgMAdd := New(PDlgMAdd, Create(@Self));
@@ -850,7 +860,7 @@ begin
 	GetDlgMEdit := FDlgMEdit;
 end;
 
-function TPGME.GetDlgMDelete : PControl; 
+function TPGME.GetDlgMDelete : PControl;
 begin
 	if Not Assigned(FDlgMDel) then begin
 		FDlgMDel := New(PDlgMDel, Create(@Self));
@@ -920,12 +930,12 @@ begin
 					P := P^.Next;
 				end;
 			end;
-			if S <> '' then 
+			if S <> '' then
 				AddFilter('Viewable (' + S + ')');
 			AddFilter('All Files (*.*)');
 		end;
 		ApplySettings(FDlgFindExec);
-		
+
 	end;
 	GetDlgFindExec := FDlgFindExec;
 end;
@@ -935,7 +945,7 @@ begin
 	if Not Assigned(FDlgOptExec) then begin
 		FDlgOptExec := New(PDlgExecOpt, Create(@Self, 'DIALOG.OPTEXEC'));
 		ApplySettings(FDlgOptExec);
-		
+
 	end;
 	GetDlgOptExec := FDlgOptExec;
 end;
@@ -955,7 +965,7 @@ begin
 		FDlgMove := New(PDlgMove, Create(@Self));
 		ApplySettings(FDlgMove);
 	end;
-	
+
 	GetDlgMove := FDlgMove;
 end;
 
@@ -976,7 +986,7 @@ begin
 	FillChar(FD, Sizeof(FD), 0);
 	FD[0].ID := FmtString;
 	FD[0].StringValue := ATheme;
-	FD[1].ID := FmtString;	
+	FD[1].ID := FmtString;
 	FD[1].StringValue := ALang;
 	if Not Assigned(FDlgChangeLang) then begin
 		TextAttr := $1F;
@@ -993,7 +1003,7 @@ begin
 			AppendMessage('Hey, about that theme you want to apply. It would really');
 			AppendMessage('appreciate a different language file.');
 			AppendMessage(' ');
-			AppendMessage('1;So, do you want to switch to the %0 language?'); 
+			AppendMessage('1;So, do you want to switch to the %0 language?');
 			SetHelpText('The change language too "One more thing" question dialog box.');
 			AddHelpText('');
 			AddHelpText('The requested theme that is going to be applied highly suggests');
@@ -1030,7 +1040,7 @@ begin
 	FillChar(FD, Sizeof(FD), 0);
 	FD[0].ID := FmtString;
 	FD[0].StringValue := ATheme;
-	FD[1].ID := FmtString;	
+	FD[1].ID := FmtString;
 	FD[1].StringValue := ALang;
 	if Not Assigned(FDlgChangeTheme) then begin
 		TextAttr := $1F;
@@ -1047,7 +1057,7 @@ begin
 			AppendMessage('Hey, about that language you want to apply. It really');
 			AppendMessage('wants to use a different theme file.');
 			AppendMessage(' ');
-			AppendMessage('0;So, do you want to switch to the %0 theme?'); 
+			AppendMessage('0;So, do you want to switch to the %0 theme?');
 			SetHelpText('The change theme too "One more thing" question dialog box.');
 			AddHelpText('');
 			AddHelpText('The requested language that is going to be applied highly suggests');
@@ -1128,6 +1138,7 @@ var
 	I : integer;
 	O, V : String;
 begin
+    FPauseText := '';
 	FResumeText := '';
 	FReqSearch := '';
 	for I := 1 to ParamCount do begin
@@ -1138,17 +1149,22 @@ begin
 		if (Length(V) > 1) and (V[1] = '/') then begin
 			O := UCase(Trim(PullStr('=', V)));
 			V := Trim(V);
-			if O = '/BAT' then 
+			if O = '/BAT' then
 				FBatLoop := True
-			else if O = '/INIT' then 
+			else if O = '/INIT' then
 				FInitRun := True
 			else if O = '/M' then
 				FReqMenu := UCase(V)
 			else if O = '/P' then
 				FReqProg := UCase(V)
 			else if O = '/T' then
-				FResumeText := V			
-		end else 
+				FResumeText := V
+			else if O = '/ERROR' then
+				FRetError := StrInt(V)
+			else if O = '/W' then begin
+				FRetWait := StrInt(V);
+			end;
+		end else
 			FReqSearch := Trim(FReqSearch + ' ' + V);
 	end;
 {	FBatLoop := True; }
@@ -1165,7 +1181,7 @@ begin
 	if Not (Assigned(FMenus) and Assigned(FMenuCache)) then exit;
 	P := FMenus^.FItems.First;
 	while Assigned(P) do begin
-		S := UCase(PCacheDir(PCacheMenu(P^.Data)^.Parent)^.GetNameID + 
+		S := UCase(PCacheDir(PCacheMenu(P^.Data)^.Parent)^.GetNameID +
 			PCacheMenu(P^.Data)^.GetNameID);
 		if S = AValue then begin
 			FMenus^.SetIndex(P^.GetIndex);
@@ -1214,11 +1230,13 @@ begin
 			Write('Resuming Eternity...')
 		else
 			Write(FResumeText);
-		ClrEol; 
+		ClrEol;
 	end;
+
 	inherited Configure;
 	PMenuCache(FMenuCache)^.ApplyLanguage(@FLanguage, GetPathID);
 	FEditTitle^.SetCaption(PMenuCache(FMenuCache)^.FNoMenuStr); {Set Initially to No Title}
+	FPauseText := FLanguage.GetValue(GetPathID + '.BOOT.PAUSE', 'press any key to continue . . .');
 	if FInitRun then begin
 		GotoXY(1, WhereY);
 		TextAttr := $0E;
@@ -1230,7 +1248,7 @@ begin
 	PMenuCache(FMenuCache)^.Load;
 	PMenuCache(FMenuCache)^.SetPaths(FConfig.GetValue('PATH.MENU', ''));
 	UpdateMenuCache;
-	OpenCurrentMenu; 
+	OpenCurrentMenu;
 	{ Later add ability to return to a menu and program }
 	if FInitRun then begin
 		GotoXY(1, WhereY);
@@ -1250,12 +1268,37 @@ begin
 	AConfig^.OpenSection(GetPathID);
 	FReadOnly := StrBool(AConfig^.GetValue('READONLY', BoolStr(FReadOnly)));
 	FCanQuit := StrBool(AConfig^.GetValue('CANQUIT', BoolStr(FCanQuit)));
-	if Not FCanQuit then 
+	if Not FCanQuit then
 		CallBack('', '', '', True); { Preset return to PGME, incase of crash }
 	FBtnQuit^.SetEnabled(FCanQuit);
 	FProgramWindow^.SetCanClose(FCanQuit);
 	AConfig^.GetInts('SCREEN_TIMEOUT', FTimeOut, 1);
 	UpdateButtons;
+end;
+
+procedure TPGME.AtStartup;
+var
+    W : LongInt;
+begin
+    inherited AtStartUp;
+	if (FRetWait = 0) then Exit;
+	HideCursor;
+    GotoXY(1, WhereY);
+    ClrEOL;
+    GotoXY(1, GetMaxY);
+    TextAttr := $1E;
+    Write(' ', FPauseText);
+    ClrEol;
+    W := FRetWait;
+    if W > 0  then
+        ScheduleCommand(cmTimer, nil, W * 1000);
+    EventPause;
+    ClearTimers;
+    PurgeEvents;
+    GotoXY(1, WhereY);
+    TextAttr := $07;
+    ClrEol;
+	{ SetCursor(PrevCursor); }
 end;
 
 procedure TPGME.Idle;
@@ -1273,7 +1316,7 @@ begin
 		if (FMenus^.FCurrent <> FLastMenu) and (not F) then begin
 			F := True;
 			PutCommand(cmNone, nil);
-		end else 
+		end else
 			F := False;
 	end;
 	if (Not Assigned(Application)) or (Not Application^.GetVisible) then exit;
@@ -1284,13 +1327,13 @@ begin
 	if Sec <> I then begin
 		I := Sec;
 		Inc(FIdleCount);
-	end;	
+	end;
 	if EventFlag then begin
 		EventFlag := False;
 		FIdleCount := 0;
 	end;
-	if ((FTimeOut = 0) and (FIdleCount >= 30)) or 
-	((FTimeOut > 0) and (FIdleCount >= FTimeOut * 60)) then 
+	if ((FTimeOut = 0) and (FIdleCount >= 30)) or
+	((FTimeOut > 0) and (FIdleCount >= FTimeOut * 60)) then
 		ScreenSaver;
 	{ If a Subwindow or Dialog is visible then don't update clock, QuickCrt doesn't
 	 support Write-Behind yet. This list keeps getting longer and longer. I really
@@ -1312,7 +1355,7 @@ begin
 	if Assigned(FDlgChangeTheme) and FDlgChangeTheme^.GetVisible then Exit;
 	if Assigned(FDlgAbout) and FDlgAbout^.GetVisible then Exit;
 	if Assigned(FDlgMove) and FDlgMove^.GetVisible then Exit;
-	
+
 	if S <> Sec then begin
 		S := Sec;
 		FTime^.Update;
@@ -1351,7 +1394,7 @@ var
 	S : String;
 begin
 	if FLastMenu = FMenus^.FCurrent then exit;
-	StartDrawing; 
+	StartDrawing;
 	FLastProgram := nil;
 	FPrograms^.BeginUpdate;
 	FPrograms^.ClearItems;
@@ -1372,7 +1415,7 @@ begin
 	UpdateButtons;
 	FLastMenu := FMenus^.FCurrent;
 	FPrograms^.EndUpdate;
-	FinishDrawing; 
+	FinishDrawing;
 end;
 
 procedure TPGME.UpdateButtons;
@@ -1397,7 +1440,7 @@ begin
 	{ Only removing for searching, cache will update itself on next launch }
 	PListItem(P^.Parent)^.Remove(P);
 	Dispose(P, Destroy);
-	
+
 	StartDrawing;
 	FMenus^.DeleteItem(FMenus^.FCurrent);
 	FinishDrawing;
@@ -1414,15 +1457,15 @@ begin
 	P := PListItem(H^.Data);
 	M := New(PConfigFile, Create('ROOT'));
 	with PCacheApp(FPrograms^.FCurrent^.Data)^ do begin
-		M^.SetFileName(PCacheDir(Parent^.Parent)^.GetNameID + 
+		M^.SetFileName(PCacheDir(Parent^.Parent)^.GetNameID +
 			PCacheMenu(Parent)^.GetNameID);
 		M^.Read;
 		M^.OpenSection(GetNameID);
 		M^.DeleteSection;
 		M^.Write;
-	end;	
+	end;
 	Dispose(M, Destroy);
-	
+
 	{ Only removing for searching, cache will update itself on next launch }
 	PListItem(P^.Parent)^.Remove(P);
 	Dispose(P, Destroy);
@@ -1441,7 +1484,7 @@ begin
 	if IOResult <> 0 then exit;
 end;
 
-function TPGME.GetReturnStr : String; 
+function TPGME.GetReturnStr : String;
 var
 	S : String;
 begin
@@ -1449,11 +1492,11 @@ begin
 	GetReturnStr := S;
 	if not Assigned(FMenuCache) then exit;
 	if Assigned(FPrograms) and Assigned(FPrograms^.FCurrent) then begin
-		with PCacheApp(FPrograms^.FCurrent^.Data)^ do 
-			S := '/M=' + PCacheDir(Parent^.Parent)^.GetNameID + 
+		with PCacheApp(FPrograms^.FCurrent^.Data)^ do
+			S := '/M=' + PCacheDir(Parent^.Parent)^.GetNameID +
 				PCacheMenu(Parent)^.GetNameID + ' /P=' + GetNameID;
 	end else if Assigned(FMenus) and Assigned(FMenus^.FCurrent) then begin
-		with PCacheMenu(FMenus^.FCurrent^.Data)^ do 
+		with PCacheMenu(FMenus^.FCurrent^.Data)^ do
 			S := '/M=' + PCacheDir(Parent)^.GetNameID + GetNameID;
 	end;
 	FLanguage.OpenSection('STRINGS');
@@ -1462,7 +1505,7 @@ begin
 	GetReturnStr := S;
 end;
 
-procedure TPGME.ExecuteItem(AItem : PListItem); 
+procedure TPGME.ExecuteItem(AItem : PListItem);
 var
 	FHoldDir,
 	FDir,
@@ -1476,23 +1519,23 @@ var
 	F : TFile;
 	OK : Boolean;
 	P : PCacheProc;
-	
+
 	procedure FileWrite(S : String);
 	begin
 		if OK then begin
 			F.WriteLn(S);
-			OK := (F.IOResult = 0);				
+			OK := (F.IOResult = 0);
 		end;
 	end;
-	
+
 	function CheckViewer : boolean;
 	begin
 		CheckViewer := True;
 		with PCacheApp(AItem^.Data)^ do begin
 			FExt := FileExtension(FName);
-			
+
 			FView := FConfig.GetValue(FExt, '');
-			if SimpleExec and (not MaxMemory) and (Count = 0) and (FName <> '') and 
+			if SimpleExec and (not MaxMemory) and (Count = 0) and (FName <> '') and
 			(not PGMVars) and (FView = '') and (FExt = 'BAT') then begin
 				FExecDir := PathOf(FName);
 				FView := GetEnv('COMSPEC') + ' /C';
@@ -1514,7 +1557,7 @@ var
 			end;
 		end;
 	end;
-	
+
 	procedure FileWriteExec(Command : String);
 	var
 		TDir : String;
@@ -1522,14 +1565,14 @@ var
 		FName := PullStr(' ', Command);
 		TDir := PathOf(FName);
 		if (TDir <> '') and (TDir <> FDir) then begin
-			if TDir[1] <> FDir[1] then 
+			if TDir[1] <> FDir[1] then
 				FileWrite (Copy(TDir, 1,2));
 			FileWrite('CD ' + Copy(TDir, 3, Length(TDir)));
 			FName := Copy(FName, Length(TDir) + 1, Length(FName));
 		end;
-		if (Length(FName) = 2) and (FName[2] = ':') then 
+		if (Length(FName) = 2) and (FName[2] = ':') then
 			FDir := FName;
-		if FName = 'CD' then 
+		if FName = 'CD' then
 			FDir := Command;
 		FExt := FileExtension(FName);
 		FView := FConfig.GetValue(FExt, '');
@@ -1541,18 +1584,18 @@ var
 		if FExt = 'BAT' then begin
 			Command := Trim(FName + ' ' + Command);
 			FName := 'CALL';
-		end;	
+		end;
 		FileWrite(Trim(FName + ' ' + Command));
 	end;
 
 begin
-	(* 
+	(*
 	 * Add Option prompting and parsing
 	 * Add PGME Value as Formatting to Options like %E for eternity path...
 	 *)
-	
+
 	if Not Assigned(AItem) then exit;
-	if Not Assigned(AItem^.Data) then exit;	
+	if Not Assigned(AItem^.Data) then exit;
 	FConfig.OpenSection(GetPathID + '.VIEWERS');
 	with PCacheApp(AItem^.Data)^ do begin
 		FDir := PCacheDir(Parent^.Parent)^.GetNameID;
@@ -1560,8 +1603,8 @@ begin
 		GetDir(0, FHoldDir);
 		ChDir(NoTailDelim(FDir));
 		FRet := GetReturnStr;
-		if FRet = '' then 
-			FRet := '/M=' + FDir + PCacheMenu(Parent)^.GetNameID + 
+		if FRet = '' then
+			FRet := '/M=' + FDir + PCacheMenu(Parent)^.GetNameID +
 			' /P=' + GetNameID + ' /T=' + FResumeText;
 		if FileName <> '' then begin
 			FName := FileExpand(FileName);
@@ -1575,8 +1618,8 @@ begin
 		FOpts := '';
 		if not CheckViewer then exit;
 		ChDir(NoTailDelim(FHoldDir));
-		
-		if SimpleExec and (not MaxMemory) and (Count = 0) and (FName <> '') and 
+
+		if SimpleExec and (not MaxMemory) and (Count = 0) and (FName <> '') and
 		(not PGMVars) then begin
 			if PathOf(FName) <> FDir then
 				FExecDir := PathOf(FName);
@@ -1585,9 +1628,9 @@ begin
 				S := FOpts;
 				FExecDir := PathOf(FileExpand(PullStr(' ', S)));
 			end;
-			if FExecDir <> '' then 
+			if FExecDir <> '' then
 				FOriginalPath := FExecDir;
-			if Tone <> '' then 
+			if Tone <> '' then
 				FEndTone := Tone;
 			ChDir(NoTailDelim(FExecDir));
 			SetCurDisk(Ord(FExecDir[1]) - 64);
@@ -1595,31 +1638,31 @@ begin
 			Terminate;
 		end else begin
 			FTemp := GetEnv('TEMP');
-			
+
 			if FTemp = '' then begin
-				{ Cannot Do Complex, no temp dir } 
+				{ Cannot Do Complex, no temp dir }
 				GetNoTempDir;
-				FNoTempDir^.ShowModal;		
+				FNoTempDir^.ShowModal;
 				Exit;
 			end;
 			if not FBatLoop  then begin
-				{ Cannot Do Complex, no batch looping } 
+				{ Cannot Do Complex, no batch looping }
 				GetNoBatchLoop;
-				FNoBatchLoop^.ShowModal;		
+				FNoBatchLoop^.ShowModal;
 				Exit;
 			end;
 			F.Create;
 			F.Assign(Dir(FTemp) + 'PGMEGORN.BAT');
 			F.Rewrite;
-			
+
 			OK := (F.IOResult = 0);
 			FileWrite('@ECHO OFF');
 			FileWrite('');
-			if PGMVars then 
+			if PGMVars then
 				S2 := 'SET '
 			else
 				S2 := 'REM SET ';
-			
+
 			FileWrite(S2 + 'PGME_PATH=' + GetExePath);
 			FileWrite(S2 + 'PGME_MENU=' + FDir + PCacheMenu(Parent)^.GetNameID );
 			FileWrite(S2 + 'PGME_PROG=' + GetNameID);
@@ -1632,7 +1675,7 @@ begin
 
 			FExt := UCase(Copy(FName, LastPos('.', FName) + 1, Length(FName) ));
 			FView := FConfig.GetValue(FExt, '');
-						
+
 			P := PCacheProc(First);
 			if OK then begin
 				if Not assigned(P) then begin
@@ -1646,14 +1689,14 @@ begin
 				end;
 			end;
 
-			if PGMVars then begin			
+			if PGMVars then begin
 				FileWrite('');
 				FileWrite('REM Clear PGME Environment Variables');
 				FileWrite(S2 + 'PGME_PATH=');
 				FileWrite(S2 + 'PGME_MENU=');
 				FileWrite(S2 + 'PGME_PROG=');
 			end;
-			
+
 			FileWrite('');
 			{FileWrite('PAUSE');}
 			FileWrite('REM Return to Program Manager Eternity');
@@ -1661,18 +1704,18 @@ begin
 
 			if OK then begin
 				F.Close;
-				OK := (F.IOResult = 0);				
+				OK := (F.IOResult = 0);
 			end;
 			F.Destroy;
 			if OK then begin
-				if Tone <> '' then 
+				if Tone <> '' then
 					FEndTone := Tone;
 				Terminate
 			end else begin
 				GetGornError;
 				FGornError^.ShowModal;
 			end;
-			CallBack('', '', '', False); { if can quit is false, was set to return }			
+			CallBack('', '', '', False); { if can quit is false, was set to return }
 		end;
 	end;
 end;
@@ -1742,7 +1785,7 @@ begin
 		if FDlgChangeLang^.ShowModal = mrOK then begin
 			FConfig.OpenSection('*');
 			FConfig.SetValue('LANGUAGE', S);
-			DeleteCache; 
+			DeleteCache;
 			{ needed to update the "Resuming Eternity" message at restart to
 			  the new language on very first restart. }
 			FLanguage.SetFileName(S);
@@ -1773,7 +1816,7 @@ begin
 	end;
 end;
 
-procedure TPGME.AddMenu; 
+procedure TPGME.AddMenu;
 var
 	M : TConfigFile;
 	CMenu, S : String;
@@ -1785,21 +1828,21 @@ begin
 	M.SetFileName(CMenu);
 	M.OpenSection('*');
 	M.SetValue('TITLE.' + Application^.FLanguageID, PDlgMAdd(FDlgMAdd)^.FEditShort^.GetCaption );
-	if Trim(M.GetValue('TITLE', '')) = '' then 
+	if Trim(M.GetValue('TITLE', '')) = '' then
 		M.SetValue('TITLE', PDlgMAdd(FDlgMAdd)^.FEditShort^.GetCaption );
 	M.SetValue('DESCRIPTION.' + Application^.FLanguageID, PDlgMAdd(FDlgMAdd)^.FEditLong^.GetCaption );
-	if Trim(M.GetValue('DESCRIPTION', '')) = '' then 
+	if Trim(M.GetValue('DESCRIPTION', '')) = '' then
 		M.SetValue('DESCRIPTION', PDlgMAdd(FDlgMAdd)^.FEditLong^.GetCaption );
-	
+
 	S := CMenu;
 	Delete(S, 1, LastPos('\', S));
 	S := Copy(S, 1, Pos('.', S) - 1);
-	
+
 	M.SetValue('ID', S);
 	M.SetValue('WRITABLE', 'yes');
 	M.SetValue('TYPE', 'MENU');
 	M.SetValue('MERGE', '');
-		
+
 	M.Write;
 	M.Destroy;
 	StartDrawing;
@@ -1809,7 +1852,7 @@ begin
 	FinishDrawing;
 end;
 
-procedure TPGME.ModifyMenu; 
+procedure TPGME.ModifyMenu;
 var
 	M : TConfigFile;
 	CMenu, CProg : String;
@@ -1819,8 +1862,8 @@ begin
 	M.Create('TEMP');
 	CMenu := '';
 	CProg := '';
-	if Assigned(FPrograms) and Assigned(FPrograms^.FCurrent) then 
-		with PCacheApp(FPrograms^.FCurrent^.Data)^ do 
+	if Assigned(FPrograms) and Assigned(FPrograms^.FCurrent) then
+		with PCacheApp(FPrograms^.FCurrent^.Data)^ do
 			CProg := GetNameID;
 	with PCacheMenu(FMenus^.FCurrent^.Data)^ do
 		CMenu := PCacheDir(Parent)^.GetNameID + GetNameID;
@@ -1828,11 +1871,11 @@ begin
 	M.Read;
 	M.OpenSection('*');
 	M.SetValue('TITLE.' + Application^.FLanguageID, PDlgMEdit(FDlgMEdit)^.FEditShort^.GetCaption );
-	if Trim(M.GetValue('TITLE', '')) = '' then 
+	if Trim(M.GetValue('TITLE', '')) = '' then
 		M.SetValue('TITLE', PDlgMEdit(FDlgMEdit)^.FEditShort^.GetCaption );
 	M.SetValue('DESCRIPTION.' + Application^.FLanguageID, PDlgMEdit(FDlgMEdit)^.FEditLong^.GetCaption );
-	if Trim(M.GetValue('DESCRIPTION', '')) = '' then 
-		M.SetValue('DESCRIPTION', PDlgMEdit(FDlgMEdit)^.FEditLong^.GetCaption );	
+	if Trim(M.GetValue('DESCRIPTION', '')) = '' then
+		M.SetValue('DESCRIPTION', PDlgMEdit(FDlgMEdit)^.FEditLong^.GetCaption );
 	if Assigned(PDlgMEdit(FDlgMEdit)^.FLockToggle) then
 		if PDlgMEdit(FDlgMEdit)^.FLockToggle^.GetOn then
 			if PDlgMEdit(FDlgMEdit)^.FLockAccept^.GetState = 1 then
@@ -1851,12 +1894,12 @@ procedure TPGME.UpdateProgram(AMenu : TConfigFile; ADlg : PDialog);
 var
 	P, K : PListItem;
 begin
-	AMenu.SetValue('TITLE.' + Application^.FLanguageID, 
+	AMenu.SetValue('TITLE.' + Application^.FLanguageID,
 		PDlgProg(ADlg)^.FEditTitle^.GetCaption );
 	AMenu.SetValue('FILE', PDlgPAdd(ADlg)^.FFile);
 
-	if Trim(AMenu.GetValue('TITLE', '')) = '' then 
-		AMenu.SetValue('TITLE', PDlgProg(ADlg)^.FEditTitle^.GetCaption );			
+	if Trim(AMenu.GetValue('TITLE', '')) = '' then
+		AMenu.SetValue('TITLE', PDlgProg(ADlg)^.FEditTitle^.GetCaption );
 	if StrBool(AMenu.GetValue('MAXAVAIL', 'False')) <> PDlgProg(ADlg)^.FMaxAvail^.GetOn then
 		AMenu.SetValue('MAXAVAIL', BoolStr(PDlgProg(ADlg)^.FMaxAvail^.GetOn));
 	if StrBool(AMenu.GetValue('RETURN', 'True')) <> PDlgProg(ADlg)^.FReturn^.GetOn then
@@ -1875,13 +1918,13 @@ begin
 			K^.Add(New(PListItem, Create(P^.GetNameID)));
 			P := P^.Next;
 		end;
-	end else 
+	end else
 		AMenu.DeleteKey('COMMANDS');
 	if Assigned(PDlgProg(ADlg)^.FEditTones) then
-		AMenu.SetValue('TONE', PDlgProg(ADlg)^.FEditTones^.GetCaption);	
+		AMenu.SetValue('TONE', PDlgProg(ADlg)^.FEditTones^.GetCaption);
 end;
 
-procedure TPGME.AddProgram; 
+procedure TPGME.AddProgram;
 var
 	M : TConfigFile;
 	CMenu, CProg : String;
@@ -1896,7 +1939,7 @@ begin
 	M.Create('TEMP');
 	M.SetFileName(CMenu);
 	M.Read;
-	CProg := ReduceStr(	PDlgPAdd(FDlgPAdd)^.FEditTitle^.GetCaption, 10);
+	CProg := ReduceStr(	OnlyAlphaNum(PDlgPAdd(FDlgPAdd)^.FEditTitle^.GetCaption), 10);
 	if M.FList.FindID(CProg) <> nil then begin
 		I := 0;
 		while M.FList.FindID(CProg + '-' + HexStr(I)) <> nil do Inc(I);
@@ -1918,16 +1961,16 @@ begin
 	FinishDrawing;
 end;
 
-procedure TPGME.ModifyProgram; 
+procedure TPGME.ModifyProgram;
 var
 	M : TConfigFile;
 	CMenu, CProg : String;
 begin
 	if not Assigned(FMenuCache) then exit;
-	if not (Assigned(FMenus) and Assigned(FMenus^.FCurrent) and 
+	if not (Assigned(FMenus) and Assigned(FMenus^.FCurrent) and
 	Assigned(FPrograms) and Assigned(FPrograms^.FCurrent)) then exit;
 	with PCacheApp(FPrograms^.FCurrent^.Data)^ do begin
-		CMenu := PCacheDir(Parent^.Parent)^.GetNameID + PCacheMenu(Parent)^.GetNameID; 
+		CMenu := PCacheDir(Parent^.Parent)^.GetNameID + PCacheMenu(Parent)^.GetNameID;
 		CProg := GetNameID;
 	end;
 	M.Create('TEMP');
@@ -1955,10 +1998,10 @@ var
 	Title : String;
 begin
 	if not Assigned(FMenuCache) then exit;
-	if not (Assigned(FMenus) and Assigned(FMenus^.FCurrent) and 
+	if not (Assigned(FMenus) and Assigned(FMenus^.FCurrent) and
 	Assigned(FPrograms) and Assigned(FPrograms^.FCurrent)) then exit;
 	with PCacheApp(FPrograms^.FCurrent^.Data)^ do begin
-		OMenu := PCacheDir(Parent^.Parent)^.GetNameID + PCacheMenu(Parent)^.GetNameID; 
+		OMenu := PCacheDir(Parent^.Parent)^.GetNameID + PCacheMenu(Parent)^.GetNameID;
 		OProg := GetNameID;
 		NMenu := PCacheDir(PCacheMenu(PDlgMove(FDlgMove)^.Destination)^.Parent)^.GetNameID +
 			PCacheMenu(PDlgMove(FDlgMove)^.Destination)^.GetNameID;
@@ -1974,7 +2017,7 @@ begin
 
 	{ Write to Destination }
 	M.SetFileName(NMenu);
-	M.Read;	
+	M.Read;
 	Title := '';
 	if Assigned(Hold) then begin
 		P := Hold^.FindID('TITLE');
@@ -1984,7 +2027,7 @@ begin
 	if Title = '' then
 		Title := 'FAILED TO LOCATE TITLE';
 
-	NProg := ReduceStr(Title, 10);
+	NProg := ReduceStr(OnlyAlphaNum(Title), 10);
 	if M.FList.FindID(NProg) <> nil then begin
 		I := 0;
 		while M.FList.FindID(NProg + '-' + HexStr(I)) <> nil do Inc(I);
@@ -1998,7 +2041,7 @@ begin
 		M.FSectionKey^.Add(P);
 	end;
 	M.Write;
-	
+
 	{ free left over bits }
 	Dispose(Hold, Destroy);
 
@@ -2036,15 +2079,15 @@ var
 		AStr := SearchStr(AStr);
 		if Pos(AValue, AStr) > 0 then begin
 			StartDrawing;
-			SelectMenu(PCacheDir(PCacheMenu(CM^.Data)^.Parent)^.GetNameID + 
+			SelectMenu(PCacheDir(PCacheMenu(CM^.Data)^.Parent)^.GetNameID +
 				PCacheMenu(CM^.Data)^.GetNameID);
-			if Assigned(CP) then 
+			if Assigned(CP) then
 				SelectProg(CP^.GetNameID);
 			FinishDrawing;
 			CompareStr := True;
 		end;
 	end;
-	
+
 begin
 	AValue := SearchStr(AValue);
 	if Not Assigned(FMenus^.FCurrent) then Exit;
@@ -2067,7 +2110,7 @@ begin
 			if CompareStr(CP^.GroupName) then Exit;
 		end else begin
 			CM := CM^.Next;
-			if not Assigned(CM) then 
+			if not Assigned(CM) then
 				CM := FMenus^.FItems.First;
 			if CompareStr(PCacheMenu(CM^.Data)^.GetNameID) then Exit;
 			if CompareStr(PCacheMenu(CM^.Data)^.ShortTitle) then Exit;
@@ -2076,7 +2119,7 @@ begin
 	until (CM = FM) and (CP = FP);
 end;
 
-procedure TPGME.CheckLocal(var AEvent : TEvent); 
+procedure TPGME.CheckLocal(var AEvent : TEvent);
 var
 	R : integer;
 	S : String;
@@ -2094,7 +2137,7 @@ begin
 			cmFind : begin
 				ClearEvent(AEvent);
 				if AEvent.InfoPtr = FBtnSearch then begin
-					if Trim(FFind.FEdit^.GetCaption) <> '' then 
+					if Trim(FFind.FEdit^.GetCaption) <> '' then
 						Search(Trim(FFind.FEdit^.GetCaption))
 					else
 						PutCommand(cmSearch, @Self);
@@ -2114,8 +2157,8 @@ begin
 				GetDlgAbout;
 				FDlgAbout^.ShowModal;
 			end;
-		end; 
-	
+		end;
+
 	if (AEvent.What = evCommand) and (not FReadOnly) then
 		case AEvent.Command of
 			cmEditFile : begin
@@ -2128,7 +2171,7 @@ begin
 				GetDlgMAdd;
 				PDlgMAdd(FDlgMAdd)^.SetData(nil);
 				R := PDialog(FDlgMAdd)^.ShowModal;
-				if R = mrOK then 
+				if R = mrOK then
 					AddMenu;
 			end;
 			cmPGMOpts : begin
@@ -2143,7 +2186,7 @@ begin
 							CheckLanguage(S);
 						end;
 						PDlgPGMOpt(FDlgPGMOpt)^.Save;
-						Restart;							
+						Restart;
 					end;
 			end;
 			cmPGMCfg : begin
@@ -2159,7 +2202,7 @@ begin
 						end;
 					PDlgPGMCfg(FDlgPGMCfg)^.Save;
 					{ need PGME to reset titles in cache to new language }
-					DeleteCache; 
+					DeleteCache;
 					{ needed to update the "Resuming Eternity" message at restart to
 					  the new language on very first restart. }
 					FLanguage.SetFileName(UCase(Trim(PDlgPGMCfg(FDlgPGMCfg)^.FLang^.GetCaption)));
@@ -2167,26 +2210,26 @@ begin
 					Restart;
 				end;
 			end;
-		end; 
+		end;
 
 	if (AEvent.What = evCommand) and (not FReadOnly) and FWritable then
 		case AEvent.Command of
 			cmMenuEdit : begin
 				ClearEvent(AEvent);
 				GetDlgMEdit;
-				if Assigned(FMenus) and Assigned(FMenus^.FCurrent) then 
+				if Assigned(FMenus) and Assigned(FMenus^.FCurrent) then
 					PDlgMEdit(FDlgMEdit)^.SetData(FMenus^.FCurrent)
 				else
 					PDlgMEdit(FDlgMEdit)^.SetData(nil);
 				R := PDialog(FDlgMEdit)^.ShowModal;
-				if R = mrOK then 
+				if R = mrOK then
 					ModifyMenu;
 			end;
 			cmMenuDel : begin
 				ClearEvent(AEvent);
 				GetDlgMDelete;
 				R := PDialog(FDlgMDel)^.ShowModal;
-				if R = mrOK then 
+				if R = mrOK then
 					DeleteMenu;
 			end;
 			cmProgAdd : begin
@@ -2194,25 +2237,25 @@ begin
 				GetDlgPAdd;
 				PDlgPAdd(FDlgPAdd)^.SetData(nil);
 				R := PDialog(FDlgPAdd)^.ShowModal;
-				if R = mrOK then 
+				if R = mrOK then
 					AddProgram;
 			end;
 			cmProgEdit : begin
 				ClearEvent(AEvent);
 				GetDlgPEdit;
-				if Assigned(FPrograms) and Assigned(FPrograms^.FCurrent) then 
+				if Assigned(FPrograms) and Assigned(FPrograms^.FCurrent) then
 					PDlgPEdit(FDlgPEdit)^.SetData(FPrograms^.FCurrent)
 				else
 					PDlgPEdit(FDlgPEdit)^.SetData(nil);
 				R := PDialog(FDlgPEdit)^.ShowModal;
-				if R = mrOK then 
+				if R = mrOK then
 					ModifyProgram;
 			end;
 			cmProgDel : begin
 				ClearEvent(AEvent);
 				GetDlgPDelete;
 				R := PDialog(FDlgPDel)^.ShowModal;
-				if R = mrOK then 
+				if R = mrOK then
 					DeleteProgram;
 			end;
 			cmProgMove : begin
@@ -2222,15 +2265,15 @@ begin
 				if R = mrOK then
 					CopyOrMove(PDlgMove(FDlgMove)^.MoveItem);
 			end;
-		end; 
+		end;
 
 	inherited CheckLocal(AEvent);
-	
+
 	if FLastMenu <> FMenus^.FCurrent then begin
 		OpenCurrentMenu;
 	end else if (FLastProgram <> FPrograms^.FCurrent) then
 		UpdateButtons;
-		
+
 	FLastMenu := FMenus^.FCurrent;
 	FLastProgram := FPrograms^.FCurrent;
 
@@ -2240,7 +2283,7 @@ begin
 				ClearEvent(AEvent);
 				ExecuteItem(FLastProgram)
 			end;
-		end; 
+		end;
 end;
 
 {$ENDIF}
