@@ -1,10 +1,10 @@
-{ Copyright 2015 Jerome Shidel }
+{ Copyright 2015-2021 Jerome Shidel }
 
-(* 
-		
+(*
+
 	This project and related files are subject to either the terms
 	specified in the included LICENSE.TXT file or the GNU GPLv2.0.
-	
+
 *)
 
 { --- TConfigFile --- }
@@ -12,8 +12,8 @@
 {$IFDEF INTERFACE}
 const
 	class_TConfigFile = 'TConfigFile';
-	
-type    
+
+type
 	PConfigFile = ^TConfigFile;
 	TConfigFile = object(TPersistent)
 	private
@@ -32,7 +32,7 @@ type
 	public
 		constructor Create(AName : String);
 		destructor Destroy; virtual;
-		function GetFileName : String; virtual;	
+		function GetFileName : String; virtual;
 		procedure SetFileName ( AValue : String ) ; virtual;
 		function GetModified : boolean; virtual;
 		procedure SetModified (AValue : boolean); virtual;
@@ -46,6 +46,8 @@ type
 		procedure SetInts(AItem : String; var AInts; ACount : integer); virtual;
 		function GetHexStr(AItem, ADefault : String) : String; virtual;
 		procedure SetHexStr(AItem, AValue : String); virtual;
+		function GetSetValue(AItem : String; ADefault : integer; ASet : Array of String) : integer; virtual;
+		procedure SetSetValue(AItem : String; AIndex : integer; ASet : Array of String); virtual;
 		function IsValid : boolean; virtual;
 		function GetAutoAdd : boolean; virtual;
 		procedure SetAutoAdd (AValue : boolean); virtual;
@@ -53,13 +55,13 @@ type
 		procedure DeleteSection; virtual;
 		procedure DeleteKey(AItem : String); virtual;
 	end;
-	
+
 {$ENDIF}
 
 {$IFDEF IMPLEMENTATION}
-function TConfigFile.ObjectClass(AName : String) : String; 
+function TConfigFile.ObjectClass(AName : String) : String;
 begin
-	if (AName = '') or (AName = class_TConfigFile) then 
+	if (AName = '') or (AName = class_TConfigFile) then
 		ObjectClass := class_TConfigFile
 	else
 		ObjectClass := inherited ObjectClass(AName);
@@ -80,13 +82,13 @@ begin
 	FAutoClear := True;
 end;
 
-destructor TConfigFile.Destroy; 	
+destructor TConfigFile.Destroy;
 begin
 	FList.Destroy;
 	inherited Destroy;
 end;
 
-function TConfigFile.GetFileName : String; 
+function TConfigFile.GetFileName : String;
 begin
 	GetFileName := FFileName;
 end;
@@ -141,13 +143,13 @@ begin
 					end;
 				end else if (Pos('=', S) > 1) and Assigned(Key) then begin
 					Loc := Pos('=', S);
-					Plus := Loc - 1 = Pos('+', S); 
+					Plus := Loc - 1 = Pos('+', S);
 					V := Copy(S, Loc + 1, Length(S) - Loc );
-					if Plus then 
+					if Plus then
 						K := Trim(UCase(Copy(S, 1, Loc - 2)))
 					else
 						K := Trim(UCase(Copy(S, 1, Loc - 1)));
-					if (K <> '') then begin 
+					if (K <> '') then begin
 						Item := Key^.FindID(K);
 						if not Assigned(Item) then begin
 							Item := New(PListItem, Create(K));
@@ -234,7 +236,7 @@ begin
 				S := S + Value^.GetNameID;
 				F.WriteLn(S);
 				S := #9#9'+=';
-				if (Item^.First <> Item^.Last) and 
+				if (Item^.First <> Item^.Last) and
 				((Value = Item^.First) or (Value = Item^.Last)) then begin
 					F.WriteLn(NS);
 				end;
@@ -258,23 +260,23 @@ begin
 	FIsValid :=True;
 end;
 
-function TConfigFile.GetModified : boolean; 
+function TConfigFile.GetModified : boolean;
 begin
 	GetModified := FModified;
 end;
 
-function TConfigFile.IsValid : boolean; 
+function TConfigFile.IsValid : boolean;
 begin
 	IsValid := FIsValid;
 end;
 
-procedure TConfigFile.SetModified (AValue : boolean); 
+procedure TConfigFile.SetModified (AValue : boolean);
 begin
 	if AValue = FModified then exit;
 	FModified := AValue;
 end;
 
-procedure TConfigFile.OpenSection ( AValue : String ); 
+procedure TConfigFile.OpenSection ( AValue : String );
 begin
 	AValue := Trim(uCase(AValue));
 	if Assigned(FSectionKey) and (FSectionKey^.GetNameID = AValue) then exit;
@@ -287,7 +289,7 @@ begin
 	end;
 end;
 
-function TConfigFile.FindKey ( AItem : String ) : PListItem; 
+function TConfigFile.FindKey ( AItem : String ) : PListItem;
 begin
 	if Assigned(FSectionKey) then
 		FindKey := FSectionKey^.FindID(UCase(Trim(AItem)))
@@ -295,7 +297,7 @@ begin
 		FindKey := nil;
 end;
 
-function TConfigFile.GetValue(AItem, ADefault : String) : String; 
+function TConfigFile.GetValue(AItem, ADefault : String) : String;
 {$IFDEF TEMPLATES} {$IFDEF ONDISK}
 	const
 		FLastSection : pointer = nil;
@@ -345,7 +347,7 @@ begin
 	{$ENDIF}
 end;
 
-procedure TConfigFile.SetValue(AItem, AValue : String); 
+procedure TConfigFile.SetValue(AItem, AValue : String);
 var
 	P : PListItem;
 begin
@@ -356,7 +358,7 @@ begin
 		FSectionKey^.Add(P);
 	{$IFDEF TEMPLATES}
 	{end else begin
-		if (P^.Count = 1) and (P^.First^.GetNameID = AValue) then 
+		if (P^.Count = 1) and (P^.First^.GetNameID = AValue) then
 			Exit;}
 	{$ENDIF}
 	end;
@@ -365,10 +367,10 @@ begin
 	FModified := True;
 end;
 
-procedure TConfigFile.GetInts(AItem : String; var AInts; ACount : Integer); 
+procedure TConfigFile.GetInts(AItem : String; var AInts; ACount : Integer);
 type
 	Ints = array[0..$FF] of integer;
-var	
+var
 	S, T : String;
 	I, L : integer;
 	P : PListItem;
@@ -381,20 +383,20 @@ begin
 		{$ENDIF}
 		exit;
 	end;
-	S := P^.First^.GetNameID; 
+	S := P^.First^.GetNameID;
 	for I := 0 to ACount - 1 do begin
 		L := Pos(',', S) - 1;
 		if L < 1 then L := Length(S);
 		T := Trim(Copy(S, 1, L));
 		Delete(S, 1, L + 1);
-		Ints(AInts)[I] := StrInt(T); 
-	end; 
+		Ints(AInts)[I] := StrInt(T);
+	end;
 end;
 
-procedure TConfigFile.SetInts(AItem : String; var AInts; ACount : integer); 
+procedure TConfigFile.SetInts(AItem : String; var AInts; ACount : integer);
 type
 	Ints = array[0..$FF] of integer;
-var	
+var
 	S : String;
 	I : integer;
 begin
@@ -411,7 +413,7 @@ begin
 	SetValue(AItem, StrHex(AValue, false));
 end;
 
-function TConfigFile.GetHexStr(AItem, ADefault : String) : String; 
+function TConfigFile.GetHexStr(AItem, ADefault : String) : String;
 var
 	I : integer;
 	S, T, O : String;
@@ -434,12 +436,33 @@ begin
 	GetHexStr := O;
 end;
 
-function TConfigFile.GetAutoAdd : boolean; 
+function  TConfigFile.GetSetValue(AItem : String; ADefault : integer; ASet : Array of String) : integer;
+var
+    I : integer;
+begin
+    GetSetValue := ADefault;
+    if ADefault < 0 then
+        AItem := UCase(GetValue(AItem, ''))
+    else
+        AItem := UCase(GetValue(AItem, ASet[ADefault]));
+    for I := low(ASet) to High(ASet) do
+        if AItem = ASet[I] then begin
+            GetSetValue := I;
+            Break;
+        end
+end;
+
+procedure  TConfigFile.SetSetValue(AItem : String; AIndex : integer; ASet : Array of String);
+begin
+    SetValue(AItem, ASet[AIndex]);
+end;
+
+function TConfigFile.GetAutoAdd : boolean;
 begin
 	GetAutoAdd := FAutoAdd;
 end;
 
-procedure TConfigFile.SetAutoAdd (AValue : boolean); 
+procedure TConfigFile.SetAutoAdd (AValue : boolean);
 begin
 	FAutoAdd := AValue;
 end;

@@ -57,6 +57,7 @@ type
 		CPUCacheOff,
 		PGMVars : boolean;
     	ReturnWait : LongInt;
+    	HideMode : integer;
 		constructor Create(AName : String);
 		destructor Destroy; virtual;
 		function	NewChild(AID : String) : PListItem; virtual;
@@ -303,6 +304,7 @@ begin
 	CPUCacheOff := False;
 	PGMVars := False;
 	ReturnWait := -2; { Use Default }
+	HideMode := 0; { Not Hidden/Disabled }
 end;
 
 destructor TCacheApp.Destroy;
@@ -424,6 +426,10 @@ begin
 		F.ReadLongInt(ReturnWait);
 		OK := F.IOResult = 0;
 	end;
+	if OK then begin
+		F.ReadInteger(HideMode);
+		OK := F.IOResult = 0;
+	end;
 	ReadSelf := OK;
 end;
 
@@ -480,6 +486,10 @@ begin
 	end;
 	if OK then begin
 		F.WriteLongInt(ReturnWait);
+		OK := F.IOResult = 0;
+	end;
+	if OK then begin
+		F.WriteInteger(HideMode);
 		OK := F.IOResult = 0;
 	end;
 	WriteSelf := OK;

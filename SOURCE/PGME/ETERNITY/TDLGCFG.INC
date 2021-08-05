@@ -1,10 +1,10 @@
-{ Copyright 2015 Jerome Shidel }
+{ Copyright 2015-2021 Jerome Shidel }
 
-(* 
-		
+(*
+
 	This project and related files are subject to either the terms
 	specified in the included LICENSE.TXT file or the GNU GPLv2.0.
-	
+
 *)
 
 { --- TDlgPGMCfg --- }
@@ -13,11 +13,11 @@
 const
 	class_TDlgPGMCfg = 'TDlgPGMCfg';
 
-type 
+type
 	PDlgPGMCfg = ^TDlgPGMCfg;
 	TDlgPGMCfg = object (TDIALOG)
     public { protected }
-    	FTimeout : PLabel;
+    	FSound : PToggle;
     	FLang : PDropList;
 		function  ObjectClass ( AName : String ) : String; virtual;
     public { protected }
@@ -26,14 +26,14 @@ type
 	public
 		constructor Create(AParent : PControl);
 		function Modified: boolean; virtual;
-	end;   
+	end;
 
 {$ENDIF}
 
 {$IFDEF IMPLEMENTATION}
-function TDlgPGMCfg.ObjectClass(AName : String) : String; 
+function TDlgPGMCfg.ObjectClass(AName : String) : String;
 begin
-	if (AName = '') or (AName = class_TDlgPGMCfg) then 
+	if (AName = '') or (AName = class_TDlgPGMCfg) then
 		ObjectClass := class_TDlgPGMCfg
 	else
 		ObjectClass := inherited ObjectClass(AName);
@@ -43,17 +43,18 @@ constructor TDlgPGMCfg.Create;
 const
 	ColorLabel = $70;
 	ColorDrop  = $1E;
+	ColorToggle = $0F;
 	ColorOK    = $2E;
 var
-	B, E : TBounds;
+	B, E, T : TBounds;
 	SRec : TSearchRec;
-begin	
+begin
 	inherited Create(AParent, 'DIALOG.CONFIG');
 	FAutoEndModal := True;
-	if PControl(Parent)^.Height <= 16 then 
+	if PControl(Parent)^.Height <= 16 then
 		SetShadow(False);
-	Bounds(1,1,56,8, B);
-	SetBounds(B);					
+	Bounds(1,1,56,12, B);
+	SetBounds(B);
 	SetTitle('Eternity Config Settings');
 	SetHelpText('The Program Manager Eternity program configuration settings dialog box.');
 	AddHelpText('');
@@ -85,12 +86,33 @@ begin
 			FindNext(SRec);
 		end;
 	end;
+	Bounds(4, B.Top + 2, Self.Width - 9, 1, B);
+	TextAttr := ColorLabel;
+	with PLabel(New(PLabel, Create(@Self, 'SOUND.TOGGLE')))^ do begin
+		T := B;
+		T.Width := T.Width - 12;
+		SetBounds(T);
+		SetAnchors(abLeft or abRight or abTop);
+		FHAlign := AlignLeft;
+		SetCaption('Sound Effects:');
+	end;
+	TextAttr := ColorToggle;
+	FSound := New(PToggle, Create(@Self, 'SOUND.TOGGLE'));
+	with PToggle(FSound)^ do begin
+		SetHelpText('Use the "Sound Effects" toggle switch to enable and disable the');
+		AddHelpText('musical notes played by PGME when launching a program, at startup, ');
+		AddHelpText('at shutdown, etc.');
+		T.Left := T.Left + T.Width;
+		T.Width := 12;
+		SetBounds(T);
+		SetAnchors(abRight or abTop);
+	end;
 	Inc(B.Top, 2);
 	B.Width := 12;
 	B.Left := Width div 2 - B.Width div 2 + 2;
 	if GetShadow then Dec(B.Left, 2);
 	TextAttr := ColorOK;
-	with PButton(New(PButton, Create(@Self, 'BUTTON.OK')))^ do begin		
+	with PButton(New(PButton, Create(@Self, 'BUTTON.OK')))^ do begin
 		SetHelpText('5;Use the "%0" button to apply any changes and close the');
 		AddHelpText('dialog box.');
 		SetAnchors(abBottom);
@@ -99,15 +121,20 @@ begin
 		SetAllowedOutside(True);
 		SetCommand(cmOK);
 	end;
-	
+
 end;
 
 procedure TDlgPGMCfg.BeforeShow;
+var
+    S : String;
 begin
 	inherited BeforeShow;
 	with Application^.FConfig do begin
 		OpenSection('*');
 		FLang^.SetCaption(Trim(GetValue('LANGUAGE', 'DEFAULT.LNG')));
+		OpenSection('PGM');
+		S := UCase(Trim(GetValue('USE_SOUND', 'TRUE')));
+		FSound^.SetOn(( S = 'TRUE') or (S='ON') or (S='ENABLED'));
 	end;
 end;
 
@@ -116,16 +143,25 @@ begin
 	with Application^.FConfig do begin
 		OpenSection('*');
 		SetValue('LANGUAGE', FLang^.GetCaption);
+		OpenSection('PGM');
+		Application^.FUseSound := FSound^.GetOn;
+		if FSound^.GetOn then
+		    SetValue('USE_SOUND', 'TRUE')
+		else
+		    SetValue('USE_SOUND', 'FALSE');
 		Write;
 	end;
 end;
 function TDlgPGMCfg.Modified;
+var
+    X : Boolean;
 begin
-	Modified := True;
+	X := False;
 	with Application^.FConfig do begin
 		OpenSection('*');
-		if GetValue('LANGUAGE', FLang^.GetCaption) <> Trim(FLang^.GetCaption) then exit;
+		X := X or (GetValue('LANGUAGE', FLang^.GetCaption) <> Trim(FLang^.GetCaption));
+        X := X or (FSound^.GetOn <> Application^.FUseSound);
 	end;
-	Modified := False;
+	Modified := X;
 end;
 {$ENDIF}

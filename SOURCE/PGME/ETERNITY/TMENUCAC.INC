@@ -42,6 +42,9 @@ type
 
 {$IFDEF IMPLEMENTATION}
 
+const
+    cHideModes : array[0..2] of string = ('OFF', 'ON', 'AUTO');
+
 function TMenuCache.ObjectClass(AName : String) : String;
 begin
 	if (AName = '') or (AName = class_TMenuCache) then
@@ -293,6 +296,7 @@ begin
 					SetTitle(S);
 					SetClassName(Trim(Temp.GetValue('CLASS', '')));
 					SetGroupName(Trim(Temp.GetValue('GROUP', '')));
+					HideMode := Temp.GetSetValue('GROUP', 0, cHideModes);
 					SetTone(Trim(Temp.GetValue('TONE', '')));
 					MaxMemory := StrBool(Temp.GetValue('MAXAVAIL', 'NO'));
 					SimpleExec := StrBool(Temp.GetValue('SIMPLE', 'YES'));
