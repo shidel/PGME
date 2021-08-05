@@ -3,8 +3,8 @@
 2021-08
 
     Added config option to save power, CPU_IDLE=ANY, APM, HALT or NONE
-    Added wait on return for individual programs, WAIT=OFF, DEFAULT or seconds.
-    Added wait on return default per menu global WAIT=OFF or second.
+    Added wait on return for individual programs, WAIT=OFF, FOREVER, DEFAULT or seconds.
+    Added wait on return default per menu global WAIT=OFF, FOREVER or seconds.
     Assigned Edit Menu popup tp EditItem Command (default Alt+E).
     Changed Edit button mapping from EditFile to EditItem
     Create menu with wildcard character, bug fix.
