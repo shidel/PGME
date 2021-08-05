@@ -7,10 +7,6 @@ if not "%1" == "" goto %1
 if "%1" == "" goto CheckV8PT
 goto ErrorExit
 
-:Test
-if exist TEST.BAT Call test.bat
-goto VeryEnd
-
 REM Simple Test that V8Power Tools for DOS is installed
 :CheckV8PT
 verrlvl 0
@@ -104,8 +100,13 @@ call %SELF% make ReleaseClean
 if errorlevel 1 goto ErrorExit
 goto Done
 
+:FullBuild
+    call %SELF% noclean
+    goto Done
+
 :DevBuildOnly
     verrlvl 0
+    if not exist etools\bin\add2lic.exe goto FullBuild
     call %SELF% make DevBuildClean Prepare
     if errorlevel 1 goto ErrorExit
 	call %SELF% MAKESUB Eternity Second
@@ -118,7 +119,7 @@ goto Done
 
 :DevBuildClean
     call %SELF% make Clean
-goto Done
+goto End
 
 REM ***************************************************************************
 :MAKE_Clean

@@ -1,10 +1,10 @@
-{ Copyright 2015 Jerome Shidel }
+{ Copyright 2015-2021 Jerome Shidel }
 
-(* 
-		
+(*
+
 	This project and related files are subject to either the terms
 	specified in the included LICENSE.TXT file or the GNU GPLv2.0.
-	
+
 *)
 
 { --- TDlgAbout --- }
@@ -13,20 +13,20 @@
 const
 	class_TDlgAbout = 'TDlgAbout';
 
-type 
+type
 	PDlgAbout = ^TDlgAbout;
 	TDlgAbout = object (TMessageBox)
     public { protected }
 		function  ObjectClass ( AName : String ) : String; virtual;
 	public
 		constructor Create(AParent : PControl);
-	end;   
+	end;
 {$ENDIF}
 
 {$IFDEF IMPLEMENTATION}
-function TDlgAbout.ObjectClass(AName : String) : String; 
+function TDlgAbout.ObjectClass(AName : String) : String;
 begin
-	if (AName = '') or (AName = class_TDlgAbout) then 
+	if (AName = '') or (AName = class_TDlgAbout) then
 		ObjectClass := class_TDlgAbout
 	else
 		ObjectClass := inherited ObjectClass(AName);
@@ -37,7 +37,7 @@ constructor TDlgAbout.Create;
 	ColorOK = $2E;}
 var
 	B : TBounds;
-begin	
+begin
 	inherited Create(AParent, 'DIALOG.ABOUT');
 	Bounds(1,1,50,16, B);
 	SetStyle(bxSingle);
@@ -45,15 +45,15 @@ begin
 	FAutoEndModal := True;
 	SetMessage(' ');
 	AppendMessage('The Program Manager Eternity Edition');
-	AppendMessage('Copyright 2015.');
+	AppendMessage('Copyright 2015-' + IntStr(Version.Year) + '.');
 	AppendMessage(' ');
 	AppendMessage('The QuickCRT Framework');
-	AppendMessage('Copyright 1990-2015.');
+	AppendMessage('Copyright 1990-' + IntStr(Version.Year)  + '.');
 	AppendMessage(' ');
 	AppendMessage('Both PGME and QuickCRT are opensource and');
-	AppendMessage('can be found on sourceforge at:');	
+	AppendMessage('can be found on sourceforge at:');
 	AppendMessage(' ');
-	AppendMessage('http://pgme.sourceforge.net');
+	AppendMessage(Version.URL);
 	AppendMessage('http://quickcrt.sourceforge.net');
 	SetTitle('About PGM Eternity');
 	SetHelpText('The "About" dialog box.');
@@ -68,7 +68,7 @@ begin
 		SetBounds(B);
 		SetAnchors(abLeft or abRight or abBottom);
 		SetCaption('OK');
-		SetCommand(cmOK);		
+		SetCommand(cmOK);
 		SetHelpText('5;Use the "%0" button to close the dialog box.');
 	end;}
 end;

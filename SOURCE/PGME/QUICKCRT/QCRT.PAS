@@ -284,6 +284,11 @@ interface
 	cmDropList		= $0508;
 	cmEdit			= $0509;
 
+    { General TUI Item Commands }
+	cmCreateItem=$0600;
+	cmDeleteItem=$0601;
+	cmEditItem=$0602;
+
   { User Commands }
     cmUser			= $1000;
 
@@ -829,7 +834,7 @@ implementation
   const
   	DefaultCommandsCount = 41;
   	DefaultCommands : array [0..DefaultCommandsCount - 1] of TCodeMapEntry = (
-	{  0}( FromCode:$0008;  ToCode:$0102;  ShiftCode:$0000;  Flags:$0002 ),
+	{  0}( FromCode:$0008;  ToCode:$0008;  ShiftCode:$0000;  Flags:$0002 ),
 	{  1}( FromCode:$0063;  ToCode:$0005;  ShiftCode:$0104;  Flags:$0002 ),
 	{  2}( FromCode:$0077;  ToCode:$0008;  ShiftCode:$0208;  Flags:$0002 ),
 	{  3}( FromCode:$0063;  ToCode:$0201;  ShiftCode:$0008;  Flags:$0002 ),
@@ -4107,7 +4112,9 @@ end;
   	        else if E.What = evMouseDown then
   	            temp :='Mouse'
   	        else if E.What = evKeyDown then
-  	            temp :='Keypress';
+  	            temp :='Keypress'
+  	        else if E.What = evCommand then
+  	            temp :='Command';
   	    until temp <> '';
   	    PurgeEvents;
   	 end else begin

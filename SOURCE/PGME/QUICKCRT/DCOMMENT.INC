@@ -1,10 +1,10 @@
 { Copyright 2015 Jerome Shidel }
 
-(* 
-		
+(*
+
 	This project and related files are subject to either the terms
 	specified in the included LICENSE.TXT file or the GNU GPLv2.0.
-	
+
 *)
 
 {$IFDEF TEMPLATES}
@@ -33,13 +33,13 @@ begin
 				end;
 			else
 				S := S + C^;
-			end;			
+			end;
 		until C^ = #$00;
 		{AConfig.FSectionKey^.Add(P);}
 	end;
 end;
 
-procedure KeyMapComments; far; assembler; 
+procedure KeyMapComments; far; assembler;
 asm
 	RETF
 	DB 'This is a keyboard scancode and keycode mapping file.',0Dh
@@ -47,7 +47,8 @@ asm
 	DB 'that are used must be mapped. They are in the ASSIMLATE and COMMANDS sections.',0Dh
 	DB 'Other sections and keys are not required. Unless, you need to override their',0Dh
 	DB 'default values.',0Dh
-	(* DB 0Dh
+
+	DB 0Dh
 	DB 9,'Example: ',0Dh
 	DB 0Dh
 	DB 9,'If you wish Delete, Ctrl+Delete, Alt+Delete to all behave',0Dh
@@ -83,11 +84,12 @@ asm
     DB 9,9,9,'kbCapsDown    = $4000',0dh
     DB 9,9,9,'kbInsertDown  = $8000',0dh
  	DB 0Dh
-	DB 9,',.... additional FROM_KEY sequences.',0Dh *)
+	DB 9,',.... additional FROM_KEY sequences.',0Dh
+
 	DB 0
 end;
-	
-procedure LanguageComments; far; assembler; 
+
+procedure LanguageComments; far; assembler;
 asm
 	RETF
 	DB 'This is a Program Manager Eternity language file.',0Dh
@@ -95,8 +97,8 @@ asm
 	DB 'changes are needed.',0Dh
 	DB 0
 end;
-	
-procedure ThemeComments; far; assembler; 
+
+procedure ThemeComments; far; assembler;
 asm
 	RETF
 	DB 'This is a Program Manager Eternity theme file.',0Dh
