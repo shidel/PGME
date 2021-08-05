@@ -1,4 +1,4 @@
-{ Copyright 2015 Jerome Shidel }
+{ Copyright 2015-2021 Jerome Shidel }
 
 
 (*
@@ -401,6 +401,13 @@ interface
     kbAltEnter   = $1C00;
     kbAltBackSpace = $0E00;
 
+    { IDLE Methods, can be combined... And when unsupported, will attempt to
+     turn themselves back off. but it may be a bad idea }
+    imNone = $00;     { Don't perform and Idle Power Conservation }
+    imHalt = $01;     { Use CPU Halt Instruction }
+    imBIOS = $02;     { Use BIOS APM call }
+    imAny  = $ff;     { Just use whatever }
+
   type
     TPoint = record
       X : byte;
@@ -531,6 +538,7 @@ interface
     MouseHomeX : integer;   { Default Mouse X Coordinate }
     MouseHomeY : integer;   { Default Mouse Y Coordinate }
     EditSender : pointer;	{ Events reposted by EditLn with a replace nil InfoPtr }
+    IdleMethod : byte;      { Halt CPU until next Interrupt when IDLE }
 
     IdleProc : procedure;      { Called while processing a delay }
     PreWriteProc : procedure;  { Called before a screen write }
@@ -1520,6 +1528,31 @@ end;
     asm
     end;
 
+  procedure DefaultIdle; far; assembler;
+    asm
+        MOV     AL, IdleMethod
+        CMP     AL, 1
+        JB      @@Done
+        JA      @@APMIdle
+        HLT
+        JMP     @@Done
+    @@Supported:
+        MOV     AL, 00000011b
+        JMP     @@SetMethod
+    @@APMIdle:
+        CMP     AL, $FF
+        JE      @@Supported
+        MOV     AX, $5305
+        INT     $15
+        JNC     @@Done
+        MOV     AL, IdleMethod
+        AND     AL, 11111101b
+    @@SetMethod:
+        MOV     IdleMethod, AL
+        JMP     @@Done
+    @@Done:
+    end;
+
   procedure IdleMouseProc; far;
     var
       X,
@@ -1529,7 +1562,7 @@ end;
       WMax,
       Cursor : word;
     begin
-      if @IdleProc <> @NullProc then
+      if (@IdleProc <> @DefaultIdle) and (@IdleProc <> @NullProc) then
       	begin
 		  Cursor := GetCursor;
 		  X := WhereX;
@@ -1789,6 +1822,7 @@ end;
     var
       P : Pointer;
     begin
+      IdleMethod    := imNone;
       FirstMaxAvail := MaxAvail;
       FirstMemAvail := MemAvail;
       MinMaxAvail := MaxAvail;
@@ -1804,7 +1838,7 @@ end;
       CommandMap	:= nil;
       CommandCount 	:= 0;
       KeyboardIgnore := kbScrollLock or kbInsertLock or kbPauseFlag or kbNumsLock;
-      IdleProc      := NullProc;
+      IdleProc      := DefaultIdle;
       PreWriteProc  := NullProc;
       PostWriteProc := NullProc;
       ReInitProc    := NullProc;
@@ -3644,7 +3678,9 @@ end;
       if Not MouseBuf.GetEvent(Event)   then
         IdleMouseProc;
       if Event.What <> evNothing then
-      	EventFlag := True;
+      	EventFlag := True
+      else
+        IdleProc;
     end;
 
   function PutEvent(var Event : TEvent) : boolean;
@@ -4104,7 +4140,6 @@ end;
   	    PurgeEvents;
   	    repeat
   	        repeat
-          	    IdleProc;
   	            GetEvent(E);
             until E.What <> evNothing;
   	        if (E.What = evCommand) and (E.Command = cmTimer) then
@@ -4120,6 +4155,7 @@ end;
   	 end else begin
       	ReleaseButtons;
       	repeat
+       	    IdleProc;
             GetMousePos(X, Y, B);
             if (B <> 0) then
                 temp := 'Mouse X' + IntStr(X) + ', Y' + IntStr(Y) + ', B' + IntStr(B)

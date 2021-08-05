@@ -1345,6 +1345,8 @@ begin
 	if ((FTimeOut = 0) and (FIdleCount >= 30)) or
 	((FTimeOut > 0) and (FIdleCount >= FTimeOut * 60)) then
 		ScreenSaver;
+
+	if S = Sec then Exit;
 	{ If a Subwindow or Dialog is visible then don't update clock, QuickCrt doesn't
 	 support Write-Behind yet. This list keeps getting longer and longer. I really
 	 need to add write behined! }
@@ -1366,11 +1368,8 @@ begin
 	if Assigned(FDlgAbout) and FDlgAbout^.GetVisible then Exit;
 	if Assigned(FDlgMove) and FDlgMove^.GetVisible then Exit;
 
-	if S <> Sec then begin
-		S := Sec;
-		FTime^.Update;
-		FDate^.Update;
-	end;
+    FTime^.Update;
+    FDate^.Update;
 end;
 
 procedure TPGME.UpdateMenuCache;

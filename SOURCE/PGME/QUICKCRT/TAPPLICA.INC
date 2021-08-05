@@ -726,10 +726,21 @@ begin
 end;
 
 procedure TApplication.ApplyConfig( AConfig : PConfigFile );
+var
+    S : String;
 begin
 	inherited ApplyConfig(AConfig);
 	FClrScr := StrBool(AConfig^.GetValue('CLEAR', BoolStr(FClrScr)));
 	FClearWindow := FClrScr;
+	S := UCase(Trim(AConfig^.GetValue('CPU_IDLE', 'NONE')));
+	if (S = 'ANY') or  (S = 'ALL') then
+	    IdleMethod := imAny
+	else if (S = 'BIOS') or (S = 'APM') then
+	    IdleMethod := imBIOS
+	else if (S = 'HALT') then
+	    IdleMethod := imHalt
+	else
+	    IdleMethod := imNone;
 	FUseFader := StrBool(AConfig^.GetValue('USE_FADER', BoolStr(FUseFader)));
 	FUseDAC := StrBool(AConfig^.GetValue('USE_DAC', BoolStr(FUseDAC)));
 	FUseSound := StrBool(AConfig^.GetValue('USE_SOUND', BoolStr(FUseSound)));

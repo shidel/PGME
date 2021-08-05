@@ -1,5 +1,8 @@
 ### The Program Manager Eternity What's Up File
 
+2021-08
+
+    Added config option to save power, CPU_IDLE=ANY, APM, HALT or NONE
     Create menu with wildcard character, bug fix.
     Changed Edit button mapping from EditFile to EditItem
     Assigned Edit Menu popup tp EditItem Command (default Alt+E).
