@@ -89,7 +89,7 @@ type
 		function GetDlgAbout : PControl; virtual;
 		function GetDlgMove : PControl; virtual;
 		function GetDlgDosCommand : PControl; virtual;
-		function GetReturnStr : String; virtual;
+		function GetReturnStr (CanWait : boolean): String; virtual;
 		procedure CreateAllDialogs(ConserveMemory : boolean); virtual;
 		procedure Restart; virtual;
 		procedure ScreenSaver; virtual;
@@ -1494,7 +1494,7 @@ begin
 	if IOResult <> 0 then exit;
 end;
 
-function TPGME.GetReturnStr : String;
+function TPGME.GetReturnStr(CanWait : Boolean) : String;
 var
     W : Longint;
 	S : String;
@@ -1518,7 +1518,7 @@ begin
 	end;
 	FLanguage.OpenSection('STRINGS');
 	FResumeText := FLanguage.GetValue(GetNameID + '.BOOT.RESUME', 'Resuming Eternity...');
-	if W <> 0 then
+	if CanWait and (W <> 0) then
 	    S := S + ' /W=' + IntStr(W);
 	S := S + ' /T=' + FResumeText;
 	GetReturnStr := S;
@@ -1621,7 +1621,7 @@ begin
 		FExecDir := '';
 		GetDir(0, FHoldDir);
 		ChDir(NoTailDelim(FDir));
-		FRet := GetReturnStr;
+		FRet := GetReturnStr(True);
 		if FRet = '' then
 			FRet := '/M=' + FDir + PCacheMenu(Parent)^.GetNameID +
 			' /P=' + GetNameID + ' /T=' + FResumeText;
@@ -1743,7 +1743,7 @@ procedure TPGME.Restart;
 begin
 	FTheme.OpenSection(GetNameID);
 	FEndTone := FTheme.GetValue('TONE.RESTART', FEndTone);
-	CallBack('', '', GetReturnStr, True);
+	CallBack('', '', GetReturnStr(False), True);
 	Terminate;
 	FOutSound := True;
 end;
@@ -1756,7 +1756,7 @@ begin
 	FConfig.OpenSection(GetPathID);
 	S := FileExpand(FConfig.GetValue('SCREEN_SAVER', 'BLANKER.SCR'));
 	if FileExists(S) then begin
-		CallBack(S, '', GetReturnStr, True);
+		CallBack(S, '', GetReturnStr(False), True);
 		FOutSound := False;
 		Terminate;
 	end else begin

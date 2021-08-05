@@ -3,6 +3,7 @@
     Create menu with wildcard character, bug fix.
     Changed Edit button mapping from EditFile to EditItem
     Assigned Edit Menu popup tp EditItem Command (default Alt+E).
+    Wait on return support in menu files.
 	Some grammer and spelling corrections.
 
 2015-07-26
