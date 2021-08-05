@@ -1,10 +1,10 @@
-{ Copyright 2015 Jerome Shidel }
+{ Copyright 2015-2021 Jerome Shidel }
 
-(* 
-		
+(*
+
 	This project and related files are subject to either the terms
 	specified in the included LICENSE.TXT file or the GNU GPLv2.0.
-	
+
 *)
 
 {$IFDEF INTERFACE}
@@ -18,18 +18,19 @@ type
 		function    WriteSelf(var F : TFile) : boolean; virtual;
 		function	NewChild(AID : String) : PListItem; virtual;
 	end;
-	
+
 	PCacheDir = ^TCacheDir;
 	TCacheDir = object(TCacheItem)
 		function	NewChild(AID : String) : PListItem; virtual;
 	end;
-	
+
 	PCacheMenu = ^TCacheMenu;
 	TCacheMenu = object (TCacheItem)
-			LastMod : longint;	
+			LastMod : longint;
 			Fixed,
 			Available,
 			Writable : boolean;
+			DefaultWait : LongInt;
 			FShortTitle,
 			FLongTitle : PString;
 		constructor Create(AName : String);
@@ -42,18 +43,20 @@ type
 		procedure SetShortTitle(AValue : String);
 		procedure SetLongTitle(AValue : String);
 	end;
-	
+
 	PCacheApp = ^TCacheApp;
 	TCacheApp = object (TCacheItem)
 		FClassName,
 		FFilename,
 		FGroupName,
-		FTitle, 
+		FTitle,
 		FTone : PString;
-		MaxMemory, 
+		MaxMemory,
 		SimpleExec,
 		ReturnAfter,
+		CPUCacheOff,
 		PGMVars : boolean;
+    	ReturnWait : LongInt;
 		constructor Create(AName : String);
 		destructor Destroy; virtual;
 		function	NewChild(AID : String) : PListItem; virtual;
@@ -97,7 +100,7 @@ begin
 	SetNameID(F.GetString);
 	ReadSelf := F.IOResult = 0;
 end;
-	
+
 function TCacheItem.WriteSelf(var F : TFile) : boolean;
 var
 	S : String;
@@ -106,7 +109,7 @@ begin
 	F.PutString(S);
 	WriteSelf := F.IOResult = 0;
 end;
-	
+
 function TCacheItem.Read(var F : TFile) : boolean;
 var
 	P, T : PListItem;
@@ -121,7 +124,7 @@ begin
 		F.ReadBoolean(B);
 		OK := (F.IOResult = 0);
 		if OK and B then begin
-			T := NewChild(S);	
+			T := NewChild(S);
 			OK := PCacheItem(T)^.Read(F);
 			Add(T);
 		end;
@@ -139,15 +142,15 @@ begin
 	B := True;
 	OK := WriteSelf(F);
 
-	P := First;	
+	P := First;
 	while OK and Assigned(P) do begin
 		F.WriteBoolean(B);
 		OK := IOResult = 0;
-		if OK then 
+		if OK then
 			OK := PCacheItem(P)^.Write(F);
 		P := P^.Next;
 	end;
-	
+
 	if OK then begin
 		B := False;
 		F.WriteBoolean(B);
@@ -165,11 +168,12 @@ end;
 
 constructor TCacheMenu.Create(AName : String);
 begin
-	inherited Create(AName);	
-	LastMod := -1;	
+	inherited Create(AName);
+	LastMod := -1;
 	Fixed := False;
 	Available := True;
 	Writable := True;
+	DefaultWait := 0;
 	FShortTitle := nil;
 	FLongTitle := nil;
 end;
@@ -180,8 +184,8 @@ begin
 	FreeStr(FLongTitle);
 	inherited Destroy;
 end;
-	
-function TCacheMenu.ReadSelf(var F : TFile) : boolean; 
+
+function TCacheMenu.ReadSelf(var F : TFile) : boolean;
 var
 	OK : boolean;
 begin
@@ -210,10 +214,14 @@ begin
 		SetLongTitle (F.GetString);
 		OK := F.IOResult = 0;
 	end;
+	if OK then begin
+		F.ReadLongInt(DefaultWait);
+		OK := F.IOResult = 0;
+	end;
 	ReadSelf := OK;
 end;
 
-function TCacheMenu.WriteSelf(var F : TFile) : boolean; 
+function TCacheMenu.WriteSelf(var F : TFile) : boolean;
 var
 	OK : boolean;
 	S : String;
@@ -245,6 +253,10 @@ begin
 		F.PutString(S);
 		OK := F.IOResult = 0;
 	end;
+	if OK then begin
+		F.WriteLongInt(DefaultWait);
+		OK := F.IOResult = 0;
+	end;
 	WriteSelf := OK;
 end;
 
@@ -270,7 +282,7 @@ begin
 	FLongTitle := StrPtr(AValue);
 end;
 
-function TCacheMenu.NewChild(AID : String) : PListItem; 
+function TCacheMenu.NewChild(AID : String) : PListItem;
 begin
 	if not MemCheck(Sizeof(TCacheApp)) then Halt(8);
 	NewChild := New(PCacheApp, Create(AID));
@@ -288,7 +300,9 @@ begin
 	MaxMemory := false;
 	SimpleExec := true;
 	ReturnAfter := True;
+	CPUCacheOff := False;
 	PGMVars := False;
+	ReturnWait := -2; { Use Default }
 end;
 
 destructor TCacheApp.Destroy;
@@ -361,7 +375,7 @@ begin
 	FTone := StrPtr(AValue);
 end;
 
-function TCacheApp.ReadSelf(var F : TFile) : boolean; 
+function TCacheApp.ReadSelf(var F : TFile) : boolean;
 var
 	OK : boolean;
 begin
@@ -402,10 +416,18 @@ begin
 		SetTone (F.GetString);
 		OK := F.IOResult = 0;
 	end;
+	if OK then begin
+		F.ReadBoolean(CPUCacheOff);
+		OK := F.IOResult = 0;
+	end;
+	if OK then begin
+		F.ReadLongInt(ReturnWait);
+		OK := F.IOResult = 0;
+	end;
 	ReadSelf := OK;
 end;
 
-function TCacheApp.WriteSelf(var F : TFile) : boolean; 
+function TCacheApp.WriteSelf(var F : TFile) : boolean;
 var
 	OK : boolean;
 	S : String;
@@ -450,6 +472,14 @@ begin
 	if OK then begin
 		S := Tone;
 		F.PutString(S);
+		OK := F.IOResult = 0;
+	end;
+	if OK then begin
+		F.WriteBoolean(CPUCacheOff);
+		OK := F.IOResult = 0;
+	end;
+	if OK then begin
+		F.WriteLongInt(ReturnWait);
 		OK := F.IOResult = 0;
 	end;
 	WriteSelf := OK;

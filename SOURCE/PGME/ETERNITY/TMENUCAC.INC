@@ -253,6 +253,13 @@ begin
 		{PCacheMenu(AMenu)^.ID := Temp.GetValue('ID', AMenu^.GetNameID)); }
 		PCacheMenu(AMenu)^.Writable := StrBool(Temp.GetValue('WRITABLE', 'YES'));
 		PCacheMenu(AMenu)^.SetShortTitle(S);
+		S := UCase(Trim(Temp.GetValue('WAIT', 'NO')));
+		if (IntStr(StrInt(S)) = S) then
+		    PCacheMenu(AMenu)^.DefaultWait := StrInt(S)
+		else if (S = 'PAUSE') or (S = 'FOREVER') or (S = 'YES') then
+		    PCacheMenu(AMenu)^.DefaultWait := -1
+		else
+		    PCacheMenu(AMenu)^.DefaultWait := 0;
 		{ Set Long Title }
 		S := Trim(Temp.GetValue('DESCRIPTION.' + Application^.FLanguageID, ''));
 		if S = '' then
@@ -289,8 +296,18 @@ begin
 					SetTone(Trim(Temp.GetValue('TONE', '')));
 					MaxMemory := StrBool(Temp.GetValue('MAXAVAIL', 'NO'));
 					SimpleExec := StrBool(Temp.GetValue('SIMPLE', 'YES'));
+                    S := UCase(Trim(Temp.GetValue('WAIT', 'DEFAULT')));
 					ReturnAfter := StrBool(Temp.GetValue('RETURN', 'YES'));
+					CPUCacheOff := StrBool(Temp.GetValue('CPUCACHE', 'NO'));
 					PGMVars := StrBool(Temp.GetValue('PGMEVARS', 'NO'));
+                    if (IntStr(StrInt(S)) = S) then
+                        ReturnWait := StrInt(S)
+                    else if (S = 'DEFAULT') then
+                        ReturnWait := -2
+                    else if (S = 'PAUSE') or (S = 'FOREVER') or ( S = 'YES' ) then
+                        ReturnWait := -1
+                    else
+                        ReturnWait := 0;
 				end;
 				{ Read App's Process }
 				V := M^.FindID('COMMANDS');

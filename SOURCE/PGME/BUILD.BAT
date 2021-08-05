@@ -106,7 +106,7 @@ goto Done
 
 :DevBuildOnly
     verrlvl 0
-    if not exist etools\bin\add2lic.exe goto FullBuild
+    if not exist quickcrt\bin\qtest.exe goto FullBuild
     call %SELF% make DevBuildClean Prepare
     if errorlevel 1 goto ErrorExit
 	call %SELF% MAKESUB Eternity Second

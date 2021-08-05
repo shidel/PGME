@@ -1496,21 +1496,30 @@ end;
 
 function TPGME.GetReturnStr : String;
 var
+    W : Longint;
 	S : String;
 begin
 	S := '';
+	W := 0;
 	GetReturnStr := S;
 	if not Assigned(FMenuCache) then exit;
 	if Assigned(FPrograms) and Assigned(FPrograms^.FCurrent) then begin
-		with PCacheApp(FPrograms^.FCurrent^.Data)^ do
+		with PCacheApp(FPrograms^.FCurrent^.Data)^ do begin
 			S := '/M=' + PCacheDir(Parent^.Parent)^.GetNameID +
 				PCacheMenu(Parent)^.GetNameID + ' /P=' + GetNameID;
+			W := ReturnWait;
+			if W = -2 then W := PCacheMenu(Parent)^.DefaultWait;
+		end;
 	end else if Assigned(FMenus) and Assigned(FMenus^.FCurrent) then begin
-		with PCacheMenu(FMenus^.FCurrent^.Data)^ do
+		with PCacheMenu(FMenus^.FCurrent^.Data)^ do begin
 			S := '/M=' + PCacheDir(Parent)^.GetNameID + GetNameID;
+			W := DefaultWait;
+		end;
 	end;
 	FLanguage.OpenSection('STRINGS');
 	FResumeText := FLanguage.GetValue(GetNameID + '.BOOT.RESUME', 'Resuming Eternity...');
+	if W <> 0 then
+	    S := S + ' /W=' + IntStr(W);
 	S := S + ' /T=' + FResumeText;
 	GetReturnStr := S;
 end;
