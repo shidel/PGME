@@ -1555,29 +1555,35 @@ end;
 
   procedure IdleMouseProc; far;
     var
-      X,
-      Y,
+      X, Y,
       Attr   : byte;
-      WMin,
-      WMax,
+      WMin, WMax,
       Cursor : word;
+      MVC    : boolean;
     begin
-      if (@IdleProc <> @DefaultIdle) and (@IdleProc <> @NullProc) then
-      	begin
+{        if (@IdleProc <> @DefaultIdle) and (@IdleProc <> @NullProc) then
+      	begin  }
 		  Cursor := GetCursor;
 		  X := WhereX;
 		  Y := WhereY;
 		  WMin := WindMin;
 		  WMax := WindMax;
 		  Attr := TextAttr;
-		  Window(1, 1, Lo(ScreenMax) + 1, Hi(ScreenMax) + 1);
+		  MVC := False;
+
+{		  Window(1, 1, Lo(ScreenMax) + 1, Hi(ScreenMax) + 1); }
 		  IdleProc;
-		  Window(Lo(WMin) + 1, Hi(WMin) + 1, Lo(WMax) + 1, Hi(WMax) + 1);
-		  GotoXY ( X, Y );
+		  if (WMin <> WindMin) or (WMax <> WindMax) then begin
+    		  Window(Lo(WMin) + 1, Hi(WMin) + 1, Lo(WMax) + 1, Hi(WMax) + 1);
+    		  MVC := True;
+    	  end;
+    	  if (WhereX <> X) or (WhereY <> Y) then begin
+    		  GotoXY ( X, Y );
+    	  end;
 		  TextAttr := Attr;
-		  MoveCursor;
+          if MVC then MoveCursor;
 		  SetCursor(Cursor);
-		end;
+{		end; }
     end;
 
   const
