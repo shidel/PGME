@@ -2,6 +2,7 @@
 
 2021-08
 
+    Fix display options only save when theme was changed bug.
     Mouse flicker reduced some.
     Added Config Dialog Option to turn sound on/off
     Added config file option to save power, CPU_IDLE=ANY, APM, HALT or NONE

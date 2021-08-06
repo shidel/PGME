@@ -1,10 +1,10 @@
 { Copyright 2015 Jerome Shidel }
 
-(* 
-		
+(*
+
 	This project and related files are subject to either the terms
 	specified in the included LICENSE.TXT file or the GNU GPLv2.0.
-	
+
 *)
 
 { --- TDlgPGMOpt --- }
@@ -13,7 +13,7 @@
 const
 	class_TDlgPGMOpt = 'TDlgPGMOpt';
 
-type 
+type
 	PDlgPGMOpt = ^TDlgPGMOpt;
 	TDlgPGMOpt = object (TDIALOG)
     public { protected }
@@ -29,7 +29,7 @@ type
 	public
 		constructor Create(AParent : PControl);
 		function Modified : boolean; virtual;
-	end;   
+	end;
 
 {$ENDIF}
 
@@ -53,9 +53,9 @@ begin
 	end;
 end;
 
-function TDlgPGMOpt.ObjectClass(AName : String) : String; 
+function TDlgPGMOpt.ObjectClass(AName : String) : String;
 begin
-	if (AName = '') or (AName = class_TDlgPGMOpt) then 
+	if (AName = '') or (AName = class_TDlgPGMOpt) then
 		ObjectClass := class_TDlgPGMOpt
 	else
 		ObjectClass := inherited ObjectClass(AName);
@@ -70,13 +70,13 @@ const
 var
 	B, E, D : TBounds;
 	SRec : TSearchRec;
-begin	
+begin
 	inherited Create(AParent, 'DIALOG.OPTIONS');
 	FAutoEndModal := True;
-	if PControl(Parent)^.Height <= 16 then 
+	if PControl(Parent)^.Height <= 16 then
 		SetShadow(False);
 	Bounds(1,1,56,17, B);
-	SetBounds(B);					
+	SetBounds(B);
 	SetTitle('Eternity Display Options');
 	SetHelpText('The Program Manager Eternity program display options dialog box.');
 	AddHelpText('This is where you can make changes to the behaviour and');
@@ -107,8 +107,8 @@ begin
 		end;
 		SetCaption('DEFAULT.THM');
 	end;
-	Inc(B.Top);	
-	Inc(B.Top);	
+	Inc(B.Top);
+	Inc(B.Top);
 	TextAttr := ColorLabel;
 	FDAC := New(PCheckbox, Create(@Self, 'DAC.CHECK'));
 	with PCheckbox(FDAC)^ do begin
@@ -118,7 +118,7 @@ begin
 		SetBounds(E);
 		SetCaption('Custom Colors');
 	end;
-	Inc(B.Top);	
+	Inc(B.Top);
 	TextAttr := ColorLabel;
 	FFader := New(PCheckbox, Create(@Self, 'FADER.CHECK'));
 	with PCheckbox(FFader)^ do begin
@@ -128,8 +128,8 @@ begin
 		SetBounds(E);
 		SetCaption('Screen Fader');
 	end;
-	Inc(B.Top);	
-	Inc(B.Top);	
+	Inc(B.Top);
+	Inc(B.Top);
 	TextAttr := ColorLabel;
 	with PLabel(New(PLabel, Create(@Self, 'FONT.LABEL')))^ do begin
 		SetBounds(B);
@@ -153,8 +153,8 @@ begin
 		end;
 		SetCaption('DEFAULT.FNT');
 	end;
-	Inc(B.Top);	
-	Inc(B.Top);	
+	Inc(B.Top);
+	Inc(B.Top);
 	TextAttr := ColorLabel;
 	with PLabel(New(PLabel, Create(@Self, 'ESAVER.LABEL')))^ do begin
 		SetBounds(B);
@@ -181,8 +181,8 @@ begin
 		end;
 		SetCaption('DEFAULT.SCR');
 	end;
-	Inc(B.Top);	
-	Inc(B.Top);	
+	Inc(B.Top);
+	Inc(B.Top);
 	TextAttr := ColorLabel;
 	FTimeout := New(PLabel, Create(@Self, 'ESAVER.DELAY'));
 	with PLabel(FTimeout)^ do begin
@@ -216,14 +216,14 @@ begin
 		SetAllowedOutside(True);
 		setCOmmand(cmOK);
 	end;
-	
+
 end;
 
 procedure TDlgPGMOpt.CheckLocal(var AEvent : TEvent);
 begin
 	inherited CheckLocal(AEvent);
 	if AEvent.What = evCommand then
-		case AEvent.Command of 
+		case AEvent.Command of
 			cmScrollBar : if AEvent.InfoPtr = FSlide then begin
 				ClearEvent(AEvent);
 				FTimeout^.Update;
@@ -238,11 +238,14 @@ end;
 procedure TDlgPGMOpt.BeforeShow;
 var
 	I : integer;
+	S : String;
 begin
 	inherited BeforeShow;
 	with Application^.FConfig do begin
 		OpenSection('*');
-		FTheme^.SetCaption(GetValue('THEME', 'DEFAULT.THM'));
+		S := GetValue('THEME', 'DEFAULT.THM');
+		if S = '' then S := '<none>';
+		FTheme^.SetCaption(S);
 		FFont^.SetCaption(GetValue('FONT', 'DEFAULT.FNT'));
 		OpenSection(Application^.GetNameID);
 		FSaver^.SetCaption(GetValue('SCREEN_SAVER', 'DEFAULT.SCR'));
@@ -265,11 +268,14 @@ end;
 procedure TDlgPGMOpt.Save;
 var
 	I : integer;
+	S : String;
 begin
 	inherited BeforeShow;
 	with Application^.FConfig do begin
 		OpenSection('*');
-		SetValue('THEME', FTheme^.GetCaption);
+		S := FTheme^.GetCaption;
+		if S = '<none>' then S := '';
+		SetValue('THEME', S);
 		SetValue('FONT', FFont^.GetCaption);
 		OpenSection(Application^.GetNameID);
 		SetValue('SCREEN_SAVER', FSaver^.GetCaption);
@@ -284,21 +290,22 @@ end;
 function TDlgPGMOpt.Modified;
 var
 	I : integer;
+	X : boolean;
 begin
-	Modified := True;
+    X := False;
 	with Application^.FConfig do begin
 		OpenSection('*');
-		if GetValue('THEME', FTheme^.GetCaption) <> Trim(FTheme^.GetCaption) then exit;
-		if GetValue('FONT', FFont^.GetCaption) <> Trim(FFont^.GetCaption) then exit;
+		X := X or (GetValue('THEME', FTheme^.GetCaption) <> Trim(FTheme^.GetCaption));
+		X := X or (GetValue('FONT', FFont^.GetCaption) <> Trim(FFont^.GetCaption));
 		OpenSection(Application^.GetNameID);
-		if GetValue('SCREEN_SAVER', FSaver^.GetCaption) <> Trim(FSaver^.GetCaption) then exit;
+		X := X or (GetValue('SCREEN_SAVER', FSaver^.GetCaption) <> Trim(FSaver^.GetCaption));
 		I := FSlide^.GetValue;
 		GetInts('SCREEN_TIMEOUT', I, 1);
-		if I <> FSlide^.GetValue then exit;
-		if StrBool(GetValue('USE_DAC', BoolStr(FDAC^.Checked))) <> FDAC^.Checked then exit;
-		if StrBool(GetValue('USE_FADER', BoolStr(FFader^.Checked))) <> FFader^.Checked then exit;
+		X := X or (I <> FSlide^.GetValue);
+		X := X or (StrBool(GetValue('USE_DAC', BoolStr(FDAC^.Checked))) <> FDAC^.Checked);
+		X := X or (StrBool(GetValue('USE_FADER', BoolStr(FFader^.Checked))) <> FFader^.Checked);
 	end;
-	Modified := False;
+	Modified := X;
 end;
 
 {$ENDIF}
