@@ -36,7 +36,7 @@ type
 		FUseFader,
 		FUseDAC,
 		FUseSound, FInSound, FOutSound : boolean;
-		FFileDateFmt, FFileTimeFmt : String;
+		FFileDateFmt, FFileTimeFmt, FFileNone : String;
 		FStartTone, FEndTone : String;
 
 	public
@@ -218,6 +218,7 @@ begin
 	FLanguage.GetValue('NAME', 'US English');
 	FFileDateFmt := FLanguage.GetValue('FILE.DATE', '0[X3.2],1[L2],2[Z2];%1/%2/%0');
 	FFileTimeFmt := FLanguage.GetValue('FILE.TIME', '0[Z2],1[L2],2[Z2],3[Z2],4{a,p};%1:%2%4');
+    FFileNone := FLanguage.GetValue('FILE.NONE', '<none>');
 
 	FTheme.SetFileName(FConfig.GetValue('THEME', 'DEFAULT' + ThemeExt) );
 	FTheme.Read;

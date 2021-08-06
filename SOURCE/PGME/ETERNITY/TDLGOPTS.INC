@@ -72,7 +72,8 @@ var
 	SRec : TSearchRec;
 begin
 	inherited Create(AParent, 'DIALOG.OPTIONS');
-	FAutoEndModal := True;
+
+    FAutoEndModal := True;
 	if PControl(Parent)^.Height <= 16 then
 		SetShadow(False);
 	Bounds(1,1,56,17, B);
@@ -99,6 +100,7 @@ begin
 		SetHelpText('Use the "Theme File" drop down list to select the theme you wish');
 		AddHelpText('PGME to use.');
 		SetBounds(D);
+        AddItem(Application^.FFileNone);
 		FindFirst(GetExePath + '*' + ThemeExt, faAnyFile, SRec);
 		while (DosError = 0) do begin
 			if SRec.Attr and faDirectory <> faDirectory then
@@ -145,6 +147,7 @@ begin
 		AddHelpText('and when exit PGME.');
 		D.Top := B.Top;
 		SetBounds(D);
+        AddItem(Application^.FFileNone);
 		FindFirst(GetExePath + '*' + FontExt, faAnyFile, SRec);
 		while (DosError = 0) do begin
 			if SRec.Attr and faDirectory <> faDirectory then
@@ -173,6 +176,7 @@ begin
 		Dec(D.Height,2);
 		if Self.GetShadow = false then Dec(D.Height);
 		SetBounds(D);
+        AddItem(Application^.FFileNone);
 		FindFirst(GetExePath + '*' + ESaverExt, faAnyFile, SRec);
 		while (DosError = 0) do begin
 			if SRec.Attr and faDirectory <> faDirectory then
@@ -238,17 +242,17 @@ end;
 procedure TDlgPGMOpt.BeforeShow;
 var
 	I : integer;
-	S : String;
 begin
 	inherited BeforeShow;
 	with Application^.FConfig do begin
 		OpenSection('*');
-		S := GetValue('THEME', 'DEFAULT.THM');
-		if S = '' then S := '<none>';
-		FTheme^.SetCaption(S);
-		FFont^.SetCaption(GetValue('FONT', 'DEFAULT.FNT'));
+		FTheme^.SetCaption(IsStr(Trim(GetValue('THEME', 'DEFAULT.THM')), '',
+		    Application^.FFileNone));
+		FFont^.SetCaption(IsStr(Trim(GetValue('FONT', 'DEFAULT.FNT')), '',
+		    Application^.FFileNone));
 		OpenSection(Application^.GetNameID);
-		FSaver^.SetCaption(GetValue('SCREEN_SAVER', 'DEFAULT.SCR'));
+		FSaver^.SetCaption(IsStr(Trim(GetValue('SCREEN_SAVER', 'DEFAULT.SCR')), '',
+		    Application^.FFileNone));
 		I := 0;
 		GetInts('SCREEN_TIMEOUT', I, 1);
 		FSlide^.SetValue(I);
@@ -268,17 +272,14 @@ end;
 procedure TDlgPGMOpt.Save;
 var
 	I : integer;
-	S : String;
 begin
 	inherited BeforeShow;
 	with Application^.FConfig do begin
 		OpenSection('*');
-		S := FTheme^.GetCaption;
-		if S = '<none>' then S := '';
-		SetValue('THEME', S);
-		SetValue('FONT', FFont^.GetCaption);
+		SetValue('THEME',IsStr(FTheme^.GetCaption, Application^.FFileNone, ''));
+		SetValue('FONT', IsStr(FFont^.GetCaption, Application^.FFileNone, ''));
 		OpenSection(Application^.GetNameID);
-		SetValue('SCREEN_SAVER', FSaver^.GetCaption);
+		SetValue('SCREEN_SAVER', IsStr(FSaver^.GetCaption, Application^.FFileNone, ''));
 		I := FSlide^.GetValue;
 		SetInts('SCREEN_TIMEOUT', I, 1);
 		SetValue('USE_DAC', BoolStr(FDAC^.Checked));
@@ -295,10 +296,13 @@ begin
     X := False;
 	with Application^.FConfig do begin
 		OpenSection('*');
-		X := X or (GetValue('THEME', FTheme^.GetCaption) <> Trim(FTheme^.GetCaption));
-		X := X or (GetValue('FONT', FFont^.GetCaption) <> Trim(FFont^.GetCaption));
+		X := X or (IsStr(GetValue('THEME', FTheme^.GetCaption), '', Application^.FFileNone)
+		    <> Trim(FTheme^.GetCaption));
+		X := X or (IsStr(GetValue('FONT', FFont^.GetCaption), '', Application^.FFileNone)
+		    <> Trim(FFont^.GetCaption));
 		OpenSection(Application^.GetNameID);
-		X := X or (GetValue('SCREEN_SAVER', FSaver^.GetCaption) <> Trim(FSaver^.GetCaption));
+		X := X or (IsStr(GetValue('SCREEN_SAVER', FSaver^.GetCaption), '', Application^.FFileNone)
+		    <> Trim(FSaver^.GetCaption));
 		I := FSlide^.GetValue;
 		GetInts('SCREEN_TIMEOUT', I, 1);
 		X := X or (I <> FSlide^.GetValue);

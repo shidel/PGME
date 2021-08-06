@@ -79,6 +79,7 @@ begin
 		AddHelpText('language is not available.');
 		SetBounds(E);
 		SetCaption('DEFAULT.LNG');
+		AddItem(Application^.FFileNone);
 		FindFirst(GetExePath + '*' + LanguageExt, faAnyFile, SRec);
 		while (DosError = 0) do begin
 			if SRec.Attr and faDirectory <> faDirectory then
@@ -131,7 +132,8 @@ begin
 	inherited BeforeShow;
 	with Application^.FConfig do begin
 		OpenSection('*');
-		FLang^.SetCaption(Trim(GetValue('LANGUAGE', 'DEFAULT.LNG')));
+		FLang^.SetCaption(IsStr(Trim(GetValue('LANGUAGE', 'DEFAULT.LNG')), '',
+		    Application^.FFileNone));
 		OpenSection('PGM');
 		S := UCase(Trim(GetValue('USE_SOUND', 'TRUE')));
 		FSound^.SetOn(( S = 'TRUE') or (S='ON') or (S='ENABLED'));
@@ -142,7 +144,7 @@ procedure TDlgPGMCfg.Save;
 begin
 	with Application^.FConfig do begin
 		OpenSection('*');
-		SetValue('LANGUAGE', FLang^.GetCaption);
+		SetValue('LANGUAGE', IsStr(FLang^.GetCaption, Application^.FFileNone, ''));
 		OpenSection('PGM');
 		Application^.FUseSound := FSound^.GetOn;
 		if FSound^.GetOn then
@@ -159,7 +161,8 @@ begin
 	X := False;
 	with Application^.FConfig do begin
 		OpenSection('*');
-		X := X or (GetValue('LANGUAGE', FLang^.GetCaption) <> Trim(FLang^.GetCaption));
+		X := X or (IsStr(GetValue('LANGUAGE', FLang^.GetCaption), '', Application^.FFileNone)
+		    <> Trim(FLang^.GetCaption));
         X := X or (FSound^.GetOn <> Application^.FUseSound);
 	end;
 	Modified := X;

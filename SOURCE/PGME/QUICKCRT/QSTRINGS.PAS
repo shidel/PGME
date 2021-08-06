@@ -1,4 +1,4 @@
-{ Copyright 2015 Jerome Shidel }
+{ Copyright 2015-2021 Jerome Shidel }
 
 (*
 
@@ -127,7 +127,6 @@ function FirstWord(Str : String) : String;
 function PullWord(var Str : String) : String;
 { Returns "FirstWord", removing it and trimming Str }
 
-
 function MatchWildCard ( AWild, AStr : String ) : boolean;
 
 procedure SetLength(var S; NewLen : byte);
@@ -139,6 +138,10 @@ function NotChars(S : String; Allowed : String) : string;
 
 function FlipStr(S : String) : string;
 
+function IsStr(TheStr, AStr, AsStr : String) : String;
+{ Caseless, When The String is AStr return AsStr, otherwise return TheStr }
+function NotStr(TheStr, AStr, AsStr : String) : String;
+{ Cassless, When The String is not AStr return AsStr, otherwise return TheStr }
 
 implementation
 
@@ -1151,6 +1154,23 @@ asm
     POP     DS
 end;
 
+function IsStr(TheStr, AStr, AsStr : String) : String;
+{ Caseless, When The String is AStr return AsStr, otherwise return TheStr }
+begin
+    if UCase(TheStr) <> UCase(AStr) then
+        IsStr := TheStr
+    else
+        IsStr := AsStr
+end;
+
+function NotStr(TheStr, AStr, AsStr : String) : String;
+{ Caseless, When The String is not AStr return AsStr, otherwise return TheStr }
+begin
+    if UCase(TheStr) <> UCase(AStr) then
+        NotStr := AsStr
+    else
+        NotStr := TheStr
+end;
 
 
 
