@@ -15,10 +15,11 @@ const
 
 type
 	PDlgPGMCfg = ^TDlgPGMCfg;
-	TDlgPGMCfg = object (TDIALOG)
+	TDlgPGMCfg = object (TDialog)
     public { protected }
     	FSound : PToggle;
     	FLang : PDropList;
+        FIdle : PDropList;
 		function  ObjectClass ( AName : String ) : String; virtual;
     public { protected }
 		procedure BeforeShow; virtual;
@@ -31,6 +32,13 @@ type
 {$ENDIF}
 
 {$IFDEF IMPLEMENTATION}
+
+const
+    cPowerModeID : array[0..3] of string = (
+        'OFF', 'HALT', 'BIOS', 'ANY');
+    cPowerMode : array[0..3] of string = (
+        '<disabled>', 'CPU Halt', 'BIOS APM', 'ANY');
+
 function TDlgPGMCfg.ObjectClass(AName : String) : String;
 begin
 	if (AName = '') or (AName = class_TDlgPGMCfg) then
@@ -48,6 +56,7 @@ const
 var
 	B, E, T : TBounds;
 	SRec : TSearchRec;
+	I : integer;
 begin
 	inherited Create(AParent, 'DIALOG.CONFIG');
 	FAutoEndModal := True;
@@ -58,8 +67,8 @@ begin
 	SetTitle('Eternity Config Settings');
 	SetHelpText('The Program Manager Eternity program configuration settings dialog box.');
 	AddHelpText('');
-	AddHelpText('This is where you can change the language and other');
-	AddHelpText('settings of PGME.');
+	AddHelpText('This is where you can change the language and some other');
+	AddHelpText('settings for PGME.');
 	TextAttr := ColorLabel;
 	Bounds(3,2, 15, 1, B);
 	Bounds(B.Left + B.Width + 1, B.Top, Self.Width - B.Left - B.Width - 4, 10, E);
@@ -108,6 +117,36 @@ begin
 		SetBounds(T);
 		SetAnchors(abRight or abTop);
 	end;
+
+	TextAttr := ColorLabel;
+	Inc(B.Top, 2);
+	T := B;
+	T.Width := 15;
+	Bounds(T.Left + T.Width, T.Top, Self.Width - T.Left - T.Width - 5, 8, E);
+	with PLabel(New(PLabel, Create(@Self, 'IDLE.LABEL')))^ do begin
+		SetBounds(T);
+		FHAlign := AlignLeft;
+		SetCaption('Power Saving:');
+	end;
+	TextAttr := ColorDrop;
+	FIdle := New(PDropList, Create(@Self, 'IDLE.DROP'));
+	with PDropList(FIdle)^ do begin
+		SetHelpText('Use the "Power Saving" field to select the desired method');
+		AddHelpText('for PGME to use to conserve power while idle. This takes');
+		AddHelpText('effect immediately on "OK" and may cause the system to freeze.');
+		AddHelpText('However, the change is not saved until after the power setting');
+		AddHelpText('has been activated. If it is unable to set the request power');
+		AddHelpText('saving mode, it may downgrade or disable the setting.');
+		SetBounds(E);
+		SetCaption(Application^.FFileNone);
+		Application^.FLanguage.OpenSection('STRINGS');
+		for I := low(cPowerMode) to high(cPowerMode) do begin
+	    	cPowerMode[I]:=Application^.FLanguage.GetValue(GetPathID + '.ITEM.'
+	    	    + cPowerModeID[I],cPowerMode[I]);
+    		AddItem(cPowerMode[I]);
+    	end;
+	end;
+
 	Inc(B.Top, 2);
 	B.Width := 12;
 	B.Left := Width div 2 - B.Width div 2 + 2;
@@ -128,24 +167,38 @@ end;
 procedure TDlgPGMCfg.BeforeShow;
 var
     S : String;
+    I : integer;
 begin
 	inherited BeforeShow;
 	with Application^.FConfig do begin
 		OpenSection('*');
+		OpenSection('PGM');
 		FLang^.SetCaption(IsStr(Trim(GetValue('LANGUAGE', 'DEFAULT.LNG')), '',
 		    Application^.FFileNone));
-		OpenSection('PGM');
+		    I := StrIndex(GetValue('CPU_IDLE', cPowerModeID[IdleMethod]), cPowerModeID);
+            if I < 0 then I := 0;
+		    FIdle^.SetCaption(cPowerMode[I]);
 		S := UCase(Trim(GetValue('USE_SOUND', 'TRUE')));
 		FSound^.SetOn(( S = 'TRUE') or (S='ON') or (S='ENABLED'));
 	end;
 end;
 
 procedure TDlgPGMCfg.Save;
+var
+    I : integer;
 begin
 	with Application^.FConfig do begin
 		OpenSection('*');
 		SetValue('LANGUAGE', IsStr(FLang^.GetCaption, Application^.FFileNone, ''));
 		OpenSection('PGM');
+        I := StrIndex(Trim(UCase(FIdle^.GetCaption)), cPowerMode);
+        if I < 0 then I := 0;
+		if I = High(cPowerModeID) then I := imAny;
+		IdleMethod := I;
+		for I := 0 to 9 do IdleProc;
+		I := IdleMethod;
+		SetValue('CPU_IDLE', cPowerModeID[I]);
+
 		Application^.FUseSound := FSound^.GetOn;
 		if FSound^.GetOn then
 		    SetValue('USE_SOUND', 'TRUE')
@@ -157,12 +210,16 @@ end;
 function TDlgPGMCfg.Modified;
 var
     X : Boolean;
+    I : integer;
 begin
 	X := False;
 	with Application^.FConfig do begin
 		OpenSection('*');
 		X := X or (IsStr(GetValue('LANGUAGE', FLang^.GetCaption), '', Application^.FFileNone)
 		    <> Trim(FLang^.GetCaption));
+        I := StrIndex(Trim(UCase(FIdle^.GetCaption)), cPowerMode);
+        if I < 0 then I := 0;
+        X := X or (cPowerModeID[I] <> GetValue('CPU_IDLE', cPowerModeID[0]));
         X := X or (FSound^.GetOn <> Application^.FUseSound);
 	end;
 	Modified := X;

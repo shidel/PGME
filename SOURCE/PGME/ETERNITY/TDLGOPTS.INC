@@ -1,4 +1,4 @@
-{ Copyright 2015 Jerome Shidel }
+{ Copyright 2015-2021 Jerome Shidel }
 
 (*
 
@@ -15,7 +15,7 @@ const
 
 type
 	PDlgPGMOpt = ^TDlgPGMOpt;
-	TDlgPGMOpt = object (TDIALOG)
+	TDlgPGMOpt = object (TDialog)
     public { protected }
     	FTimeout : PLabel;
     	FSaver, FTheme, FFont : PDropList;

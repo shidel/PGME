@@ -141,7 +141,9 @@ function FlipStr(S : String) : string;
 function IsStr(TheStr, AStr, AsStr : String) : String;
 { Caseless, When The String is AStr return AsStr, otherwise return TheStr }
 function NotStr(TheStr, AStr, AsStr : String) : String;
-{ Cassless, When The String is not AStr return AsStr, otherwise return TheStr }
+{ Caseless, When The String is not AStr return AsStr, otherwise return TheStr }
+function StrIndex(TheStr : String; Strs : array of String) : integer;
+{ Caseless, Returns the index in an array of the string, or -1 if not found }
 
 implementation
 
@@ -1172,6 +1174,19 @@ begin
         NotStr := TheStr
 end;
 
+function StrIndex(TheStr : String; Strs : array of String) : integer;
+{ Caseless, Returns the index in an array of the string, or -1 if not found }
+var
+    I : Integer;
+begin
+    StrIndex := -1;
+    TheStr := UCase(TheStr);
+    for I := Low(Strs) to High(Strs) do
+        if (TheStr = UCase(Strs[I])) then begin
+            StrIndex := I;
+            Break;
+        end;
 
+end;
 
 end.
