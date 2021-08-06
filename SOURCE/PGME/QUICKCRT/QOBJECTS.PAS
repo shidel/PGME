@@ -18,6 +18,10 @@ uses
    {$IFDEF DEVLOG} QLog, {$ENDIF}
 	QCrt, QStrings, QClass, QBIOS;
 
+const
+    LowMemAvailWarn = 32768;
+    LowMaxAvailWarn = 5120;
+
 const { Anchor Bounds and Align Control Constants. Anchors can override Alignments }
 	abNone   = $0000;
 	abLeft   = $0001;
@@ -186,8 +190,9 @@ uses QErrors, QDos, QFiles, QFmtStr;
 		{$IFDEF MEMINFO}
 			ShowMemFlag := True;
 		{$ELSE}
-			ShowMemFlag := (MinMemAvail < 65535) or (MinMaxAvail < 10240) or
-				(MemAvail <> FirstMemAvail);
+			ShowMemFlag := (MinMemAvail < LowMemAvailWarn)
+			    or (MinMaxAvail < LowMaxAvailWarn)
+			    or (MemAvail <> FirstMemAvail);
 		{$ENDIF}
 		if ShowMemFlag then begin
 			TextAttr := $0F;
@@ -198,7 +203,8 @@ uses QErrors, QDos, QFiles, QFmtStr;
 			if MemAvail <> FirstMemAvail then begin
 				TextAttr := $0C;
 				Write('ERROR ', MaxAvail, '/', MemAvail);
-			end else if (MinMemAvail < 65535) or (MinMaxAvail < 10240) then  begin
+			end else if (MinMemAvail < LowMemAvailWarn)
+			or (MinMaxAvail < LowMaxAvailWarn) then  begin
 				TextAttr := $0C;
 				Write('LOW ');
 				TextAttr := $0B;

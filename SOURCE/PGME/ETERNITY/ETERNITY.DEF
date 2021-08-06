@@ -11,7 +11,7 @@
 {$T-}       (* No type-checked pointers *)
 {$X+}       (* Enable extended syntax *)
 
-{$D+,L+,Y+,R+,S+}
+{ D+,L+,Y+,R+,S+}
 
-{$M 50000,0,655350} (* Memory: Largest Stack, No Minimum Free, Use All Ram *)
+{$M 32768,0,655350} (* Mem: Largest Stack 50000, No Minimum Free, Use All Ram *)
 

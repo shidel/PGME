@@ -241,11 +241,16 @@ interface
   function DirExists ( AFileName : String ) : boolean;
   function Exists ( AFileName : String ) : boolean;
 
+  function SearchPathSpec(AFileName : String) : String;
+
   function Dir(ADirName : String) : String;
 
   function GetEnv(AKey : String): String;
   function GetEnvCount: integer;
   function GetEnvParam(AIndex : integer): String;
+
+  { Expands %ENV% variables in a string }
+  function ENVExpand(Str : String) : String;
 
   procedure PackTime(DateTime : TDateTime; var Value : LongInt);
   procedure UnPackTime(Value : LongInt; var DateTime : TDateTime);
@@ -1461,6 +1466,59 @@ begin
 	else
 		TailDelim := APath + '\';
 end;
+
+function ENVExpand(Str : String) : String;
+var
+    S, T : String;
+    X : boolean;
+    P : integer;
+begin
+    S := '';
+    X := False;
+    T := '';
+    while true do begin
+        P := Pos('%', Str);
+        if P = 0 then begin
+            if X then
+                S := S + T + '%' + Str
+            else
+                S := S + Str;
+            Break;
+        end;
+        if X and (T<>'') then
+            S := S + T;
+        T := Copy(Str, 1, P - 1);
+        Delete(Str, 1, P);
+        if X then begin
+            if T = '' then
+                S := S + '%'
+            else
+                S := S + GetEnv(UCase(T));
+        end;
+        X := not X;
+    end;
+    ENVExpand := S;
+end;
+
+function SearchPathSpec(AFileName : String) : String;
+var
+    D, PS : String;
+    I : integer;
+begin
+    SearchPathSpec := '';
+    PS := GetENV('PATH');
+    while PS <> '' do begin
+        I := Pos(';', PS);
+        if I < 1 then I := Length(PS) + 1;
+        D := Trim(Copy(PS, 1, I - 1));
+        Delete(PS, 1, I);
+        if FileExists(TailDelim(D) + AFileName) then begin
+            SearchPathSpec := TailDelim(D) + AFileName;
+            Break;
+        end;
+    end;
+end;
+
 
 begin
   InitUnit;

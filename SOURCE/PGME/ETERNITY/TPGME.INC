@@ -117,6 +117,10 @@ var
 {$ENDIF}
 
 {$IFDEF IMPLEMENTATION}
+
+const
+    cHideMode : array[0..2] of string = ('NO', 'AUTO', 'YES');
+
 var
 	OldIdleProc : procedure;
 
@@ -1271,6 +1275,16 @@ end;
 procedure TPGME.ApplyConfig( AConfig : PConfigFile );
 begin
 	inherited ApplyConfig(AConfig);
+	if CPUCacheProg = '' then begin
+    	AConfig^.OpenSection('THROTTLE');
+    	CPUCacheProg := AConfig^.GetValue('CPUCACHE', 'CPUCACH.COM');
+    	if CPUCacheProg <> '' then begin
+    	    if FileExists(FileExpand(CPUCacheProg)) then
+    	        CPUCacheProg := FileExpand(CPUCacheProg)
+    	    else
+    	        CPUCacheProg := SearchPathSPec(CPUCacheProg);
+    	end;
+    end;
 	AConfig^.OpenSection(GetPathID + '.VIEWERS');
 	AConfig^.SetValue('TXT', AConfig^.GetValue('TXT', 'QSCROLL.EXE'));
 	AConfig^.SetValue('DOC', AConfig^.GetValue('DOC', 'QSCROLL.EXE'));
@@ -1283,6 +1297,7 @@ begin
 	FBtnQuit^.SetEnabled(FCanQuit);
 	FProgramWindow^.SetCanClose(FCanQuit);
 	AConfig^.GetInts('SCREEN_TIMEOUT', FTimeOut, 1);
+
 	UpdateButtons;
 end;
 
@@ -1922,6 +1937,8 @@ begin
 		AMenu.SetValue('MAXAVAIL', BoolStr(PDlgProg(ADlg)^.FMaxAvail^.GetOn));
 	if StrBool(AMenu.GetValue('RETURN', 'True')) <> PDlgProg(ADlg)^.FReturn^.GetOn then
 		AMenu.SetValue('RETURN', BoolStr(PDlgProg(ADlg)^.FReturn^.GetOn));
+	if StrBool(AMenu.GetValue('CPUCACHE', 'False')) <> PDlgProg(ADlg)^.FCPUCache^.GetOn then
+		AMenu.SetValue('CPUCACHE', BoolStr(PDlgProg(ADlg)^.FCPUCache^.GetOn));
 	if StrBool(AMenu.GetValue('SIMPLE', 'True')) <> PDlgProg(ADlg)^.FSimple then
 		AMenu.SetValue('SIMPLE', BoolStr(PDlgProg(ADlg)^.FSimple));
 	if StrBool(AMenu.GetValue('PGMVARS', 'False')) <> PDlgProg(ADlg)^.FPGMVars then

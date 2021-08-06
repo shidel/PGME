@@ -60,8 +60,8 @@ var
 begin
 	inherited Create(AParent, 'DIALOG.CONFIG');
 	FAutoEndModal := True;
-	if PControl(Parent)^.Height <= 16 then
-		SetShadow(False);
+	{ if PControl(Parent)^.Height <= 16 then
+		SetShadow(False); }
 	Bounds(1,1,56,12, B);
 	SetBounds(B);
 	SetTitle('Eternity Config Settings');

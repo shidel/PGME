@@ -302,7 +302,7 @@ begin
 					SimpleExec := StrBool(Temp.GetValue('SIMPLE', 'YES'));
                     S := UCase(Trim(Temp.GetValue('WAIT', 'DEFAULT')));
 					ReturnAfter := StrBool(Temp.GetValue('RETURN', 'YES'));
-					CPUCacheOff := StrBool(Temp.GetValue('CPUCACHE', 'NO'));
+					CPUCacheOff := StrBool(Temp.GetValue('CPUCACHE', ''));
 					PGMVars := StrBool(Temp.GetValue('PGMEVARS', 'NO'));
                     if (IntStr(StrInt(S)) = S) then
                         ReturnWait := StrInt(S)

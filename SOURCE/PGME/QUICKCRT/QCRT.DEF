@@ -12,9 +12,8 @@
 {$X+}       (* Enable extended syntax *)
 
 { D+,L+,Y+,R+,S+}
-{$S+}
 
-{$I TEMPLATE.DEF}	{ DEFINE TEMPLATES}	{ Creates and saves all TConfigFile values and 
+{$I TEMPLATE.DEF}	{ DEFINE TEMPLATES}	{ Creates and saves all TConfigFile values and
 					defaults for creating custom themes, not defined then it is the app.}
 
 { DEFINE DEVLOG}	{ Enables development logging/debugging system }
@@ -33,7 +32,7 @@
 {$IFDEF DEVLOG}
 	{$DEFINE DEVLOG_CLEAN}		{ Cleans out log file on each execution }
 	{ DEFINE DEVLOG_CREATE} 	{ Creation and destruction of objects }
-	{ DEFINE DEVLOG_CREATEINDENT} { Mostly Pointless since Indents on Create, 
+	{ DEFINE DEVLOG_CREATEINDENT} { Mostly Pointless since Indents on Create,
 									un-indents on destroy }
 	{ DEFINE DEVLOG_BOUNDS} 	{ Bounds, position changes }
 	{ DEFINE DEVLOG_ADJUST} 	{ size adjustments }

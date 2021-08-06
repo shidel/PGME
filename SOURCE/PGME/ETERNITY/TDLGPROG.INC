@@ -1,10 +1,10 @@
-{ Copyright 2015 Jerome Shidel }
+{ Copyright 2015-2021 Jerome Shidel }
 
-(* 
-		
+(*
+
 	This project and related files are subject to either the terms
 	specified in the included LICENSE.TXT file or the GNU GPLv2.0.
-	
+
 *)
 
 { --- TDlgProg --- }
@@ -13,17 +13,17 @@
 const
 	class_TDlgProg = 'TDlgProg';
 
-type 
+type
 	PDlgLaunchFwd =^TDlgLaunchFwd;
 	TDlgLaunchFwd = object(TDialog)
 		procedure SetData(ADlg : PDialog); virtual;
 	end;
-	
+
 	PDlgProg = ^TDlgProg;
 	TDlgProg = object (TDIALOG)
-    public { protected }	
+    public { protected }
     		FEditTitle, FEditTones : PEdit;
-    		FMaxAvail, FReturn : PToggle;
+    		FMaxAvail, FReturn, FCPUCache : PToggle;
     		FOK : PButton;
     		FFile, FClass : String;
     		FSimple, FPGMVars : boolean;
@@ -38,7 +38,7 @@ type
 		procedure SetData(AItem : PListItem); virtual;
 		procedure UpdateData; virtual;
 		procedure ReplaceCommands(AWith : PObject); virtual;
-	end;   
+	end;
 
 {$ENDIF}
 
@@ -47,9 +47,9 @@ procedure TDlgLaunchFwd.SetData;
 begin
 end;
 
-function TDlgProg.ObjectClass(AName : String) : String; 
+function TDlgProg.ObjectClass(AName : String) : String;
 begin
-	if (AName = '') or (AName = class_TDlgProg) then 
+	if (AName = '') or (AName = class_TDlgProg) then
 		ObjectClass := class_TDlgProg
 	else
 		ObjectClass := inherited ObjectClass(AName);
@@ -64,19 +64,22 @@ const
 	ColorToggle = $0F;
 	ColorAccept = $74;
 	ColorLaunch = $3E;
+	ColorDisabled = $78;
 var
 	B, T : TBounds;
-begin	
+begin
 	inherited Create(AParent, AName);
-	Bounds(1,1,55,15, B);
+	if PControl(Parent)^.Height <= 16 then
+		SetShadow(False);
+	Bounds(1,1,55,19, B);
 	FEditTones := nil;
-	if AParent^.Height > 18 then begin
+{	if AParent^.Height > 18 then begin
 		Inc(B.Height, 2);
-	end;
-	SetBounds(B);					
+	end; }
+	SetBounds(B);
 	FAutoEndModal := True;
 	SetBounds(B);
-	Bounds(3,2,47,1, B);		
+	Bounds(3,2,47,1, B);
 	TextAttr := ColorLabel;
 	with PLabel(New(PLabel, Create(@Self, 'TITLE.LABEL')))^ do begin
 		SetBounds(B);
@@ -118,30 +121,57 @@ begin
 		SetBounds(T);
 		SetAnchors(abRight or abTop);
 	end;
+	if Height > 14 then begin
+        Inc(B.Top, 2);
+        TextAttr := ColorLabel;
+        with PLabel(New(PLabel, Create(@Self, 'RETURN.LABEL')))^ do begin
+            T := B;
+            T.Width := T.Width - 12;
+            SetBounds(T);
+            SetAnchors(abLeft or abRight or abTop);
+            FHAlign := AlignLeft;
+            SetCaption('Return to PGM Eternity:');
+        end;
+        TextAttr := ColorToggle;
+        FReturn := New(PToggle, Create(@Self, 'RETURN.TOGGLE'));
+        with PToggle(FReturn)^ do begin
+            SetHelpText('The "Return to PGM Eternity" toggle is rather straight forward.');
+            AddHelpText('After the menu entry has completed running, the "ON" setting');
+            AddHelpText('will return you to PGME. If it is "OFF", you will return to the');
+            AddHelpText('command line.');
+            T.Left := T.Left + T.Width;
+            T.Width := B.Width + B.Left - T.Left;
+            SetBounds(T);
+            SetAnchors(abRight or abTop);
+            SetOn(True);
+        end;
+    end;
 	Inc(B.Top, 2);
-	TextAttr := ColorLabel;
-	with PLabel(New(PLabel, Create(@Self, 'RETURN.LABEL')))^ do begin
+   	TextAttr := ColorLabel;
+	with PLabel(New(PLabel, Create(@Self, 'CPUCACHE.LABEL')))^ do begin
 		T := B;
 		T.Width := T.Width - 12;
 		SetBounds(T);
 		SetAnchors(abLeft or abRight or abTop);
+		FAttr.Disabled := ColorDisabled;
 		FHAlign := AlignLeft;
-		SetCaption('Return to PGM Eternity:');
+		SetCaption('Disable CPU Cache:');
+		SetEnabled(CPUCacheProg <> '');
 	end;
-	TextAttr := ColorToggle;
-	FReturn := New(PToggle, Create(@Self, 'RETURN.TOGGLE'));
-	with PToggle(FReturn)^ do begin
-		SetHelpText('The "Return to PGM Eternity" toggle is rather straight forward.');
-		AddHelpText('After the menu entry has completed running, the "ON" setting');
-		AddHelpText('will return you to PGME. If it is "OFF", you will return to the');
-		AddHelpText('command line.');
+   	TextAttr := ColorToggle;
+	FCPUCache := New(PToggle, Create(@Self, 'CPUCACHE.TOGGLE'));
+	with PToggle(FCPUCache)^ do begin
+		SetHelpText('The "Disable CPU Cache" toggle is a great way to slow many machines');
+		AddHelpText('down for running very old games. If CPUCACHE is installed, the "ON" setting');
+		AddHelpText('will disable CPU caching for the program.');
 		T.Left := T.Left + T.Width;
 		T.Width := B.Width + B.Left - T.Left;
 		SetBounds(T);
 		SetAnchors(abRight or abTop);
-		SetOn(True);
+		SetEnabled(CPUCacheProg <> '');
+		SetOn(FALSE);
 	end;
-	
+
 	Inc(B.Top, 2);
 	TextAttr := ColorLabel;
 	with PLabel(New(PLabel, Create(@Self, 'LAUNCH.LABEL')))^ do begin
@@ -150,14 +180,14 @@ begin
 		SetBounds(T);
 		SetAnchors(abLeft or abRight or abTop);
 		FHAlign := AlignLeft;
-		if ANewProg then 
+		if ANewProg then
 			SetCaption('Select program launch process:')
 		else
-			SetCaption('Change program launch process:');		
+			SetCaption('Change program launch process:');
 	end;
 	TextAttr := ColorLaunch;
 	with PButton(New(PButton, Create(@Self, 'LAUNCH.BUTTON')))^ do begin
-		if ANewProg then 
+		if ANewProg then
 			SetHelpText('Use the "Select" program launch process button to configure')
 		else
 			SetHelpText('Use the "Modify" program launch process button to alter');
@@ -167,14 +197,14 @@ begin
 		T.Width := B.Width + B.Left - T.Left;
 		SetBounds(T);
 		SetAnchors(abRight or abTop);
-		if ANewProg then 
+		if ANewProg then
 			SetCaption('Select')
 		else
 			SetCaption('Modify');
 		SetCommand(cmBrowseExec)
 	end;
-	
-	if Height > 15 then begin
+
+	if Height > 16 then begin
 		Inc(B.Top, 2);
 		TextAttr := ColorLabel;
 		with PLabel(New(PLabel, Create(@Self, 'TONE.LABEL')))^ do begin
@@ -210,7 +240,7 @@ begin
 		B.Width := 14;
 		SetBounds(B);
 		SetAnchors(abLeft or abRight or abTop);
-		if ANewProg then 
+		if ANewProg then
 			SetCaption('Create')
 		else
 			SetCaption('Update');
@@ -226,11 +256,11 @@ begin
 end;
 
 procedure TDlgProg.CheckLocal(var AEvent : TEvent);
-var 
+var
 	P : PDialog;
 begin
 	inherited CheckLocal(AEvent);
-	if AEvent.What = evCommand then 
+	if AEvent.What = evCommand then
 		case AEvent.Command of
 			cmEdit : if Assigned(FEditTones) and (AEvent.InfoPtr = FEditTones) then begin
 				ClearEvent(AEvent);
@@ -240,7 +270,7 @@ begin
 				ClearEvent(AEvent);
 				P := PDialog(PGME.GetDlgLaunch);
 				PDlgLaunch(P)^.SetData(@Self);
-				if PGME.FDlgLaunch^.ShowModal = mrOK then 
+				if PGME.FDlgLaunch^.ShowModal = mrOK then
 					ReplaceCommands(P);
 			end;
 		end;
@@ -267,12 +297,13 @@ begin
 	FReturn^.SetOn(True);
 	{ PGMVARS, SIMPLE, TONE, GROUP, FILENAME, CLASS }
 	if Not Assigned(AItem) then begin
-		if Assigned(PGME.FMenuCache) then 
+		if Assigned(PGME.FMenuCache) then
 			FEditTitle^.SetCaption(PMenuCache(PGME.FMenuCache)^.FNoNameStr);
 	end else with PCacheApp(AItem^.Data)^ do begin
-		FEditTitle^.SetCaption(Title);	
+		FEditTitle^.SetCaption(Title);
 		FMaxAvail^.SetOn(MaxMemory);
 		FReturn^.SetOn(ReturnAfter);
+		FCPUCache^.SetOn(CPUCacheOff);
 		FFile := FileName;
 		FClass := ClassName;
 		FPGMVars := PGMVars;
@@ -282,7 +313,7 @@ begin
 			P := P^.Next;
 		end;
 		if Assigned(FEditTones) then
-			FEditTones^.SetCaption(Tone);	
+			FEditTones^.SetCaption(Tone);
 	end;
 	UpdateData;
 end;
@@ -291,19 +322,21 @@ procedure TDlgProg.UpdateData;
 var
 	S : String;
 begin
-	FSimple := (Not FMaxAvail^.GetOn) and (FCommands.Count = 0);
-	
+	FSimple := (Not FMaxAvail^.GetOn) and (FCommands.Count = 0) and
+	    (Not FCPUCache^.GetOn);
+
 	S := UCase(FileExtension(FFile));
-	if (S = 'EXE') or (S = 'COM') then 
+	if (S = 'EXE') or (S = 'COM') then
 		FClass := 'PROGRAM'
-	else if (S = 'SCR') then 
+	else if (S = 'SCR') then
 		FClass := 'ESAVER'
-	else if (S = 'TXT') or (S = 'DOC') or (S = 'ME') then 
+	else if (S = 'TXT') or (S = 'DOC') or (S = 'ME') then
 		FClass := 'DOCUMENT'
 	else begin
 		FClass := 'OTHER';
 		FSimple := False;
 	end;
+
 	FOK^.SetEnabled(Trim(FFile) <> '');
 end;
 
@@ -320,8 +353,8 @@ begin
 	P := PLaunchItem(PDlgLaunch(AWith)^.FProc^.FItems.First);
 	while Assigned(P) do begin
 		if (Not P^.FLock) and (Trim(P^.GetNameID) <> '') then begin
-			if Trim(P^.FOptions) <> '' then 
-				FCommands.Add(New(PListItem, Create(P^.GetNameID + ' ' 
+			if Trim(P^.FOptions) <> '' then
+				FCommands.Add(New(PListItem, Create(P^.GetNameID + ' '
 				+ Trim(P^.FOptions))))
 			else
 				FCommands.Add(New(PListItem, Create(P^.GetNameID)));
@@ -331,22 +364,22 @@ begin
 			end else begin
 				T := PullStr(' ', S);
 				if (T <> 'CD') then begin
-					if (FFile <> '') or (Pos('.', T) < 2) then 
+					if (FFile <> '') or (Pos('.', T) < 2) then
 						Multi := True
 					else begin
 						FFile := T;
 						if P^.FPath <> PDlgLaunch(AWith)^.FStartDir then
 							FFile := Dir(P^.FPath) + FFile;
-						if (S <> '') or (P^.FExact) then 
+						if (S <> '') or (P^.FExact) then
 							Multi := True;
 					end;
 				end;
-					
+
 			end;
 		end;
 		P := PLaunchItem(P^.Next);
 	end;
-	if Not Multi then 
+	if Not Multi then
 		FCommands.Clear;
 	UpdateData;
 end;

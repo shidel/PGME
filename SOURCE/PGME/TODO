@@ -16,6 +16,7 @@ Maybe Eventual Improvements:
 
 Todo:
 
+    Improve memory management and ETERNITY memory usage. (It wastes a lot)
 	Add Auto-detect of CD/DVD insertion.
 	Add more custom themes.
 	Add Flip & Flop to EFNTDSGN.
