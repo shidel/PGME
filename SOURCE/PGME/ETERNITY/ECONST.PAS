@@ -43,7 +43,9 @@ const
 
 	ftMenu	= 'MENU';
 
-	CPUCacheProg : String = '';
+	CPUCacheProg    : String = '';
+	CPUCacheEnable  : String = '';
+	CPUCacheDisable : String = '';
 
 implementation
 

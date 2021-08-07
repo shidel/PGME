@@ -2,6 +2,9 @@
 
 2021-08
 
+    Added ability to auto-hide uninstalled/missing programs.
+    Ignore CPUCache setting in DOSBOX.
+    Added suport to use CPUCACHE to disable/enable CPU caching for old games.
     Added CPU Idle/power saving option to Config Dialog.
     Added "<none>" option to Config and Display Dialogs for File based options.
     Fix display options only save when theme was changed bug.

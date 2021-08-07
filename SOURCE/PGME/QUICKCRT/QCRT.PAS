@@ -408,6 +408,9 @@ interface
     imBIOS = $02;     { Use BIOS APM call }
     imAny  = $ff;     { Just use whatever }
 
+    cpu8086 = 0;
+    cpuDOSBox = 100;
+
   type
     TPoint = record
       X : byte;
@@ -548,6 +551,7 @@ interface
 	FirstMemAvail, FirstMaxAvail : longInt; { Initial Memory Available }
 	MinMemAvail, MinMaxAvail : LongInt;    { Lowest amount of memory available during execution }
 	KeyboardIgnore : word;     { Keyboard status flags to ignore }
+	SystemPlatform : dword;    { Sytem hardware flags }
 
 { Interface procedures }
   procedure AssignCrt(var F : Text);
@@ -703,6 +707,13 @@ interface
   video modes (InitQCrt is called internally by TextMode, and at application
   startup). }
   procedure InitQCrt;
+
+  function IsHardware : boolean;
+  function IsDOSBox   : boolean;
+  function IsVirtual  : boolean;
+
+  procedure SetMachineInfo;
+
 
 implementation
 {$F+}
@@ -4348,6 +4359,85 @@ begin
 	MemW[Seg0040:$0017] := AValue;
 end;
 
+function IsHardware : boolean;
 begin
+    IsHardware := not IsVirtual;
+end;
+
+function IsDOSBox : boolean;
+begin
+    IsDOSBox :=  SystemPlatform.L and $f0 = $10;
+end;
+
+function IsVirtual  : boolean;
+begin
+    isVirtual := SystemPlatform.L and $f0 <> 0;
+end;
+
+function SearchRAM(Start, Max : word; AStr : String) : boolean; assembler;
+asm
+        push    ds
+        les     si, AStr
+        mov     cx, Max
+        mov     ax, Start
+        push    ax
+        pop     ds
+        mov     dl, es:[si]
+        mov     dh, dl
+        inc     si
+        xor     di, di
+    @@CheckNext:
+        cmp     cx, 0
+        je      @@NotFound
+        xor     bx, bx
+        mov     dl, dh
+    @@CheckScan:
+        cmp     dl, 0
+        je      @@Matched
+        mov     al, es:[si+bx]
+        mov     ah, ds:[di+bx]
+        cmp     ah, $61
+        jb      @@NotLower
+        cmp     ah, $7a
+        ja      @@NotLower
+        sub     ah, $20
+    @@NotLower:
+        cmp     ah, al
+        jne     @@MissMatch
+        inc     bx
+        dec     dl
+        jmp     @@CheckScan
+
+    @@MissMatch:
+        dec     cx
+        inc     di
+        jmp     @@CheckNext
+
+    @@Matched:
+        mov     ax, True
+        jmp     @@Done
+
+    @@NotFound:
+        mov     ax, FALSE
+
+    @@Done:
+        pop     ds
+end;
+
+procedure SetMachineInfo;
+begin
+    SystemPlatform.Long := 0;
+    if SearchRAM($fe00, $0100, 'THE DOSBOX TEAM') then
+        SystemPlatform.L := $10
+    else if SearchRAM($f000, $f000, 'QEMU') then
+        SystemPlatform.L := $20
+    else if SearchRAM($ffe0, $2000, 'ORACLE VM VIRTUALBOX') then
+        SystemPlatform.L := $30
+    else if SearchRAM($f000, $2000, 'VMWARE VIRTUAL PLATFORM') then
+        SystemPlatform.L := $40;
+end;
+
+begin
+    SetMachineInfo;
 	InitQCrtUnit;
 end.

@@ -233,7 +233,7 @@ procedure TMenuCache.UpdateMenu(AMenu : PListItem);
 var
 	Temp : TConfigFile;
 	SRec : TSearchRec;
-	S : String;
+	S, H : String;
 	M, A, P, V : PListItem;
 	I : LongInt;
 begin
@@ -278,6 +278,12 @@ begin
 		while assigned(M) do begin
 			Temp.OpenSection(M^.GetNameID);
 			S := Temp.GetValue('FILE', '');
+			H := Ucase(trim(Temp.GetValue('HIDE', '')));
+			if (S <> '') and (H = 'AUTO') then begin
+			    H := FileExpand(S);
+			    if (H = '') or (not FileExists(H)) then S := '';
+			end else if StrBool(H) then S := '';
+
 			if (S <> '') or (Temp.FindKey('COMMANDS') <> nil) then begin
 				{ It is a program entry }
 				if not MemCheck(Sizeof(TCacheApp)) then Halt(8);

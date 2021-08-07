@@ -1273,11 +1273,12 @@ begin
 end;
 
 procedure TPGME.ApplyConfig( AConfig : PConfigFile );
+
 begin
 	inherited ApplyConfig(AConfig);
 	if CPUCacheProg = '' then begin
     	AConfig^.OpenSection('THROTTLE');
-    	CPUCacheProg := AConfig^.GetValue('CPUCACHE', 'CPUCACH.COM');
+    	CPUCacheProg := AConfig^.GetValue('CPUCACHE', 'CPUCACHE.COM');
     	if CPUCacheProg <> '' then begin
     	    if FileExists(FileExpand(CPUCacheProg)) then
     	        CPUCacheProg := FileExpand(CPUCacheProg)
@@ -1285,6 +1286,10 @@ begin
     	        CPUCacheProg := SearchPathSPec(CPUCacheProg);
     	end;
     end;
+   	CPUCacheEnable  := AConfig^.GetValue('CPUCACHE.ENABLE', '');
+   	CPUCacheDisable := AConfig^.GetValue('CPUCACHE.DISABLE', '');
+   	if CPUCacheEnable = '' then CPUCacheEnable := 'On';
+   	if CPUCacheDisable = '' then CPUCacheDisable := 'Off';
 	AConfig^.OpenSection(GetPathID + '.VIEWERS');
 	AConfig^.SetValue('TXT', AConfig^.GetValue('TXT', 'QSCROLL.EXE'));
 	AConfig^.SetValue('DOC', AConfig^.GetValue('DOC', 'QSCROLL.EXE'));
@@ -1549,6 +1554,7 @@ var
 	FRet,
 	FView,
 	FTemp, S, S2 : String;
+	FCCO : boolean;
 	F : TFile;
 	OK : Boolean;
 	P : PCacheProc;
@@ -1627,6 +1633,8 @@ begin
 	 * Add PGME Value as Formatting to Options like %E for eternity path...
 	 *)
 
+	{ CPUCacheProg := 'C:\CPUTEST.BAT' ; }
+
 	if Not Assigned(AItem) then exit;
 	if Not Assigned(AItem^.Data) then exit;
 	FConfig.OpenSection(GetPathID + '.VIEWERS');
@@ -1636,6 +1644,9 @@ begin
 		GetDir(0, FHoldDir);
 		ChDir(NoTailDelim(FDir));
 		FRet := GetReturnStr(True);
+		FCCO := CPUCacheOff and (CPUCacheProg <> '')
+		    and (CPUCacheEnable <> '') and (CPUCacheDisable <> '') and
+		    (Not IsDOSBox);
 		if FRet = '' then
 			FRet := '/M=' + FDir + PCacheMenu(Parent)^.GetNameID +
 			' /P=' + GetNameID + ' /T=' + FResumeText;
@@ -1652,8 +1663,8 @@ begin
 		if not CheckViewer then exit;
 		ChDir(NoTailDelim(FHoldDir));
 
-		if SimpleExec and (not MaxMemory) and (Count = 0) and (FName <> '') and
-		(not PGMVars) then begin
+		if SimpleExec and (not MaxMemory) and (Count = 0) and (FName <> '')
+		and (not PGMVars) and (not FCCO) then begin
 			if PathOf(FName) <> FDir then
 				FExecDir := PathOf(FName);
 			if FView <> '' then begin
@@ -1696,10 +1707,29 @@ begin
 			else
 				S2 := 'REM SET ';
 
+{
+			FileWrite('TYPE ' + Dir(FTemp) + 'PGMEGORN.BAT' );
+			FileWrite('pause' );
+			FileWrite('');
+
+			FileWrite('REM ' + BoolStr(CPUCacheOff) + '/' + BoolStr(FCCO));
+			FileWrite('REM ' + CPUCacheProg);
+			FileWrite('REM ' + CPUCacheEnable);
+			FileWrite('REM ' + CPUCacheDisable);
+			FileWrite('');
+}
+
 			FileWrite(S2 + 'PGME_PATH=' + GetExePath);
 			FileWrite(S2 + 'PGME_MENU=' + FDir + PCacheMenu(Parent)^.GetNameID );
 			FileWrite(S2 + 'PGME_PROG=' + GetNameID);
 			FileWrite('');
+			if FCCO then begin
+    			FileWrite('REM First Disable CPU Caching.');
+    			FileWrite(Copy(CPUCacheProg, 1, 2));
+			    FileWriteExec(CPUCacheProg + ' ' + CPUCacheDisable);
+    			FileWrite('');
+			end;
+
 			FileWrite('REM Begin by setting current dir and drive to menu directory.');
 			FileWrite(Copy(FDir, 1, 2));
 			FileWrite('CD ' + NoTailDelim(Copy(FDir, 3, Length(FDir))));
@@ -1712,7 +1742,7 @@ begin
 			P := PCacheProc(First);
 			if OK then begin
 				if Not assigned(P) then begin
-					FileWriteExec(FName + ' ' + FOpts);
+					FileWriteExec(FileExpand(FileName) + ' ' + FOpts);
 				end else while Assigned(P) and OK do begin
 					if (Length(P^.GetNameID) > 4) and (UCase(Copy(P^.GetNameID, 1, 4)) = 'CD \') then
 						FileWriteExec(NoTailDelim(P^.GetNameID))
@@ -1731,6 +1761,12 @@ begin
 			end;
 
 			FileWrite('');
+			if FCCO then begin
+    			FileWrite('REM Finally Enable CPU Caching.');
+    			FileWrite(Copy(CPUCacheProg, 1, 2));
+			    FileWriteExec(CPUCacheProg + ' ' + CPUCacheEnable);
+    			FileWrite('');
+			end;
 			{FileWrite('PAUSE');}
 			FileWrite('REM Return to Program Manager Eternity');
 			FileWrite('PGM.BAT ' + FRet);
