@@ -108,6 +108,7 @@ type
 		procedure UpdateProgram(AMenu : TConfigFile; ADlg : PDialog); virtual;
 		function  SearchStr(AValue : String) : String; virtual;
 		procedure Search(AValue : String); virtual;
+		procedure DoneWithDialog(var Dlg : PDialog); virtual;
 	end;
 
 { Some Global Variables }
@@ -2227,6 +2228,7 @@ begin
 				ClearEvent(AEvent);
 				GetDlgAbout;
 				FDlgAbout^.ShowModal;
+				FreeDialog(FDlgAbout);
 			end;
 		end;
 
@@ -2355,6 +2357,12 @@ begin
 				ExecuteItem(FLastProgram)
 			end;
 		end;
+end;
+
+procedure TPGME.DoneWithDialog(var Dlg : PDialog);
+begin
+    if Not Assigned(Dlg) then Exit;
+    FreeDialog(Dlg);
 end;
 
 {$ENDIF}

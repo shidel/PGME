@@ -1,12 +1,14 @@
-{ Copyright 2015 Jerome Shidel }
+{ Copyright 2015-2021 Jerome Shidel }
 
-(* 
-		
+(*
+
 	This project and related files are subject to either the terms
 	specified in the included LICENSE.TXT file or the GNU GPLv2.0.
-	
+
 *)
 
+{$I ..\QUICKCRT\TEMPLATE.DEF}
+{$I ETERNITY.DEF}
 unit PGM_Call;
 
 interface
@@ -17,13 +19,13 @@ implementation
 
 uses QStrings;
 
-var 
+var
 	CallBackPtr : Pointer;
 	CallBackBuffer  : record
 		S : boolean;
 		C, P, R : String;
 	end;
-	
+
 procedure DoCallBack(const Buffer); assembler;
 asm
   PUSH ES
@@ -33,7 +35,7 @@ asm
   POP BX
   POP ES
 end;
-	
+
 procedure CallBack(const Command, Params, RetStr : String; const ComeBack : boolean);
 begin
 	with CallBackBuffer do begin
@@ -53,14 +55,14 @@ begin
 		WriteLn('Please use PGM.EXE to start "Program Manager Eternity."');
 		halt($F001);
 	end;
-	
+
 	Sig := Ptr(StrInt(Copy(ParamStr(1), 7, 10)), 3);
 	if Sig^ <> 'ETERNITY' then begin
 		WriteLn('Invalid Callback address. Terminated.');
-		halt($F002);		
-	end; 
-	
-	CallBackPtr := Ptr(StrInt(Copy(ParamStr(1), 7, 10)), 0);	
+		halt($F002);
+	end;
+
+	CallBackPtr := Ptr(StrInt(Copy(ParamStr(1), 7, 10)), 0);
 	CallBack('', '', '', False);
 end;
 

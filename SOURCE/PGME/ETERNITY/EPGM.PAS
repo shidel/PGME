@@ -1,4 +1,4 @@
-{ Copyright 2015 Jerome Shidel }
+{ Copyright 2015-2021 Jerome Shidel }
 
 (*
 
@@ -7,6 +7,8 @@
 
 *)
 
+{$I ..\QUICKCRT\TEMPLATE.DEF}
+{$I ETERNITY.DEF}
 unit EPGM;
 
 interface

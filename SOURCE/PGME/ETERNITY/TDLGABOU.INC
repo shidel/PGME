@@ -61,7 +61,8 @@ begin
 	AddHelpText('This is dialog box provides some information regarding PGME.');
 	AddHelpText('Additional information is available in the BLAHBLAH.TXT file');
 	AddHelpText('and online at http://pgme.sourceforge.net');
-	{$IFNDEF TEMPLATES}
+	{$IFDEF TEMPLATES}
+	{$ELSE}
 	AddHelpText('');
 	AddHelpText('PGME Memory Statistics:');
 	AddHelpText('');
