@@ -61,6 +61,19 @@ begin
 	AddHelpText('This is dialog box provides some information regarding PGME.');
 	AddHelpText('Additional information is available in the BLAHBLAH.TXT file');
 	AddHelpText('and online at http://pgme.sourceforge.net');
+	{$IFNDEF TEMPLATES}
+	AddHelpText('');
+	AddHelpText('PGME Memory Statistics:');
+	AddHelpText('');
+	AddHelpText('  Using ' + IntStr(FirstMemAvail - MemAvail) + ' of ' +
+	    IntStr(FirstMemAvail) + ' bytes available');
+	AddHelpText('');
+	AddHelpText('  Largest free block is ' + IntStr(MaxAvail) + ' bytes available');
+	AddHelpText('');
+	AddHelpText('  Peak usage ' + IntStr(FirstMaxAvail - MinMaxAvail) + ' of ' +
+	    IntStr(FirstMaxAvail) + ' bytes available');
+	{$ENDIF}
+
 {	TextAttr := ColorOK;
 	FOK := New(PButton, Create(@Self, 'BUTTON.OK'));
 	with PButton(FOK)^ do begin

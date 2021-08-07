@@ -1583,6 +1583,7 @@ end;
 		  MVC := False;
 
 {		  Window(1, 1, Lo(ScreenMax) + 1, Hi(ScreenMax) + 1); }
+          MemCheck(0);
 		  IdleProc;
 		  if (WMin <> WindMin) or (WMax <> WindMax) then begin
     		  Window(Lo(WMin) + 1, Hi(WMin) + 1, Lo(WMax) + 1, Hi(WMax) + 1);

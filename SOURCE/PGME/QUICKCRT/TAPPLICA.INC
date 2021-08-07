@@ -198,7 +198,10 @@ begin
 end;
 
 procedure TApplication.Configure;
+var
+    DosLang, TL, TT, TF, TK : string;
 begin
+    DosLang :=GetEnv('LANG');
 	FConfig.SetFileName(GetConfigName);
 	FConfig.Read;
 	FConfig.OpenSection('*');
@@ -207,7 +210,19 @@ begin
 	{$ENDIF}
 	FLanguage.Create('Language');
 	FLanguage.SetFreeOnDestroy(False);
-	FLanguage.SetFileName(FConfig.GetValue('LANGUAGE', 'DEFAULT' + LanguageExt));
+	TL := FConfig.GetValue('LANGUAGE', 'DEFAULT' + LanguageExt);
+	TT := FConfig.GetValue('THEME', 'DEFAULT' + ThemeExt);
+	TK := FConfig.GetValue('KEYBOARD', 'DEFAULT' + KeymapExt);
+	TF := FConfig.GetValue('FONT', 'DEFAULT' + FontExt);
+	if DosLang <> '' then begin
+    	FConfig.OpenSection('LANG.' + DosLang);
+    	TL := FConfig.GetValue('LANGUAGE', TL);
+        TT := FConfig.GetValue('THEME', TT);
+        TK := FConfig.GetValue('KEYBOARD', TK);
+        TF := FConfig.GetValue('FONT', TF);
+    	FConfig.OpenSection('*');
+	end;
+	FLanguage.SetFileName(TL);
 	FLanguage.Read;
 	{$IFDEF TEMPLATES}
 		AddComments(FLanguage, @LanguageComments);
@@ -220,7 +235,7 @@ begin
 	FFileTimeFmt := FLanguage.GetValue('FILE.TIME', '0[Z2],1[L2],2[Z2],3[Z2],4{a,p};%1:%2%4');
     FFileNone := FLanguage.GetValue('FILE.NONE', '<none>');
 
-	FTheme.SetFileName(FConfig.GetValue('THEME', 'DEFAULT' + ThemeExt) );
+	FTheme.SetFileName(TT);
 	FTheme.Read;
 	{$IFDEF TEMPLATES}
 		AddComments(FTheme, @ThemeComments);
@@ -229,7 +244,7 @@ begin
 		FTheme.GetValue('ID', 'DEFAULT');
 		FTheme.GetValue('NAME', 'Default Theme');
 	{$ENDIF}
-	FKeyboard.SetFileName(FConfig.GetValue('KEYBOARD', 'DEFAULT' + KeymapExt) );
+	FKeyboard.SetFileName(TK);
 	FKeyboard.Read;
 	FKeyboard.SetAutoAdd(True);
 	{$IFDEF TEMPLATES}
@@ -239,7 +254,7 @@ begin
 		FKeyboard.GetValue('ID', 'USPC101');
 		FKeyboard.GetValue('NAME', 'US English 101-key PC Enhanced Keyboard');
 	{$ENDIF}
-	FFont.SetFileName(FConfig.GetValue('FONT', 'DEFAULT' + FontExt));
+	FFont.SetFileName(TF);
 end;
 
 procedure TApplication.Idle;
