@@ -1,4 +1,4 @@
-{ Copyright 2015 Jerome Shidel }
+{ Copyright 2015-2021 Jerome Shidel }
 
 (*
 
@@ -27,6 +27,9 @@ type
 const
 	Smooth : boolean = True;
 	MousePage = 10;
+	const
+	    ProgramUsage : string =
+	        '   /S[-/+]     Force disable/enable of smooth scrolling'#13;
 
 var
 	Top, Bottom, First, Last : PLine;
@@ -349,16 +352,20 @@ var
 	S : String;
 begin
 	FWriteLn('Usage: QSCROLL filename');
-	FWriteLn('');
-	S := SoftwareLicense;
+	S := #13 + ProgramUsage + #13;
+	while S <> '' do
+		FWriteLn(Space(4) + PullStr(#13, S));
+	S := SoftwareLicense + #13 + #13;
 	while S <> '' do
 		FWriteLn(Space(4) + PullStr(#13, S));
 end;
 
 begin
+    Smooth := IsDOSBox or (not IsVirtual);
 	TurnMouseOff;
 	if ParamCount = 0 then
 		ShowHelp
 	else
 		Viewer;
-end.
+end.
+

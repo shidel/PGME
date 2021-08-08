@@ -13,6 +13,7 @@ Maybe Eventual Improvements:
 	Add prompting and parsing for custom options in menu launchers.
 	Add PGME Value as Formatting to Options like %E for eternity path... for launchers.
 	Change searching to search programs in order of appearance, not order of ID.
+	Ticker style viewing of really long text when selected or mouse is over.
 
 Todo:
 
@@ -31,3 +32,4 @@ What's left for upcoming Release:
     Add Read caching to cache file.
     Add UPX compression to build process.
     Add LSM Change Scanning.
+    Improve scrolling in QScroll
