@@ -21,7 +21,7 @@ type
     		FNoNameStr,
     		FNoTitleStr,
     		FNoDescStr : String;
-    		FModified : boolean;
+    		FModified, FRebuild : boolean;
     		FCache : PListItem;
     		FWatch : String;
 		function  ObjectClass ( AName : String ) : String; virtual;
@@ -63,6 +63,7 @@ begin
 	FNoDescStr := '';
 	FCache := New(PCacheItem, Create('MENUDATA'));
 	FCache^.Sorted := True;
+	FRebuild := False;
 	FWatch := GetEnv('DOSDIR');
 	if FWatch <> '' then FWatch := TailDelim(FWatch) + 'APPINFO';
 	if DirExists(FWatch) then
@@ -153,7 +154,10 @@ begin
 	end;
 	if OK then OK := PCacheItem(FCache)^.Read(F);
 	F.Destroy;
-	if Not OK then Purge;
+	if Not OK then begin
+	    Purge;
+	    FRebuild := True;
+	end;
 end;
 
 procedure TMenuCache.Save;

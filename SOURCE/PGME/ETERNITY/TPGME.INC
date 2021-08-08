@@ -1238,7 +1238,7 @@ end;
 
 procedure TPGME.Configure;
 begin
-	if (Not FInitRun) then begin
+	if (Not FInitRun) and (not PMenuCache(FMenuCache)^.FRebuild) then begin
 		GotoXY(1, WhereY);
 		TextAttr := $0B;
 		if FResumeText = '' then
@@ -1252,18 +1252,14 @@ begin
 	PMenuCache(FMenuCache)^.ApplyLanguage(@FLanguage, GetPathID);
 	FEditTitle^.SetCaption(PMenuCache(FMenuCache)^.FNoMenuStr); {Set Initially to No Title}
 	FPauseText := FLanguage.GetValue(GetPathID + '.BOOT.PAUSE', 'press any key to continue . . .');
-	if FInitRun then begin
+
+	PMenuCache(FMenuCache)^.Load;
+	if PMenuCache(FMenuCache)^.FRebuild then begin
 		GotoXY(1, WhereY);
 		TextAttr := $0E;
 		Write(FLanguage.GetValue(GetPathID + '.BOOT.CACHE.UPDATE', 'Updating Menu Cache...'));
 		ClrEol;
-	end;
-	FConfig.OpenSection(GetPathID);
-	FResumeText := FLanguage.GetValue(GetPathID + '.BOOT.RESUME', 'Resuming Eternity...');
-	PMenuCache(FMenuCache)^.Load;
-	PMenuCache(FMenuCache)^.SetPaths(FConfig.GetValue('PATH.MENU', ''));
-	UpdateMenuCache;
-	OpenCurrentMenu;
+	end else
 	{ Later add ability to return to a menu and program }
 	if FInitRun then begin
 		GotoXY(1, WhereY);
@@ -1271,6 +1267,11 @@ begin
 		Write(FLanguage.GetValue(GetPathID + '.BOOT.STARTING', 'Beginning Eternity...'));
 		ClrEol;
 	end;
+	FConfig.OpenSection(GetPathID);
+	FResumeText := FLanguage.GetValue(GetPathID + '.BOOT.RESUME', 'Resuming Eternity...');
+	PMenuCache(FMenuCache)^.SetPaths(FConfig.GetValue('PATH.MENU', ''));
+	UpdateMenuCache;
+	OpenCurrentMenu;
 end;
 
 procedure TPGME.ApplyConfig( AConfig : PConfigFile );
