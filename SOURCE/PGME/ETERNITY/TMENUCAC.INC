@@ -23,6 +23,7 @@ type
     		FNoDescStr : String;
     		FModified : boolean;
     		FCache : PListItem;
+    		FWatch : String;
 		function  ObjectClass ( AName : String ) : String; virtual;
 		procedure UpdateMenu(AMenu : PListItem); virtual;
 	public
@@ -62,6 +63,12 @@ begin
 	FNoDescStr := '';
 	FCache := New(PCacheItem, Create('MENUDATA'));
 	FCache^.Sorted := True;
+	FWatch := GetEnv('DOSDIR');
+	if FWatch <> '' then FWatch := TailDelim(FWatch) + 'APPINFO';
+	if DirExists(FWatch) then
+	    FWatch := TailDelim(FWatch) + '*.LSM'
+	else
+	    FWatch := '';
 end;
 
 destructor TMenuCache.Destroy;
@@ -118,6 +125,7 @@ var
 	F : TFile;
 	S : String;
 	OK : boolean;
+	WD, WH, WC : String;
 begin
 	FCache^.Clear;
 	FModified := False;
@@ -130,6 +138,18 @@ begin
 		S[0] := Chr(Length(FileID));
 		F.ReadRecord(S[1], Length(FileID));
 		OK := (IOResult = 0) and (S = FileID);
+	end;
+	if OK then begin
+	    WD := F.GetString;
+	    OK := (F.IOResult = 0) and (WD = FWatch);
+	end;
+	if OK then begin
+	    WH := F.GetString;
+	    OK := (F.IOResult = 0);
+	    if OK and (WD <> '') then begin
+	        WC := DirScanID(WD, faAnyFile, 16);
+	        OK := WC = WH;
+	    end;
 	end;
 	if OK then OK := PCacheItem(FCache)^.Read(F);
 	F.Destroy;
@@ -151,6 +171,19 @@ begin
 	if OK then begin
 		S := FileID;
 		F.WriteRecord(S[1], Length(S));
+		OK := (IOResult = 0);
+	end;
+	if OK then begin
+	    F.PutString(FWatch);
+		OK := (IOResult = 0);
+	end;
+	if OK then begin
+	    if FWatch = '' then
+    	    F.PutString(FWatch)
+    	else begin
+        	S := DirScanID(FWatch, faAnyFile, 16);
+    	    F.PutString(S);
+    	end;
 		OK := (IOResult = 0);
 	end;
 	if OK then OK := PCacheItem(FCache)^.Write(F);
@@ -235,6 +268,7 @@ var
 	SRec : TSearchRec;
 	S, H : String;
 	M, A, P, V : PListItem;
+	HideItem : boolean;
 	I : LongInt;
 begin
 	AMenu^.Clear;
@@ -281,10 +315,11 @@ begin
 			H := Ucase(trim(Temp.GetValue('HIDE', '')));
 			if (S <> '') and (H = 'AUTO') then begin
 			    H := FileExpand(S);
-			    if (H = '') or (not FileExists(H)) then S := '';
-			end else if StrBool(H) then S := '';
+			    HideItem := (H = '') or (not FileExists(H));
+			end else if StrBool(H) then
+			    HideItem := True;
 
-			if (S <> '') or (Temp.FindKey('COMMANDS') <> nil) then begin
+			if (Not HideItem) and ((S <> '') or (Temp.FindKey('COMMANDS') <> nil)) then begin
 				{ It is a program entry }
 				if not MemCheck(Sizeof(TCacheApp)) then Halt(8);
 				A := New(PCacheApp, Create(M^.GetNameID));

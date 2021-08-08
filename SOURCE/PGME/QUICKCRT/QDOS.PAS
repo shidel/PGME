@@ -258,6 +258,13 @@ interface
   function NoTailDelim(APath : String) : String;
   function TailDelim(APath : String) : String;
 
+  function DirScanID(AFileSpec:String; Attr : Word; ALen :byte) : string;
+  { Returns a ASCII string of any length that is the result of scanning
+    AFileSpec and creating a simple hash-like value of the returned results.
+    Mostly, only useful to test if a directory/set of files has changed at
+    all since a previous check. }
+
+
 implementation
 
 uses QStrings;
@@ -1519,6 +1526,43 @@ begin
     end;
 end;
 
+function DirScanID(AFileSpec:String; Attr : Word; ALen :byte) : string;
+var
+    Search : TSearchRec;
+    TempStr : String;
+
+    procedure RollIn(S : String);
+    var
+        I : Integer;
+    begin
+        for I := 1 to Length(S) do begin
+            ROLStr(TempStr);
+            TempStr[1] := Chr(Ord(TempStr[1]) xor Ord(S[I]));
+        end;
+    end;
+
+begin
+    if AFileSpec = '' then begin
+        GetDir(0, AFileSpec);
+        AFileSpec := TailDelim(AFileSpec) + '*.*';
+    end;
+    DirScanID := '';
+    FindFirst(AFileSpec, Attr, Search );
+    TempStr := Space(ALen);
+    RollIn(PathOf(UCase(AFileSpec)));
+    while DosError = 0 do begin
+        FindNext(Search);
+        With Search do begin
+            RollIn(Name);
+            RollIn(HexWord(DosError));
+            RollIn(HexByte(Attr));
+            RollIn(HexLong(Time));
+            RollIn(HexLong(Size));
+        end;
+    end;
+    RollIn(HexWord(DosError));
+    DirScanId := TempStr;
+end;
 
 begin
   InitUnit;

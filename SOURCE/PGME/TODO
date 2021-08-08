@@ -31,7 +31,5 @@ What's left for upcoming Release:
 
     Fix extra spacing in help text
     Fix displayed language, font and theme file when using DOS LANG setting.
-    Add Read caching to cache file.
-    Add UPX compression to build process.
-    Add LSM Change Scanning.
-    Compress Most Binaries with UPX.
+    Add Read Ahead caching to cache file.
+    Add UPX compression to build process and Compress most of them.

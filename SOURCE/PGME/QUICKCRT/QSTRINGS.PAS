@@ -85,6 +85,9 @@ interface
   { Converts a Strings to its Hex Values }
   function HexToStr(AStr : String) : String;
 
+  function StrAsHex(AStr : String) : String;
+  { Converts the ascii values of AStr to Hex values }
+
   function WhichStr (B : boolean; FalseStr, TrueStr : String) : String;
   { Depending on Boolean value, returns either FalseStr or TrueStr }
   function PluralStr(I : LongInt) : String;
@@ -144,6 +147,9 @@ function NotStr(TheStr, AStr, AsStr : String) : String;
 { Caseless, When The String is not AStr return AsStr, otherwise return TheStr }
 function StrIndex(TheStr : String; Strs : array of String) : integer;
 { Caseless, Returns the index in an array of the string, or -1 if not found }
+procedure ROLStr(var AStr : String);
+{ Rotates a string left, placing the first character at the end }
+
 
 implementation
 
@@ -1188,5 +1194,41 @@ begin
         end;
 
 end;
+
+procedure ROLStr(var AStr : String); assembler;
+asm
+    xor     ch, ch
+    push    ds
+    lea     si, AStr
+    lds     si, SS:[SI]
+    mov     cl, [si]
+    cmp     cl, 2
+    jb      @@RotateDone
+    mov     dh, [si + 1]
+@@RotateStr:
+    dec     cl
+    jz      @@LastChar
+    inc     si
+    mov     dl, [si + 1]
+    mov     [si], dl
+    jmp     @@RotateStr
+@@LastChar:
+    mov     [si], dh
+@@RotateDone:
+    pop     ds
+end;
+
+
+function StrAsHex(AStr : String) : String;
+var
+    I : Integer;
+    S : String;
+begin
+    S := '';
+    for I := 1 to length(AStr) do
+        S := S + HexByte(Ord(AStr[I]));
+    StrAsHex := S;
+end;
+
 
 end.
