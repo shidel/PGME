@@ -318,10 +318,15 @@ begin
 			S := Temp.GetValue('FILE', '');
 			H := Ucase(trim(Temp.GetValue('HIDE', '')));
 			if (S <> '') and (H = 'AUTO') then begin
-			    H := FileExpand(S);
+			    if PathOf(S) = '' then
+			        H := TailDelim(GetEXEPath) + S
+			    else
+    			    H := FileExpand(S);
 			    HideItem := (H = '') or (not FileExists(H));
 			end else if StrBool(H) then
-			    HideItem := True;
+			    HideItem := True
+			else
+			    HideItem := False;
 
 			if (Not HideItem) and ((S <> '') or (Temp.FindKey('COMMANDS') <> nil)) then begin
 				{ It is a program entry }
