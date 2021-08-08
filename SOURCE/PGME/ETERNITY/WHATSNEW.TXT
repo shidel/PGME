@@ -2,6 +2,7 @@
 
 2021-08
 
+    Added support to scroll to item in unsorted lists (for the dropdowns)
     Improved startup message (beginning/resuming/updating) display
     Watch for Package (Un)Installs under FreeDOS, improved Auto-Hide.
     Installer ignore drive Z: under DOSBox.

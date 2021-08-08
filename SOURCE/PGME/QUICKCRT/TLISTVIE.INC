@@ -1,10 +1,10 @@
 { Copyright 2015 Jerome Shidel }
 
-(* 
-		
+(*
+
 	This project and related files are subject to either the terms
 	specified in the included LICENSE.TXT file or the GNU GPLv2.0.
-	
+
 *)
 
 { ---TListView --- }
@@ -12,7 +12,7 @@
 {$IFDEF INTERFACE}
 const
 	class_TListView = 'TListView';
-	
+
 type
 	TColumn = record
 		Width : integer;
@@ -76,14 +76,14 @@ type
 		procedure ClearItems; virtual;
 		procedure SetAllowEmpty(AValue : boolean); virtual;
 		function GetAllowEmpty : boolean; virtual;
-		procedure DeleteItem(AItem : PListItem); virtual;		
+		procedure DeleteItem(AItem : PListItem); virtual;
 	end;
 {$ENDIF}
 
 {$IFDEF IMPLEMENTATION}
-function TListView.ObjectClass(AName : String) : String; 
+function TListView.ObjectClass(AName : String) : String;
 begin
-	if (AName = '') or (AName = class_TListView) then 
+	if (AName = '') or (AName = class_TListView) then
 		ObjectClass := class_TListView
 	else
 		ObjectClass := inherited ObjectClass(AName);
@@ -142,7 +142,7 @@ begin
 	FVScroll.Destroy;
 	FItems.Destroy;
 	if assigned(FColumns) then begin
-		for I := 0 to FColumnCount - 1 do 
+		for I := 0 to FColumnCount - 1 do
 			FreeStr(FColumns^[I].Name);
 		FreeMem(FColumns, sizeof(TColumn) * FColumnCount);
 		FColumns := nil;
@@ -157,7 +157,7 @@ var
 begin
 	inherited ApplyLanguage(AConfig);
 	FNoColumnPad := AConfig^.GetValue(GetPathID + '.COLUMN.NONE', FNoColumnPad);
-	if FColumnCount > 0 then 
+	if FColumnCount > 0 then
 		for I := 0 to FColumnCount - 1 do with FColumns^[I] do begin
 			S := AConfig^.GetValue(GetPathID + '.COLUMN.' + IntStr(I), PtrStr(Name));
 			FreeStr(Name);
@@ -170,10 +170,10 @@ var
 	I : integer;
 	B : Integer;
 begin
-	inherited ApplyTheme(AConfig); 
+	inherited ApplyTheme(AConfig);
 	AConfig^.GetInts('COLORS.HEADER', FHAttr, SizeOf(FHAttr) div SizeOf(Integer));
 	AConfig^.GetInts('COLORS.COLUMNS', FNAttr, SizeOf(FNAttr) div SizeOf(Integer));
-	if FColumnCount > 0 then 
+	if FColumnCount > 0 then
 		for I := 0 to FColumnCount - 1 do with FColumns^[I] do begin
 			AConfig^.GetInts('COLUMN.' + IntStr(I) + '.COLOR', FColumns^[I].Colors, SizeOf(TTextAttrs) div SizeOf(Integer));
 			AConfig^.GetInts('COLUMN.' + IntStr(I) + '.WIDTH', FColumns^[I].Width, SizeOf(integer) div SizeOf(Integer));
@@ -183,7 +183,7 @@ begin
 		end;
 end;
 
-procedure TListView.AdjustBars; 
+procedure TListView.AdjustBars;
 var
 	AValue : TBounds;
 	T : integer;
@@ -192,7 +192,7 @@ begin
 	FLB := AValue;
 	T := AValue.Height;
 	if FColumnCount > 0 then Dec(T);
-	
+
 	FVScroll.SetMin(1);
 	FVScroll.SetMax(FItems.Count);
 	FVScroll.SetValue(FIndex + 1);
@@ -202,7 +202,7 @@ begin
 	if FScrollEdge then Inc(AValue.Left);
 	AValue.Height := Height;
 
-	FVScroll.SetBounds(AValue); 
+	FVScroll.SetBounds(AValue);
 
 	FVScroll.SetVisible(FItems.Count > T);
 end;
@@ -214,29 +214,29 @@ begin
 	LI := FIndex;
 	if (FTop = nil) or (FCurrent = nil) then begin
 		FTop := FItems.First;
-		if ((Not FAllowNull) and (FCurrent = nil)) or (FNoNill) then 
+		if ((Not FAllowNull) and (FCurrent = nil)) or (FNoNill) then
 			FCurrent := FTop;
-		if Assigned(FCurrent) then 
+		if Assigned(FCurrent) then
 			FIndex := 0
 		else
 			FIndex := -1;
 	end;
-	if (FLB.Width <> FCBounds.Width) or (FLB.Height <> FCBounds.Height) or 
+	if (FLB.Width <> FCBounds.Width) or (FLB.Height <> FCBounds.Height) or
 	(FVScroll.GetMax <> FItems.Count) or (LI <> FIndex) then AdjustBars;
 end;
 
-procedure TListView.SetBounds(AValue : TBounds); 
+procedure TListView.SetBounds(AValue : TBounds);
 begin
 	inherited SetBounds(AValue);
 	AdjustBars;
 end;
 
-procedure TListView.SetColumns(AValue : integer); 
+procedure TListView.SetColumns(AValue : integer);
 var
 	I : integer;
 begin
 	if assigned(FColumns) then begin
-		for I := 0 to FColumnCount - 1 do 
+		for I := 0 to FColumnCount - 1 do
 			FreeStr(FColumns^[I].Name);
 		FreeMem(FColumns, sizeof(TColumn) * FColumnCount);
 		FColumns := nil;
@@ -271,7 +271,7 @@ var
 	WMin, WMax : word;
 begin
 	CheckMarkers(False);
-	Window(FWindow.Left, FWindow.Top, FWindow.Left + FWindow.Width - 1, FWindow.Top + 
+	Window(FWindow.Left, FWindow.Top, FWindow.Left + FWindow.Width - 1, FWindow.Top +
 		FWindow.Height - 1);
 
 	{ inherited Draw;  }
@@ -285,26 +285,26 @@ begin
 	end;
 	MW := Width;
 	if FVScroll.GetVisible and (Not FScrollEdge) then Dec(MW);
-	MH := Height;	
+	MH := Height;
 	{ if FHScroll.GetVisible then Dec(MH); }
 	P := FTop;
 	WMin := WindMin;
 	WMax := WindMax;
 	while (Line <= MH) and Assigned(P) do begin
 		Window(Lo(WMin) + 1, Hi(WMin) + Line, Lo(WMin) + MW, Hi(WMin) + Line);
-		if FLL = Line then 
+		if FLL = Line then
 			DrawItem(P, 1)
-		else if P = FCurrent then 
+		else if P = FCurrent then
 			DrawItem(P, 3)
 		else
-			DrawItem(P, 0);		
+			DrawItem(P, 0);
 		Inc(Line);
 		P := P^.Next;
 	end;
 	Window(Lo(WMin) + 1, Hi(WMin) + 1, Lo(WMax) + 1, Hi(WMax) + 1);
 end;
 
-procedure TListView.DrawHeader; 
+procedure TListView.DrawHeader;
 var
 	I, TW, MW : integer;
 begin
@@ -325,13 +325,13 @@ begin
 	end;
 end;
 
-procedure TListView.DrawItem(var AItem : PListItem; AState : integer); 
+procedure TListView.DrawItem(var AItem : PListItem; AState : integer);
 var
 	I, TW, MW, X, Y, B : integer;
 	P : PListItem;
 begin
 	TextAttr := GetItemAttr(AItem, AItem, 0, AState);
-	ClrScr; 
+	ClrScr;
 {	if Not Assigned(AItem) then begin
 	end else }
 	if FColumnCount = 0 then begin
@@ -361,7 +361,7 @@ begin
 			TW := FColumns^[I].Width;
 			if TW > MW then TW := MW;
 			Dec(MW, TW);
-			TextAttr := GetItemAttr(AItem, P, I, AState);	
+			TextAttr := GetItemAttr(AItem, P, I, AState);
 			case FColumns^[I].Align of
 				AlignLeft : FWrite(CropStr(RSpace(P^.GetNameID, FColumns^[I].Width), TW) );
 				AlignRight : FWrite(CropStr(LSpace(P^.GetNameID, FColumns^[I].Width), TW) );
@@ -369,7 +369,7 @@ begin
 				FWrite(CropStr(CSpace(P^.GetNameID, FColumns^[I].Width), TW) );
 			end;
 			inc(I);
-			if P = AItem then 
+			if P = AItem then
 				P := P^.First
 			else
 				P := P^.Next;
@@ -377,16 +377,16 @@ begin
 	end;
 end;
 
-function TListView.GetItemAttr(var AItem, ASubItem : PListItem; AColumn, AState : integer) : integer; 
+function TListView.GetItemAttr(var AItem, ASubItem : PListItem; AColumn, AState : integer) : integer;
 begin
-	if (FColumnCount = 0) or (not Assigned(AItem)) then 
+	if (FColumnCount = 0) or (not Assigned(AItem)) then
 		case AState of
 			1 : GetItemAttr := FNAttr.Hover;
 			2 : GetItemAttr := FNAttr.Click;
 			3 : GetItemAttr := FNAttr.Focused;
 			-1 : GetItemAttr := FNAttr.Disabled;
 		else
-			GetItemAttr := FNAttr.Normal; 
+			GetItemAttr := FNAttr.Normal;
 		end
 	else
 		case AState of
@@ -395,7 +395,7 @@ begin
 			3 : GetItemAttr := FColumns^[AColumn].Colors.Focused;
 			-1 : GetItemAttr := FColumns^[AColumn].Colors.Disabled;
 		else
-			GetItemAttr := FColumns^[AColumn].Colors.Normal; 
+			GetItemAttr := FColumns^[AColumn].Colors.Normal;
 		end;
 end;
 
@@ -408,7 +408,7 @@ begin
 	FLD := False;
 end;
 
-procedure TListView.CheckLocal(var AEvent : TEvent); 
+procedure TListView.CheckLocal(var AEvent : TEvent);
 begin
 	if AEvent.What = evCommand then
 {	if (AEvent.InfoPtr = @FVScroll) or (AEvent.InfoPtr = @Self) or
@@ -460,7 +460,7 @@ begin
 	inherited CheckLocal(AEvent);
 end;
 
-procedure TListView.CheckMouse(var AEvent : TEvent); 
+procedure TListView.CheckMouse(var AEvent : TEvent);
 var
 	Hold : TEvent;
 	J, L, MW : integer;
@@ -472,7 +472,7 @@ begin
 	inherited CheckMouse(AEvent);
 	if not GetVisible then exit;
 	if not GetShown then exit;
-	if (Not FMouseOver) or (FVScroll.GetVisible and (Not FScrollEdge) and 
+	if (Not FMouseOver) or (FVScroll.GetVisible and (Not FScrollEdge) and
 	(Hold.Where.X - FWindow.Left > Width - FMargin.Left - 2  )) then begin
 		if FLL <> -1 then begin
 			FLL := -1;
@@ -498,7 +498,7 @@ begin
 		end;
 		if P <> FCurrent then begin
 			Ref := True;
-			FCurrent := P;	
+			FCurrent := P;
 			if Assigned(P) then begin
 				FVScroll.SetValue(P^.GetIndex + 1);
 				FIndex := P^.GetIndex;
@@ -507,15 +507,15 @@ begin
 				FIndex := -1;
 			end;
 		end;
-			
+
 	end;
 	if (L <> FLL) or (Ref) then begin
 		FLL := L;
 		Refresh;
-	end;	
+	end;
 end;
 
-procedure TListView.Up( ARefresh : boolean ); 
+procedure TListView.Up( ARefresh : boolean );
 var
 	Flag : boolean;
 	LI : integer;
@@ -527,14 +527,14 @@ begin
 	if Not Assigned(FCurrent) then exit;
 	if Not Assigned(FCurrent^.Prior) then exit;
 	if Not (Flag and Assigned(FCurrent)) then begin
-		if FCurrent = FTop then 
+		if FCurrent = FTop then
 			FTop := FTop^.Prior;
 		FCurrent := FCurrent^.Prior;
 		Dec(FIndex);
 	end;
 	if ARefresh then begin
 		Refresh;
-		FVScroll.SetValue(FIndex + 1); 
+		FVScroll.SetValue(FIndex + 1);
 	end;
 end;
 
@@ -545,7 +545,7 @@ var
 	MH : integer;
 	Flag : boolean;
 	LI : integer;
-begin	
+begin
 	Flag := Not Assigned(FCurrent);
 	LI := FIndex;
 	CheckMarkers(True);
@@ -566,12 +566,12 @@ begin
 		{if FHScroll.GetVisible then Dec(MH); }
 		if FColumnCount > 0 then Dec(MH);
 
-		if C >= MH then 
+		if C >= MH then
 			FTop := FTop^.Next;
 	end;
 	if ARefresh then begin
 		Refresh;
-		FVScroll.SetValue(FIndex + 1); 
+		FVScroll.SetValue(FIndex + 1);
 	end;
 end;
 
@@ -589,7 +589,7 @@ begin
 	end;
 end;
 
-procedure TListView.PageUp; 
+procedure TListView.PageUp;
 var
 	I, MH : integer;
 begin
@@ -608,12 +608,12 @@ begin
 	SetIndex(FItems.Count - 1);
 end;
 
-procedure TListView.Top; 
+procedure TListView.Top;
 begin
 	SetIndex(0);
 end;
 
-procedure TListView.SetIndex(AValue : integer); 
+procedure TListView.SetIndex(AValue : integer);
 begin
 	if AValue = FIndex then exit;
 	CheckMarkers(True);
@@ -621,7 +621,7 @@ begin
 	While ( AValue < FIndex ) and ( FIndex > 0 ) and Assigned(FCurrent^.Prior) do Up(False);
 	While ( AValue > FIndex ) and ( FIndex < FItems.Count - 1 ) and Assigned(FCurrent^.Next) do Down(False);
 	Refresh;
-	FVScroll.SetValue(FIndex + 1); 
+	FVScroll.SetValue(FIndex + 1);
 end;
 
 function TListView.GetIndex : integer;
@@ -632,13 +632,19 @@ end;
 procedure TListView.ScrollTo(AValue : String);
 begin
 	CheckMarkers(True);
-	if Not FItems.Sorted then exit;
-	if Not Assigned(FCurrent) then exit;
-	while Assigned(FCurrent^.Prior) and (FCurrent^.GetNameID > AValue) do 
-		Up(True);
-	while Assigned(FCurrent^.Next) and (FCurrent^.GetNameID < AValue) do 
-		Down(True);
-	Refresh;	
+	if Assigned(FCurrent) and (FItems.Sorted) then begin
+        while Assigned(FCurrent^.Prior) and (FCurrent^.GetNameID > AValue) do
+            Up(True);
+        while Assigned(FCurrent^.Next) and (FCurrent^.GetNameID < AValue) do
+            Down(True);
+    	Refresh;
+    end else begin
+        Top;
+        if not Assigned(FCurrent) then exit;
+        while Assigned(FCurrent^.Next) and (FCurrent^.GetNameID <> AValue) do
+            Down(True);
+    	Refresh;
+    end;
 end;
 
 procedure TListView.SetScrollEdge(AValue : boolean);
@@ -654,7 +660,7 @@ begin
 	GetScrollEdge := FScrollEdge;
 end;
 
-function TListView.AddItem( AValue : String) : PListItem; 
+function TListView.AddItem( AValue : String) : PListItem;
 var
 	Item : PListItem;
 begin
@@ -718,15 +724,15 @@ begin
 	TP := FTop^.Prior;
 	TN := FTop^.Next;
 	if AItem = FCurrent then begin
-		if Assigned(FCurrent^.Next) then begin 
+		if Assigned(FCurrent^.Next) then begin
 			FCurrent := FCurrent^.Next;
 			{Inc(FIndex); Will be wrong because it is being moved up one }
 		end else if Assigned(FCurrent^.Prior) then begin
 			FCurrent := FCurrent^.Prior;
 			Dec(FIndex);
-			if Assigned(TP) then 
+			if Assigned(TP) then
 				FTop := TP;
-		end else 
+		end else
 			ClearItems;
 	end;
 	if FItems.Count > 0 then begin
@@ -739,12 +745,12 @@ begin
 		end;
 		Dispose(AItem, Destroy);
 	end;
-	FVScroll.SetValue(FIndex); 
+	FVScroll.SetValue(FIndex);
 	AdjustSize;
 	Update;
 end;
 
-procedure TListView.AdjustSize; 
+procedure TListView.AdjustSize;
 begin
 	inherited AdjustSize;
 	AdjustBars;
