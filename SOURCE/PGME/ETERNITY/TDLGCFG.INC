@@ -59,9 +59,9 @@ var
 	I : integer;
 begin
 	inherited Create(AParent, 'DIALOG.CONFIG');
-	FAutoEndModal := True;
 	{ if PControl(Parent)^.Height <= 16 then
 		SetShadow(False); }
+	FAutoEndModal := True;
 	Bounds(1,1,56,12, B);
 	SetBounds(B);
 	SetTitle('Eternity Config Settings');
@@ -87,7 +87,7 @@ begin
 		AddHelpText('fallback to English for itself and menus when the requested');
 		AddHelpText('language is not available.');
 		SetBounds(E);
-		SetCaption('DEFAULT.LNG');
+		SetReadOnly(True);
 		AddItem(Application^.FFileNone);
 		FindFirst(GetExePath + '*' + LanguageExt, faAnyFile, SRec);
 		while (DosError = 0) do begin
@@ -95,6 +95,7 @@ begin
 				AddItem(SRec.Name);
 			FindNext(SRec);
 		end;
+		{ SetCaption(Application^.FFileNone); }
 	end;
 	Bounds(4, B.Top + 2, Self.Width - 9, 1, B);
 	TextAttr := ColorLabel;
@@ -138,13 +139,14 @@ begin
 		AddHelpText('has been activated. If it is unable to set the request power');
 		AddHelpText('saving mode, it may downgrade or disable the setting.');
 		SetBounds(E);
-		SetCaption(Application^.FFileNone);
+		SetReadOnly(True);
 		Application^.FLanguage.OpenSection('STRINGS');
 		for I := low(cPowerMode) to high(cPowerMode) do begin
 	    	cPowerMode[I]:=Application^.FLanguage.GetValue(GetPathID + '.ITEM.'
 	    	    + cPowerModeID[I],cPowerMode[I]);
     		AddItem(cPowerMode[I]);
     	end;
+		{SetCaption(Application^.FFileNone);}
 	end;
 
 	Inc(B.Top, 2);
@@ -166,18 +168,26 @@ end;
 
 procedure TDlgPGMCfg.BeforeShow;
 var
+    DosLang, TL : string;
     S : String;
     I : integer;
 begin
 	inherited BeforeShow;
 	with Application^.FConfig do begin
-		OpenSection('*');
+        DosLang := UCase(Trim(GetEnv('LANG')));
+        TL := ''; {'DEFAULT' + LanguageExt;}
+        if DosLang <> '' then
+            OpenSection('LANG.' + DosLang)
+        else
+            OpenSection('LANG.NULL');
+        TL := GetValue('LANGUAGE', TL);
+        OpenSection('*');
+        TL := GetValue('LANGUAGE', TL);
+		FLang^.SetCaption(IsStr(TL, '', Application^.FFileNone));
 		OpenSection('PGM');
-		FLang^.SetCaption(IsStr(Trim(GetValue('LANGUAGE', 'DEFAULT.LNG')), '',
-		    Application^.FFileNone));
-		    I := StrIndex(GetValue('CPU_IDLE', cPowerModeID[IdleMethod]), cPowerModeID);
-            if I < 0 then I := 0;
-		    FIdle^.SetCaption(cPowerMode[I]);
+        I := StrIndex(GetValue('CPU_IDLE', cPowerModeID[IdleMethod]), cPowerModeID);
+        if I < 0 then I := 0;
+        FIdle^.SetCaption(cPowerMode[I]);
 		S := UCase(Trim(GetValue('USE_SOUND', 'TRUE')));
 		FSound^.SetOn(( S = 'TRUE') or (S='ON') or (S='ENABLED'));
 	end;
@@ -209,13 +219,23 @@ begin
 end;
 function TDlgPGMCfg.Modified;
 var
+    DosLang, TL : string;
     X : Boolean;
     I : integer;
 begin
 	X := False;
 	with Application^.FConfig do begin
+        DosLang := UCase(Trim(GetEnv('LANG')));
+        TL := ''; {'DEFAULT' + LanguageExt;}
+        if DosLang <> '' then
+            OpenSection('LANG.' + DosLang)
+        else
+            OpenSection('LANG.NULL');
+        TL := GetValue('LANGUAGE', TL);
+        OpenSection('*');
+        TL := GetValue('LANGUAGE', TL);
 		OpenSection('*');
-		X := X or (IsStr(GetValue('LANGUAGE', FLang^.GetCaption), '', Application^.FFileNone)
+		X := X or (IsStr(TL, '', Application^.FFileNone)
 		    <> Trim(FLang^.GetCaption));
         I := StrIndex(Trim(UCase(FIdle^.GetCaption)), cPowerMode);
         if I < 0 then I := 0;

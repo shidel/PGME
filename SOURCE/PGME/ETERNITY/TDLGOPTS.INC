@@ -100,6 +100,7 @@ begin
 		SetHelpText('Use the "Theme File" drop down list to select the theme you wish');
 		AddHelpText('PGME to use.');
 		SetBounds(D);
+ 		SetReadOnly(True);
         AddItem(Application^.FFileNone);
 		FindFirst(GetExePath + '*' + ThemeExt, faAnyFile, SRec);
 		while (DosError = 0) do begin
@@ -107,7 +108,7 @@ begin
 				AddItem(SRec.Name);
 			FindNext(SRec);
 		end;
-		SetCaption('DEFAULT.THM');
+		{ SetCaption(Application^.FFileNone); }
 	end;
 	Inc(B.Top);
 	Inc(B.Top);
@@ -147,6 +148,7 @@ begin
 		AddHelpText('and when exit PGME.');
 		D.Top := B.Top;
 		SetBounds(D);
+ 		SetReadOnly(True);
         AddItem(Application^.FFileNone);
 		FindFirst(GetExePath + '*' + FontExt, faAnyFile, SRec);
 		while (DosError = 0) do begin
@@ -154,7 +156,7 @@ begin
 				AddItem(SRec.Name);
 			FindNext(SRec);
 		end;
-		SetCaption('DEFAULT.FNT');
+		{ SetCaption(Application^.FFileNone); }
 	end;
 	Inc(B.Top);
 	Inc(B.Top);
@@ -241,15 +243,28 @@ end;
 
 procedure TDlgPGMOpt.BeforeShow;
 var
+    DosLang, TT, TF : string;
 	I : integer;
 begin
 	inherited BeforeShow;
 	with Application^.FConfig do begin
-		OpenSection('*');
-		FTheme^.SetCaption(IsStr(Trim(GetValue('THEME', 'DEFAULT.THM')), '',
-		    Application^.FFileNone));
-		FFont^.SetCaption(IsStr(Trim(GetValue('FONT', 'DEFAULT.FNT')), '',
-		    Application^.FFileNone));
+        DosLang := UCase(Trim(GetEnv('LANG')));
+        TT := ''; {'DEFAULT' + ThemeExt;}
+        TF := ''; {'DEFAULT' + FontExt;}
+        if DosLang <> '' then
+            OpenSection('LANG.' + DosLang)
+        else
+            OpenSection('LANG.NULL');
+        TT := GetValue('THEME', TT);
+        TF := GetValue('FONT', TF);
+        OpenSection('*');
+        TT := Trim(UCase(GetValue('THEME', TT)));
+        TF := Trim(UCase(GetValue('FONT', TF)));
+		FTheme^.SetCaption(Application^.FFileNone);
+		FTheme^.SetCaption(IsStr(TT, '', Application^.FFileNone));
+		FFont^.SetCaption(Application^.FFileNone);
+		if TF <> '' then FFont^.SetCaption(TF);
+{		FFont^.SetCaption(IsStr(TF, '',  Application^.FFileNone));}
 		OpenSection(Application^.GetNameID);
 		FSaver^.SetCaption(IsStr(Trim(GetValue('SCREEN_SAVER', 'DEFAULT.SCR')), '',
 		    Application^.FFileNone));
@@ -266,7 +281,6 @@ begin
 			FFader^.SetState(0);
 	end;
 	FFader^.SetEnabled(FDAC^.Checked);
-
 end;
 
 procedure TDlgPGMOpt.Save;
@@ -290,15 +304,28 @@ end;
 
 function TDlgPGMOpt.Modified;
 var
+    DosLang, TT, TF : string;
 	I : integer;
 	X : boolean;
 begin
     X := False;
 	with Application^.FConfig do begin
+        DosLang := UCase(Trim(GetEnv('LANG')));
+        TT := ''; {'DEFAULT' + ThemeExt;}
+        TF := ''; {'DEFAULT' + FontExt;}
+        if DosLang <> '' then
+            OpenSection('LANG.' + DosLang)
+        else
+            OpenSection('LANG.NULL');
+        TT := GetValue('THEME', TT);
+        TF := GetValue('FONT', TF);
+        OpenSection('*');
+        TT := Trim(UCase(GetValue('THEME', TT)));
+        TF := Trim(UCase(GetValue('FONT', TF)));
 		OpenSection('*');
-		X := X or (IsStr(GetValue('THEME', FTheme^.GetCaption), '', Application^.FFileNone)
+		X := X or (IsStr(TT, '', Application^.FFileNone)
 		    <> Trim(FTheme^.GetCaption));
-		X := X or (IsStr(GetValue('FONT', FFont^.GetCaption), '', Application^.FFileNone)
+		X := X or (IsStr(TF, '', Application^.FFileNone)
 		    <> Trim(FFont^.GetCaption));
 		OpenSection(Application^.GetNameID);
 		X := X or (IsStr(GetValue('SCREEN_SAVER', FSaver^.GetCaption), '', Application^.FFileNone)

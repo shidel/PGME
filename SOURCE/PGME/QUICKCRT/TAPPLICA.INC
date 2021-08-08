@@ -199,29 +199,41 @@ end;
 
 procedure TApplication.Configure;
 var
-    DosLang, TL, TT, TF, TK : string;
+    DosLang, TL, TT, TF, TK, S : string;
 begin
-    DosLang :=GetEnv('LANG');
 	FConfig.SetFileName(GetConfigName);
 	FConfig.Read;
 	FConfig.OpenSection('*');
 	{$IFDEF TEMPLATES}
 		FConfig.GetValue('TYPE', ftConfig);
+        TL := 'DEFAULT' + LanguageExt;
+        TT := 'DEFAULT' + ThemeExt;
+        TK := 'DEFAULT' + KeymapExt;
+        TF := 'DEFAULT' + FontExt;
+    {$ELSE}
+        TL := ''; { 'DEFAULT' + LanguageExt; }
+        TT := ''; { 'DEFAULT' + ThemeExt; }
+        TK := ''; { 'DEFAULT' + KeymapExt; }
+        TF := ''; { 'DEFAULT' + FontExt; }
 	{$ENDIF}
-	FLanguage.Create('Language');
-	FLanguage.SetFreeOnDestroy(False);
-	TL := FConfig.GetValue('LANGUAGE', 'DEFAULT' + LanguageExt);
-	TT := FConfig.GetValue('THEME', 'DEFAULT' + ThemeExt);
-	TK := FConfig.GetValue('KEYBOARD', 'DEFAULT' + KeymapExt);
-	TF := FConfig.GetValue('FONT', 'DEFAULT' + FontExt);
-	if DosLang <> '' then begin
-    	FConfig.OpenSection('LANG.' + DosLang);
-    	TL := FConfig.GetValue('LANGUAGE', TL);
-        TT := FConfig.GetValue('THEME', TT);
-        TK := FConfig.GetValue('KEYBOARD', TK);
-        TF := FConfig.GetValue('FONT', TF);
-    	FConfig.OpenSection('*');
-	end;
+    FLanguage.Create('Language');
+    FLanguage.SetFreeOnDestroy(False);
+    with FConfig do begin
+        DosLang := UCase(Trim(GetEnv('LANG')));
+        if DosLang <> '' then
+            OpenSection('LANG.' + DosLang)
+        else
+            OpenSection('LANG.NULL');
+        TL := GetValue('LANGUAGE', TL);
+        TT := GetValue('THEME', TT);
+        TK := GetValue('KEYBOARD', TK);
+        TF := GetValue('FONT', TF);
+        OpenSection('*');
+        TL := GetValue('LANGUAGE', TL);
+        TT := GetValue('THEME', TT);
+        TK := GetValue('KEYBOARD', TK);
+        TF := GetValue('FONT', TF);
+    end;
 	FLanguage.SetFileName(TL);
 	FLanguage.Read;
 	{$IFDEF TEMPLATES}

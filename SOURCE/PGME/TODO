@@ -17,7 +17,7 @@ Maybe Eventual Improvements:
 	Ticker style viewing of really long text when selected or mouse is over.
 	Improve Installer to not require two builds and permit UPX compressed stub.
 
-Todo:
+Todo Someday:
 
     Improve memory management and ETERNITY memory usage. (It wastes a lot)
 	Add Auto-detect of CD/DVD insertion.
@@ -26,10 +26,10 @@ Todo:
 	Add Ability to Click and Draw in EFNTDSGN.
 	Make Reboot Utility.
 	Multi-Language option inside installer.
+	Ability to auto-hide an entire menu when empty.
 
 What's left for upcoming Release:
 
     Fix extra spacing in help text
-    Fix displayed language, font and theme file when using DOS LANG setting.
     Add Read Ahead caching to cache file.
     Add UPX compression to build process and Compress most of them.

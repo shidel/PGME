@@ -1,10 +1,10 @@
 { Copyright 2015 Jerome Shidel }
 
-(* 
-		
+(*
+
 	This project and related files are subject to either the terms
 	specified in the included LICENSE.TXT file or the GNU GPLv2.0.
-	
+
 *)
 
 { ---TDropList --- }
@@ -12,7 +12,7 @@
 {$IFDEF INTERFACE}
 const
 	class_TDropList = 'TDropList';
-	
+
 type
 	PDropList = ^TDropList;
 	TDropList = object(TControl)
@@ -37,14 +37,14 @@ type
 		function GetCaption : String; virtual;
 		procedure SetReadOnly(AValue: Boolean); virtual;
 		function GetReadOnly : Boolean; virtual;
-		procedure ClearItems; virtual;		
+		procedure ClearItems; virtual;
 	end;
 {$ENDIF}
 
 {$IFDEF IMPLEMENTATION}
-function TDropList.ObjectClass(AName : String) : String; 
+function TDropList.ObjectClass(AName : String) : String;
 begin
-	if (AName = '') or (AName = class_TDropList) then 
+	if (AName = '') or (AName = class_TDropList) then
 		ObjectClass := class_TDropList
 	else
 		ObjectClass := inherited ObjectClass(AName);
@@ -64,10 +64,10 @@ begin
 		SetFreeOnDestroy(False);
 		FRBounds := B;
 	end;
-	TextAttr := C;	
+	TextAttr := C;
 	FDrop.Create(@Self, 'BUTTON');
 	with FDrop do begin
-		FCaptionAsChar := True;  
+		FCaptionAsChar := True;
 		SetFreeOnDestroy(False);
 		FCaption := #$20#$1F#$20;
 		FRBounds := B;
@@ -98,19 +98,19 @@ begin
 	GetBounds(AValue);
 	AValue.Top := 1;
 	AValue.Left := 1;
-	
+
 	Dec(AValue.Width, Length(FDrop.GetCaption));
 	FEdit.SetBounds(AValue);
 	AValue.Left := AValue.Width + 1;
 	AValue.Width := Length(FDrop.GetCaption);
 	FDrop.SetBounds(AValue);
-	
+
 	AValue.Left := 3;
 	Inc(AValue.Top);
 	AValue.Height := FMaxDrop;
-	AValue.Width := Width;	
+	AValue.Width := Width;
 	if not FList.GetShadow then Dec(AValue.Width, 2);
-	FList.SetBounds(AValue); 
+	FList.SetBounds(AValue);
 end;
 
 procedure TDropList.Draw;
@@ -119,7 +119,7 @@ begin
 	AdjustChildren;
 end;
 
-procedure TDropList.SetBounds(AValue : TBounds); 
+procedure TDropList.SetBounds(AValue : TBounds);
 begin
 	FMaxDrop := AValue.Height - 1;
 	AValue.Height := 1;
@@ -135,25 +135,25 @@ begin
 	S := '';
 	P := FList.GetCurrent;
 	if Assigned(P) then begin
-		S := P^.GetNameID;	
+		S := P^.GetNameID;
 	end else begin
 		if not FList.FList.GetAllowEmpty then
 			FList.FList.Up(True);
 		P := FList.GetCurrent;
-		if Assigned(P) then 
-			S := P^.GetNameID;	
+		if Assigned(P) then
+			S := P^.GetNameID;
 	end;
 	FEdit.SetCaption(S);
 	FEdit.Update;
 end;
 
-procedure TDropList.CheckLocal(var AEvent : TEvent); 
+procedure TDropList.CheckLocal(var AEvent : TEvent);
 var
 	R : integer;
 begin
 	if AEvent.What = evCommand then
 		case AEvent.Command of
-			cmDown : if (AEvent.InfoPtr = @FEdit) or 
+			cmDown : if (AEvent.InfoPtr = @FEdit) or
 			(Application^.FFocused = @Self) then begin
 				PutCommand(cmDoDropList, @FDrop);
 				ClearEvent(AEvent);
@@ -174,16 +174,16 @@ begin
 					PutCommand(cmDoDropList, @FDrop);
 				end else
 				if AEvent.InfoPtr = @FEdit then begin
-					FList.FList.ScrollTo(FEdit.GetCaption);	
+					FList.FList.ScrollTo(FEdit.GetCaption);
 					ClearEvent(AEvent);
 					PutCommand(cmEdit, @Self);
 				end;
 			end;
-		end; 
+		end;
 	inherited CheckLocal(AEvent);
 end;
 
-function TDropList.AddItem( AValue : String) : PListItem; 
+function TDropList.AddItem( AValue : String) : PListItem;
 begin
 	if FList.FList.FItems.FindID(AValue) = nil then
 		AddItem := FList.AddItem(AValue)
@@ -196,23 +196,23 @@ begin
 	FList.SetSorted(AValue);
 end;
 
-procedure TDropList.SetCaption(AValue: String); 
+procedure TDropList.SetCaption(AValue: String);
 begin
 	FEdit.SetCaption(AValue);
 	FList.ScrollTo(AValue);
 end;
 
-function TDropList.GetCaption : String; 
+function TDropList.GetCaption : String;
 begin
 	GetCaption := FEdit.GetCaption;
 end;
 
-procedure TDropList.SetReadOnly(AValue: Boolean); 
+procedure TDropList.SetReadOnly(AValue: Boolean);
 begin
 	FEdit.SetReadOnly(AValue);
 end;
 
-function TDropList.GetReadOnly : Boolean; 
+function TDropList.GetReadOnly : Boolean;
 begin
 	GetReadOnly := FEdit.GetReadOnly;
 end;
