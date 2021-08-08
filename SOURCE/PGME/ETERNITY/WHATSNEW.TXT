@@ -2,6 +2,7 @@
 
 2021-08
 
+    Installer ignore drive Z: under DOSBox.
     Auto disable QSCROLL smooth scrolling in common non-DOSBox Virtual Machines
     Added ability to auto-hide uninstalled/missing programs.
     Ignore CPUCache setting in DOSBOX.

@@ -24,27 +24,39 @@ begin
 	WriteLn(F, #9'SoftwareLicense : String =');
 	case License of
 		2 : begin
-			WriteLn('GPLv2.0 License');
+        	TextColor(LightGreen);
+			Write('GPLv2.0 License');
+			TextColor(LightGray);
+			WriteLn;
 			WriteLn(F, #9#9#$27 + 'This project and related files are subject to the terms of the' + #$27 + '#13 +');
 			WriteLn(F, #9#9#$27 + 'GNU General Public License, version 2.0. If a copy of the GPL' + #$27 + '#13 +');
 			WriteLn(F, #9#9#$27 + 'was not distributed with this file, You can obtain one at:' + #$27 + '#13 +');
 			WriteLn(F, #9#9#$27 + 'http://www.gnu.org/licenses/gpl-2.0.txt.' + #$27 + ';');
 		end;
 		1000 : begin
-			WriteLn('Commercial License');
+        	TextColor(LightMagenta);
+			Write('Commercial License');
+			TextColor(LightGray);
+			WriteLn;
+			Delay(2000);
 			WriteLn(F, #9#9#$27 + 'This project and related files are subject to the terms ' + #$27 + '#13 +');
 			WriteLn(F, #9#9#$27 + 'specified in the included LICENSE.TXT file. If a copy of that' + #$27 + '#13 +');
 			WriteLn(F, #9#9#$27 + 'file was not distributed with this file, You can obtain one by ' + #$27 + '#13 +');
 			WriteLn(F, #9#9#$27 + 'contacting the distributor of this program' + #$27 + ';');
 		end;
 	else
-		WriteLn('Unlicensed');
+        TextColor(LightRed);
+		Write('Unlicensed');
+        TextColor(LightGray);
+        WriteLn;
+        Delay(5000);
 		WriteLn(F, #9#9#$27 + 'This project and related files are subject to either the terms' + #$27 + '#13 +');
 		WriteLn(F, #9#9#$27 + 'specified in the included LICENSE.TXT file or the GNU GPLv2.0.'  + #$27 + '#13 +');
 		WriteLn(F, #9#9#$27 + 'Neither file was present during the creation of this program,' + #$27 + '#13 +');
 		WriteLn(F, #9#9#$27 + 'making it an invalid and possibly illegal copy.' + #$27 + ';');
 	end;
 	Close(F);
+	Delay(1000);
 	halt(0);
 end;
 
@@ -113,4 +125,4 @@ begin
 	Detect('..\license.txt', 1000); { Commercial Release }
 	SetLicense(0); 			  	    { Unlicensed }
 
-end.
+end.

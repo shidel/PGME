@@ -582,9 +582,11 @@ begin
 			G := '';
 			while Length(E) > 0 do begin
 				S := Dir(PullStr(';', E)) + BatchName;
-				AddItem(S);
-				if (G = '') or (S[1] < G[1]) or ( (S[1] = G[1]) and (Length(S) < Length(G) )) then
-					G := S;
+				if (Not IsDOSBox) or (Ucase(Copy(S,1,2)) <> 'Z:') then begin
+    				AddItem(S);
+	    			if (G = '') or (S[1] < G[1]) or ( (S[1] = G[1]) and (Length(S) < Length(G) )) then
+		    			G := S;
+		    	end;
 			end;
 			if BatchPath <> '' then
 				G := Dir(BatchPath) + BatchName
@@ -883,4 +885,4 @@ begin
 		ErrorsOnExit := False;
 		Halt(1);
 	end;
-end.
+end.

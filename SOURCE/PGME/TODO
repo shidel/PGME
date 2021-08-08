@@ -7,6 +7,7 @@ Maybe Eventual Improvements:
 	Convert PMGE Launcher to assembly.
 	General perfomance enhancements.
 	Restore all paths on exit.
+    Improve scrolling in QScroll
 	Do QDETUNE.
 	Import of PMI from within PGME.
 	Improve Install Size Accuracy.
@@ -14,6 +15,7 @@ Maybe Eventual Improvements:
 	Add PGME Value as Formatting to Options like %E for eternity path... for launchers.
 	Change searching to search programs in order of appearance, not order of ID.
 	Ticker style viewing of really long text when selected or mouse is over.
+	Improve Installer to not require two builds and permit UPX compressed stub.
 
 Todo:
 
@@ -32,4 +34,4 @@ What's left for upcoming Release:
     Add Read caching to cache file.
     Add UPX compression to build process.
     Add LSM Change Scanning.
-    Improve scrolling in QScroll
+    Compress Most Binaries with UPX.

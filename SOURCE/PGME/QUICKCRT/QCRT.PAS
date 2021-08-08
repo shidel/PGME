@@ -128,9 +128,11 @@ interface
     Magenta       = 5;
     Brown         = 6;
     LightGray     = 7;
+    LightGrey     = LightGray;
 
   { Foreground color/attribute constants }
     DarkGray      = 8;
+    DarkGrey      = DarkGray;
     LightBlue     = 9;
     LightGreen    = 10;
     LightCyan     = 11;

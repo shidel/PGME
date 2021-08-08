@@ -342,8 +342,9 @@ begin
 		ScreenMax := ScreenMax - $100;
 		WindMax := ScreenMax;
 	end;
-	CheckCursor := True;
-	GotoXY(1,Hi(ScreenMax)+1);
+    CheckCursor := True;
+    GotoXY(1,Hi(ScreenMax)+1);
+    WriteLn;
 	NormalCursor;
 end;
 
