@@ -344,7 +344,7 @@ begin
 	end;
     CheckCursor := True;
     GotoXY(1,Hi(ScreenMax)+1);
-    WriteLn;
+    ClrEol;
 	NormalCursor;
 end;
 
