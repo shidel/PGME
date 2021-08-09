@@ -1,6 +1,7 @@
 @echo off
 
 if "%1" == "dev" goto TestTPC
+if "%1" == "scr" goto TestTPC
 if "%1" == "clean" goto CheckV8PT
 if "%1" == "noclean" goto CheckV8PT
 if not "%1" == "" goto %1
@@ -80,6 +81,7 @@ REM Main Build Section
 set SELF=%0
 vecho Creating /fWhite Program Manager /fCyan Eternity /fGrey from source.
 if "%1" == "dev" goto DevBuildOnly
+if "%1" == "scr" goto ScrSvrBuildOnly
 if "%1" == "clean" goto DevBuildClean
 
 call %SELF% make Clean Prepare
@@ -115,6 +117,16 @@ goto Done
     if errorlevel 1 goto ErrorExit
     call %SELF% make Collect
     if errorlevel 1 goto ErrorExit
+goto Done
+
+:ScrSvrBuildOnly
+    verrlvl 0
+    call %SELF% make DevBuildClean Prepare
+    if errorlevel 1 goto ErrorExit
+	call %SELF% MAKESUB ESAVER Only
+    if errorlevel 1 goto ErrorExit
+    if exist esaver\bin\blanker.exe move /y esaver\bin\*.exe bin
+
 goto Done
 
 :DevBuildClean
@@ -361,15 +373,22 @@ goto DoneMAKESUB
 goto DoneMAKESUB
 
 :MAKE_ESAVER_Second
+:MAKE_ESAVER_Only
     verrlvl 0
  	if exist BIN\NUL deltree /y BIN
     if not exist BIN\NUL mkdir BIN
 
     set TPC_OPTS=-M -L -EBIN -UBIN;..\QuickCRT\BIN -I..\QuickCRT
-    call ..\%SELF% COMPILE BLANKER ATOM
+    call ..\%SELF% COMPILE BLANKER ATOM STATIC TIME CONWAY
     if exist FAILED goto ErrorMAKESUB
+
+    if /I "%2" == "ONLY" goto DoneMAKESUB
+
     if exist bin\blanker.exe move bin\blanker.exe bin\blanker.scr
     if exist bin\atom.exe move bin\atom.exe bin\atom.scr
+    if exist bin\static.exe move bin\static.exe bin\static.scr
+    if exist bin\snow.exe move bin\snow.exe bin\snow.scr
+    if exist bin\time.exe move bin\time.exe bin\time.scr
     if exist bin\conway.exe move bin\conway.exe bin\conway.scr
 
 goto DoneMAKESUB

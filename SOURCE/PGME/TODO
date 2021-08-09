@@ -25,11 +25,11 @@ Todo Someday:
 	Add Ability to Click and Draw in EFNTDSGN.
 	Make Reboot Utility.
 	Multi-Language option inside installer.
-	Ability to auto-hide an entire menu when empty.
 	Add color attributes for disabled thumb toggle text.
+    Add Read Ahead caching to cache file.
 
 What's left for upcoming Release:
 
     Improve QScroll smooth scrolling
-    Add Read Ahead caching to cache file.
+	Ability to auto-hide an entire menu when empty.
     Add UPX compression to build process and Compress most of them.

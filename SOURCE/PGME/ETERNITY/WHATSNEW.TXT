@@ -2,6 +2,9 @@
 
 2021-08
 
+    Automatic language/font/theme/keymap switching in QCrt based apps (PGME,
+        EFontDesigner and Installer) when defaults are empty.
+    New Clock, Conway and Static screen savers.
     Removed Extra spacing in alternate language help text
     Added support to scroll to item in unsorted lists (for the dropdowns)
     Improved startup message (beginning/resuming/updating) display
@@ -17,7 +20,8 @@
     Mouse flicker reduced some.
     Added Config Dialog option to turn sound on/off
     Added config file option to save power, CPU_IDLE=ANY, APM, HALT or NONE
-    Added wait on return for individual programs, WAIT=OFF, FOREVER, DEFAULT or seconds.
+    Added wait on return for individual programs, WAIT=OFF, FOREVER, DEFAULT
+        or time in seconds.
     Added wait on return default per menu global WAIT=OFF, FOREVER or seconds.
     Assigned Edit Menu popup tp EditItem Command (default Alt+E).
     Changed Edit button mapping from EditFile to EditItem
