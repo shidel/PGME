@@ -7,7 +7,6 @@ Maybe Eventual Improvements:
 	Convert PMGE Launcher to assembly.
 	General perfomance enhancements.
 	Restore all paths on exit.
-    Improve scrolling in QScroll
 	Do QDETUNE.
 	Import of PMI from within PGME.
 	Improve Install Size Accuracy.
@@ -27,9 +26,10 @@ Todo Someday:
 	Make Reboot Utility.
 	Multi-Language option inside installer.
 	Ability to auto-hide an entire menu when empty.
+	Add color attributes for disabled thumb toggle text.
 
 What's left for upcoming Release:
 
-    Fix extra spacing in help text
+    Improve QScroll smooth scrolling
     Add Read Ahead caching to cache file.
     Add UPX compression to build process and Compress most of them.

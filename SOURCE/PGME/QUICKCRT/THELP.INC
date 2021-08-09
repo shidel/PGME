@@ -1,10 +1,10 @@
-{ Copyright 2015 Jerome Shidel }
+{ Copyright 2015-2021 Jerome Shidel }
 
-(* 
-		
+(*
+
 	This project and related files are subject to either the terms
 	specified in the included LICENSE.TXT file or the GNU GPLv2.0.
-	
+
 *)
 
 { ---THelp --- }
@@ -12,11 +12,12 @@
 {$IFDEF INTERFACE}
 const
 	class_THelp = 'THelp';
-	
+
 type
 	PHelp = ^THelp;
 	THelp = object(TWindow)
     public { protected }
+        FBlankLines : integer;
 		function  ObjectClass ( AName : String ) : String; virtual;
 	public { protected }
 		FText : TTextView;
@@ -24,7 +25,7 @@ type
 		procedure AddHelpFrom(AControl : PCOntrol);
 	public
 		constructor Create(AParent : PControl; AName : String);
-		
+
 		procedure ShowHelp(AValue : PControl); virtual;
 		procedure BuildHelp; virtual;
 	end;
@@ -45,7 +46,7 @@ begin
 	while Assigned(P) and (D.StringValue = '') do begin
 		if P^.ClassOf(class_TApplication) then
 			D.StringValue := Trim(PApplication(P)^.FInfo.Title)
-		else if P^.ClassOf(class_TWindow) then 
+		else if P^.ClassOf(class_TWindow) then
 			D.StringValue := Trim(PWindow(P)^.FTitle.GetCaption);
 		P := PControl(P^.Parent);
 	end;
@@ -53,9 +54,9 @@ begin
 	AValue := FormatStr(AValue, D, 1);
 end;
 
-function THelp.ObjectClass(AName : String) : String; 
+function THelp.ObjectClass(AName : String) : String;
 begin
-	if (AName = '') or (AName = class_THelp) then 
+	if (AName = '') or (AName = class_THelp) then
 		ObjectClass := class_THelp
 	else
 		ObjectClass := inherited ObjectClass(AName);
@@ -72,10 +73,10 @@ begin
 	FTitle.SetCaption('0; Help on "%0" ');
 	FTitle.SetTextAttr($74);
 	FTitle.OnFormat := FormatHelpTitle;
-	
+    FBlankLines := 0;
 	Bounds(1, 1, 70, Hi(ScreenMax) - 1,B);
-	SetBounds(B);	
-	
+	SetBounds(B);
+
 	FStyle := bxSingle;
 	SetAnchors(abTop or abBottom);
 
@@ -103,11 +104,11 @@ begin
 	end else begin
 		AValue.Left := (Lo(ScreenMax) div 2) - (AValue.Width div 2) + 1;
 		AValue.Top := (Hi(ScreenMax)  div 2) - (AValue.Height div 2) + 1;
-	end; 
+	end;
 	inherited SetCurrentBounds(AValue);
 end;
 
-procedure THelp.ShowHelp(AValue : PControl); 
+procedure THelp.ShowHelp(AValue : PControl);
 begin
 	HelpSection := AValue;
 	if (Not Assigned(HelpSection)) or (HelpSection = @Self) then begin
@@ -115,7 +116,7 @@ begin
 		Hide;
 	end;
 	StartDrawing;
-	BuildHelp; 
+	BuildHelp;
 	FinishDrawing;
 	SetCurrentBounds(FRBounds);
 	ShowModal;
@@ -135,7 +136,11 @@ var
 begin
 	GetCommandMap(CommandMap, CommandCount);
 	L := AControl^.FHelpList.First;
-	if Assigned(L) then FText.AddItem('');
+	if Assigned(L) then begin
+        Inc(FBlankLines);
+        if FBlankLines < 2 then
+            FText.AddItem('');
+    end;
 	D[0].ID := fmtString;
 	D[0].StringValue := AControl^.GetNameID;
 	D[1].ID := fmtString;
@@ -157,7 +162,7 @@ begin
 	while Assigned(L) or (S <> '') do begin
 		if Assigned(L) then
 			T := FormatStr(L^.GetNameID, D, 4)
-		else 
+		else
 			T := '';
 		if T = '' then begin
 			if S <> '' then begin
@@ -165,24 +170,29 @@ begin
 				S := '';
 			end;
 		end;
-		
-		if S <> '' then 
+
+		if S <> '' then
 			S := S + ' ' + T
 		else
 			S := T;
-			
-		if S = '' then FText.AddItem('');
-		
+
+		if (S = '') then begin
+		    Inc(FBlankLines);
+		    if FBlankLines < 2 then
+        		FText.AddItem('');
+        end else
+            FBlankLines := 0;
+
 		while Length(S) > FText.Width do begin
 			W := FText.Width;
 			while (W > 0) and (S[W] <> ' ') do dec(W);
 			if W = 0 then W := FText.Width;
 			T := Copy(S, 1, W);
-			S := LTrim(Copy(S, Length(T) + 1, Length(S)));				
+			S := LTrim(Copy(S, Length(T) + 1, Length(S)));
 			FText.AddItem(T);
 		end;
 
-		if Assigned(L) then 
+		if Assigned(L) then
 			L := L^.Next;
 	end;
 	P := PControl(AControl^.First);
@@ -193,14 +203,9 @@ begin
 end;
 
 procedure THelp.BuildHelp;
-{var 
-	I : integer; }
 begin
-	FText.ClearItems; 
-
+	FText.ClearItems;
+	FBlankLines := 0;
 	AddHelpFrom(HelpSection);
-	
-{	for I := 1 to 30 do
-		FText.AddItem('Extra Line: ' + IntStr(I)); }
 end;
 {$ENDIF}
