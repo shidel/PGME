@@ -278,22 +278,28 @@ program Time;
 
   procedure SetColors;
     var
-      I      : byte;
+      I: byte;
+      X: Word;
     begin
-      FillChar ( Colors, Sizeof(Colors), 0);
-      for I := 0 to 63 do Colors[      I, 0] := I;
-      for I := 0 to 63 do Colors[ 64 + I, 1] := I;
-      for I := 0 to 63 do Colors[128 + I, 2] := I;
-      for I := 0 to 63 do FillChar(Colors[192 + I, 0], 3, I);
-      asm
-      	MOV DX, OFFSET Colors
-      	push ds
-      	pop  es
-      	mov ax, $1012
-        xor bx, bx
-        mov cx, $0100
-        int $10
-      end;
+        FillChar ( Colors, Sizeof(Colors), 0);
+        for I := 1 to 255 do begin
+            repeat
+                Colors[I, 0] := Random(16) * 4;
+                Colors[I, 1] := Random(16) * 4;
+                Colors[I, 2] := Random(16) * 4;
+                X := Colors[I, 0] + Colors[I, 1] + Colors[I, 2];
+            until (X <= 128) and (X > 64);
+
+        end;
+        asm
+            MOV DX, OFFSET Colors
+            push ds
+            pop  es
+            mov ax, $1012
+            xor bx, bx
+            mov cx, $0100
+            int $10
+        end;
     end;
 
   procedure OpenVideo; assembler;
@@ -348,7 +354,7 @@ program Time;
 
     procedure RandColor;
     begin
-        Colr := Random(4) * 63 + 50;
+        Colr := Random(255) + 1;
     end;
 
     procedure RandPos;
@@ -368,8 +374,8 @@ program Time;
         if T = LTime then Exit;
         LTime := T;
         if NChg = 0 then begin
-            NChg := Random(11) + 5;
-            if Random(4) <> 0 then
+            NChg := Random(10) + 5;
+            if Random(3) <> 0 then
                 RandPos
             else
                 RandColor;

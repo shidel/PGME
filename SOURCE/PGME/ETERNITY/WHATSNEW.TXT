@@ -7,7 +7,7 @@
     New Clock, Conway and Static screen savers.
     Removed Extra spacing in alternate language help text
     Added support to scroll to item in unsorted lists (for the dropdowns)
-    Improved startup message (beginning/resuming/updating) display
+    Improved startup message (beginning/resuming/updating) display and duration
     Watch for Package (Un)Installs under FreeDOS, improved Auto-Hide.
     Installer ignore drive Z: under DOSBox.
     Auto disable QSCROLL smooth scrolling in common non-DOSBox Virtual Machines
