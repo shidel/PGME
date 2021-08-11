@@ -17,7 +17,6 @@ Known Issues (That I either can not or will not do anything about):
 	Font's turned into TSRs with QFNT2TSR will not function in DosBox.
 	Sounds cannot be heard in VMware.
 	QScroll Smooth scrolling doesn't work in VMware.
-	ATOM screen saver will not work in DosBox fullscreen mode.
 
 To-Do (Sooner or later, maybe):
 	
