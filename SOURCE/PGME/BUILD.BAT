@@ -222,6 +222,8 @@ goto DoneMake
     xcopy /y /d eternity\*.txt bin\
 
     xcopy /y /d custom\config\*.* bin\
+    xcopy /y /d custom\docs\*.* bin\
+    xcopy /y /d custom\keyboard\*.* bin\
     xcopy /y /d custom\language\*.* bin\
     xcopy /y /d custom\fonts\*.* bin\
     xcopy /y /d custom\themes\*.* bin\
