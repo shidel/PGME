@@ -1,4 +1,4 @@
-{ Copyright 2015 Jerome Shidel }
+{ Copyright 2015-2021 Jerome Shidel }
 
 (*
 
@@ -1428,25 +1428,6 @@ end;
 {Dos Fn 06,07,0A,0C,1B,26,31,32,34,37,44(00,01,02,03,04,05,06,07,0A,0B,0C,0D),
   4B,4C,4D,4E,4F,54,56,57,59,5A,5B,5C,5E,5F,62,65,66,67,68,6C ommitted. }
 
-  procedure InitUnit;
-    begin
-      DosError := 0;
-
-      { if Unknown assume its ok and exit procedure }
-      if ( DosVersion = DosXXX ) then exit;
-
-      { check dos version }
-      if (Lo(DosVersion) < Lo(ReqDosVersion)) or
-      ((Lo(DosVersion) = Lo(ReqDosVersion)) and
-      (Hi(DosVersion) < Hi(ReqDosVersion))) then
-        begin
-          WriteLn ( 'This program requires ', DosVersionStr(ReqDosVersion), '+. Your version ',
-          'says it is ',  DosVersionStr(DosVersion) );
-          Halt(1);
-        end;
-        SaveIntVecs;
-    end;
-
 function FileExtension(AFileName : String) : String;
 var
 	I : integer;
@@ -1562,6 +1543,25 @@ begin
     end;
     RollIn(HexWord(DosError));
     DirScanId := TempStr;
+end;
+
+procedure InitUnit;
+begin
+    DosError := 0;
+
+    { if Unknown assume its ok and exit procedure }
+    if ( DosVersion = DosXXX ) then exit;
+
+    { check dos version }
+    if (Lo(DosVersion) < Lo(ReqDosVersion)) or
+    ((Lo(DosVersion) = Lo(ReqDosVersion)) and
+    (Hi(DosVersion) < Hi(ReqDosVersion))) then
+        begin
+            WriteLn ( 'This program requires ', DosVersionStr(ReqDosVersion),
+            '+. Your version says it is ',  DosVersionStr(DosVersion) );
+            Halt(1);
+        end;
+    SaveIntVecs;
 end;
 
 begin

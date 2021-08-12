@@ -2,6 +2,7 @@
 
 if "%1" == "dev" goto TestTPC
 if "%1" == "scr" goto TestTPC
+if "%1" == "util" goto TestTPC
 if "%1" == "clean" goto CheckV8PT
 if "%1" == "noclean" goto CheckV8PT
 if not "%1" == "" goto %1
@@ -82,6 +83,7 @@ set SELF=%0
 vecho Creating /fWhite Program Manager /fCyan Eternity /fGrey from source.
 if "%1" == "dev" goto DevBuildOnly
 if "%1" == "scr" goto ScrSvrBuildOnly
+if "%1" == "util" goto EtoolsBuildOnly
 if "%1" == "clean" goto DevBuildClean
 
 call %SELF% make Clean Prepare
@@ -126,6 +128,16 @@ goto Done
 	call %SELF% MAKESUB ESAVER Only
     if errorlevel 1 goto ErrorExit
     if exist esaver\bin\blanker.exe move /y esaver\bin\*.exe bin
+
+goto Done
+
+:EToolsBuildOnly
+    verrlvl 0
+    call %SELF% make DevBuildClean Prepare
+    if errorlevel 1 goto ErrorExit
+	call %SELF% MAKESUB ETOOLS Only
+    if errorlevel 1 goto ErrorExit
+    if exist etools\bin\qnothing.exe move /y etools\bin\*.exe bin
 
 goto Done
 
@@ -351,6 +363,7 @@ goto DoneMAKESUB
 
 :MAKE_ETOOLS_First
 :MAKE_ETOOLS_Second
+:MAKE_ETOOLS_Only
     verrlvl 0
  	if exist BIN\NUL deltree /y BIN
     if not exist BIN\NUL mkdir BIN
@@ -361,7 +374,7 @@ goto DoneMAKESUB
     if /I "%2" == "FIRST" goto DoneMakeSub
     REM call ..\%SELF% COMPILE ETOOL
     if exist FAILED goto ErrorMAKESUB
-    call ..\%SELF% COMPILE QCNFTOOL QDETUNE QKEYS
+    call ..\%SELF% COMPILE QRESFILE QCNFTOOL QDETUNE QKEYS
     if exist FAILED goto ErrorMAKESUB
     call ..\%SELF% COMPILE QNOTHING QSCROLL
     if exist FAILED goto ErrorMAKESUB
@@ -426,6 +439,8 @@ goto DoneMakeSub
     call ..\%SELF% COMPILE QCONTROL QDIRCNTL QFILEDLG QLOG
     if exist FAILED goto ErrorMAKESUB
     call ..\%SELF% COMPILE QMORE QSCRNSVR QSPEAKER QTIMER
+    if exist FAILED goto ErrorMAKESUB
+    call ..\%SELF% COMPILE QRESRC
     if exist FAILED goto ErrorMAKESUB
     call ..\%SELF% COMPILE QTEST
     if exist FAILED goto ErrorMAKESUB
