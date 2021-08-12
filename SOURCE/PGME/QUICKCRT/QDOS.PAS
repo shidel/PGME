@@ -136,6 +136,7 @@ interface
     end;
 
   var
+    SwitchChar  : Char;
     DosError : integer;
 
   function  DosVersion : word;
@@ -1546,6 +1547,8 @@ begin
 end;
 
 procedure InitUnit;
+var
+    S : String;
 begin
     DosError := 0;
 
@@ -1562,6 +1565,13 @@ begin
             Halt(1);
         end;
     SaveIntVecs;
+
+    S := GetEnv('SWITCHCHAR');
+    if S = '' then
+        SwitchChar := '/'
+    else
+        SwitchChar := S[1];
+
 end;
 
 begin

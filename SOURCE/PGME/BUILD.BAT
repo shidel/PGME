@@ -440,7 +440,7 @@ goto DoneMakeSub
     if exist FAILED goto ErrorMAKESUB
     call ..\%SELF% COMPILE QMORE QSCRNSVR QSPEAKER QTIMER
     if exist FAILED goto ErrorMAKESUB
-    call ..\%SELF% COMPILE QRESRC
+    call ..\%SELF% COMPILE QASCIIZ QNLS QRESRC
     if exist FAILED goto ErrorMAKESUB
     call ..\%SELF% COMPILE QTEST
     if exist FAILED goto ErrorMAKESUB
