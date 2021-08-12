@@ -33,6 +33,7 @@ type
 			DefaultWait : LongInt;
 			FShortTitle,
 			FLongTitle : PString;
+			AutoHide : integer;
 		constructor Create(AName : String);
 		destructor Destroy; virtual;
 		function    ReadSelf(var F : TFile) : boolean; virtual;
@@ -177,6 +178,7 @@ begin
 	DefaultWait := 0;
 	FShortTitle := nil;
 	FLongTitle := nil;
+	AutoHide := 0;
 end;
 
 destructor TCacheMenu.Destroy;
@@ -219,6 +221,10 @@ begin
 		F.ReadLongInt(DefaultWait);
 		OK := F.IOResult = 0;
 	end;
+	if OK then begin
+		F.ReadInteger(AutoHide);
+		OK := F.IOResult = 0;
+	end;
 	ReadSelf := OK;
 end;
 
@@ -256,6 +262,10 @@ begin
 	end;
 	if OK then begin
 		F.WriteLongInt(DefaultWait);
+		OK := F.IOResult = 0;
+	end;
+	if OK then begin
+		F.WriteInteger(AutoHide);
 		OK := F.IOResult = 0;
 	end;
 	WriteSelf := OK;

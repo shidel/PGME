@@ -272,14 +272,15 @@ var
 	SRec : TSearchRec;
 	S, H : String;
 	M, A, P, V : PListItem;
-	HideItem : boolean;
-	I : LongInt;
+	HideItem, HideMenu : boolean;
+	I, ICnt : LongInt;
 begin
 	AMenu^.Clear;
 	Temp.Create(AMenu^.GetNameID);
 	Temp.SetFileName(AMenu^.Parent^.GetNameID + AMenu^.GetNameID);
 	Temp.Read;
 	Temp.OpenSection('*');
+	HideMenu := False;
 	if Temp.GetValue('TYPE', '') = ftMenu then begin
 		{ Validated that is a menu file }
 
@@ -301,6 +302,14 @@ begin
 		    PCacheMenu(AMenu)^.DefaultWait := -1
 		else
 		    PCacheMenu(AMenu)^.DefaultWait := 0;
+		S := UCase(Trim(Temp.GetValue('HIDE', 'NO')));
+		if (S = 'AUTO') then
+		    PCacheMenu(AMenu)^.AutoHide := 2
+		else if (S = 'ON') then begin
+		    PCacheMenu(AMenu)^.AutoHide := 1;
+		    HideMenu := True;
+		end else
+		    PCacheMenu(AMenu)^.AutoHide := 0;
 		{ Set Long Title }
 		S := Trim(Temp.GetValue('DESCRIPTION.' + Application^.FLanguageID, ''));
 		if S = '' then
@@ -312,78 +321,92 @@ begin
 		PCacheMenu(AMenu)^.SetLongTitle(S);
 
 		{ Read Program Entries }
-		M := Temp.FList.First;
-		while assigned(M) do begin
-			Temp.OpenSection(M^.GetNameID);
-			S := Temp.GetValue('FILE', '');
-			H := Ucase(trim(Temp.GetValue('HIDE', '')));
-			if (S <> '') and (H = 'AUTO') then begin
-			    if PathOf(S) = '' then
-			        H := TailDelim(GetEXEPath) + S
-			    else
-    			    H := FileExpand(S);
-			    HideItem := (H = '') or (not FileExists(H));
-			end else if StrBool(H) then
-			    HideItem := True
-			else
-			    HideItem := False;
-
-			if (Not HideItem) and ((S <> '') or (Temp.FindKey('COMMANDS') <> nil)) then begin
-				{ It is a program entry }
-				if not MemCheck(Sizeof(TCacheApp)) then Halt(8);
-				A := New(PCacheApp, Create(M^.GetNameID));
-				with PCacheApp(A)^ do begin
-					 { if S = '' then
-						S := 'unknown'; }
-					SetFileName(Trim(uCase(S)));
-					S := Trim(Temp.GetValue('TITLE.' + Application^.FLanguageID, ''));
-					if S = '' then
-						S := Trim(Temp.GetValue('TITLE', ''));
-					if S = '' then
-						S := Trim(Temp.GetValue('TITLE.EN_US', ''));
-					if S = '' then
-						S := GetNameID;
-					SetTitle(S);
-					SetClassName(Trim(Temp.GetValue('CLASS', '')));
-					SetGroupName(Trim(Temp.GetValue('GROUP', '')));
-					HideMode := Temp.GetSetValue('GROUP', 0, cHideModes);
-					SetTone(Trim(Temp.GetValue('TONE', '')));
-					MaxMemory := StrBool(Temp.GetValue('MAXAVAIL', 'NO'));
-					SimpleExec := StrBool(Temp.GetValue('SIMPLE', 'YES'));
-                    S := UCase(Trim(Temp.GetValue('WAIT', 'DEFAULT')));
-					ReturnAfter := StrBool(Temp.GetValue('RETURN', 'YES'));
-					CPUCacheOff := StrBool(Temp.GetValue('CPUCACHE', ''));
-					PGMVars := StrBool(Temp.GetValue('PGMEVARS', 'NO'));
-                    if (IntStr(StrInt(S)) = S) then
-                        ReturnWait := StrInt(S)
-                    else if (S = 'DEFAULT') then
-                        ReturnWait := -2
-                    else if (S = 'PAUSE') or (S = 'FOREVER') or ( S = 'YES' ) then
-                        ReturnWait := -1
+		ICnt := 0;
+		if not HideMenu then begin
+            M := Temp.FList.First;
+            while assigned(M) do begin
+                Temp.OpenSection(M^.GetNameID);
+                S := Temp.GetValue('FILE', '');
+                H := Ucase(trim(Temp.GetValue('HIDE', '')));
+                if (S <> '') and (H = 'AUTO') then begin
+                    if PathOf(S) = '' then
+                        H := TailDelim(GetEXEPath) + S
                     else
-                        ReturnWait := 0;
-				end;
-				{ Read App's Process }
-				V := M^.FindID('COMMANDS');
-				if Assigned(V) then
-					V := V^.First;
-				I := 0;
-				while Assigned(V) do begin
-					S := Trim(V^.GetNameID);
-					if S <> '' then begin
-						Inc(I);
-						if not MemCheck(Sizeof(TCacheProc)) then Halt(8);
-						P := new(PCacheProc, Create(S));
-						A^.Add(P);
-					end;
-					V := V^.Next;
-				end;
-				AMenu^.Add(A);
-			end;
-			M := M^.next;
-		end;
+                        H := FileExpand(S);
+                    HideItem := (H = '') or (not FileExists(H));
+                end else if StrBool(H) then
+                    HideItem := True
+                else
+                    HideItem := False;
+
+                if (Not HideItem) and ((S <> '')
+                or (Temp.FindKey('COMMANDS') <> nil)) then begin
+                    { It is a program entry }
+                    Inc(ICnt);
+                    if not MemCheck(Sizeof(TCacheApp)) then Halt(8);
+                    A := New(PCacheApp, Create(M^.GetNameID));
+                    with PCacheApp(A)^ do begin
+                         { if S = '' then
+                            S := 'unknown'; }
+                        SetFileName(Trim(uCase(S)));
+                        S := Trim(Temp.GetValue('TITLE.'
+                        + Application^.FLanguageID, ''));
+                        if S = '' then
+                            S := Trim(Temp.GetValue('TITLE', ''));
+                        if S = '' then
+                            S := Trim(Temp.GetValue('TITLE.EN_US', ''));
+                        if S = '' then
+                            S := GetNameID;
+                        SetTitle(S);
+                        SetClassName(Trim(Temp.GetValue('CLASS', '')));
+                        SetGroupName(Trim(Temp.GetValue('GROUP', '')));
+                        HideMode := Temp.GetSetValue('GROUP', 0, cHideModes);
+                        SetTone(Trim(Temp.GetValue('TONE', '')));
+                        MaxMemory := StrBool(Temp.GetValue('MAXAVAIL', 'NO'));
+                        SimpleExec := StrBool(Temp.GetValue('SIMPLE', 'YES'));
+                        S := UCase(Trim(Temp.GetValue('WAIT', 'DEFAULT')));
+                        ReturnAfter := StrBool(Temp.GetValue('RETURN', 'YES'));
+                        CPUCacheOff := StrBool(Temp.GetValue('CPUCACHE', ''));
+                        PGMVars := StrBool(Temp.GetValue('PGMEVARS', 'NO'));
+                        if (IntStr(StrInt(S)) = S) then
+                            ReturnWait := StrInt(S)
+                        else if (S = 'DEFAULT') then
+                            ReturnWait := -2
+                        else if (S = 'PAUSE') or (S = 'FOREVER')
+                        or ( S = 'YES' ) then
+                            ReturnWait := -1
+                        else
+                            ReturnWait := 0;
+                    end;
+                    { Read App's Process }
+                    V := M^.FindID('COMMANDS');
+                    if Assigned(V) then
+                        V := V^.First;
+                    I := 0;
+                    while Assigned(V) do begin
+                        S := Trim(V^.GetNameID);
+                        if S <> '' then begin
+                            Inc(I);
+                            if not MemCheck(Sizeof(TCacheProc)) then Halt(8);
+                            P := new(PCacheProc, Create(S));
+                            A^.Add(P);
+                        end;
+                        V := V^.Next;
+                    end;
+                    AMenu^.Add(A);
+                end;
+                M := M^.next;
+            end;
+
+	    end;
+
+		HideMenu := (ICnt = 0) and (PCacheMenu(AMenu)^.AutoHide <> 0);
 
 	end else begin
+	    HideMenu := True;
+	end;
+
+	if HideMenu then begin
 		PCacheDir(AMenu^.Parent)^.Remove(AMenu);
 		Dispose(AMenu, Destroy);
 		AMenu := nil;

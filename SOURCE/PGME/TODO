@@ -31,5 +31,6 @@ Todo Someday:
 What's left for upcoming Release:
 
     Improve QScroll smooth scrolling
-	Ability to auto-hide an entire menu when empty.
     Add UPX compression to build process and Compress most of them.
+    Verify Translations, make TR & FR Themes
+    Verity Installer Files and Paths.

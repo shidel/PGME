@@ -2,6 +2,7 @@
 
 2021-08
 
+    Support to autohide menus without any visible programs.
     Automatic language/font/theme/keymap switching in QCrt based apps (PGME,
         EFontDesigner and Installer) when defaults are empty.
     New Clock, Conway and Static screen savers.
