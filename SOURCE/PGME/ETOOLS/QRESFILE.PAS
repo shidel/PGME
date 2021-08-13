@@ -43,6 +43,8 @@ type
         Zero : byte;
     end;
 
+    TResourceStatusProc = function (AFileName : String; ACompleted : word) : boolean;
+
     PResource = ^TResource;
     TResource = object (TObject)
 	public { private }
@@ -55,6 +57,7 @@ type
 	    FDataStart : longint;
 	    FHasFooter : boolean;
 	    FModified  : boolean;
+	    FJunkPaths : boolean;
       procedure   SetHandler(AHandler : PAbstractFile); virtual;
       function    GetHandler : PAbstractFile; virtual;
       function    InvalidHandler : boolean; virtual;
@@ -73,6 +76,10 @@ type
       function    Close : boolean; virtual;
       function    FindFirst(AFileSpec : String; var ARec : TResourceRec) : boolean; virtual;
       function    FindNext(var ARec : TResourceRec) : boolean; virtual;
+      function    Import(AFileSpec : String; AStatus : TResourceStatusProc ) : boolean; virtual;
+      function    Export(AFileSpec : String; AStatus : TResourceStatusProc ) : boolean; virtual;
+      function    Delete(AFileSpec : String; AStatus : TResourceStatusProc ) : boolean; virtual;
+      function    DeleteAll : boolean; virtual;
     end;
 
 function TResource.ObjectClass(AName : String) : String;
@@ -93,6 +100,7 @@ begin
     FDataStart := -1;
     FHasFooter := False;
     FModified := False;
+    FJunkPaths := False;
     SetHandler(AHandler);
 end;
 
@@ -329,6 +337,87 @@ begin
     FindNext := True;
 end;
 
+function TResource.Import(AFileSpec : String; AStatus : TResourceStatusProc ) : boolean;
+var
+    FSearch : TSearchRec;
+    F : TFile;
+    FM : word;
+    Abort : boolean;
+begin
+    Abort := False;
+    Import := False;
+    QDOS.FindFirst(AFileSpec, faAnyFile, FSearch);
+    if DOSError <> 0 then begin
+        FResult := DOSError;
+        exit;
+    end else begin
+        FResult := 0;
+        while (DOSError = 0) and (not Abort) and (FResult = 0) do begin
+            if (FSearch.Attr and faDirectory <> faDirectory) and
+            (FSearch.Attr and faVolumeID <> faVolumeID) then begin
+                if Assigned(AStatus) then
+                    if not AStatus(PathOf(AFileSpec) + FSearch.Name, 0) then
+                        Abort := True;
+                FM := FileMode;
+                FileMode := 0;
+                F.Create;
+                F.Assign(PathOf(AFileSpec) + FSearch.Name);
+                F.Reset;
+                if F.Result = 0 then begin
+                end;
+                FResult := F.Result;
+                F.Close;
+                F.Destroy;
+                if Assigned(AStatus) then
+                    if not AStatus(PathOf(AFileSpec) + FSearch.Name, 100) then
+                        Abort := True;
+            end;
+            QDOS.FindNext(FSearch);
+        end;
+        if DOSError <> 18 then begin
+            FResult := DOSError;
+            Exit;
+        end else
+            FResult := 0;
+    end;
+    Import := True;
+end;
+
+function TResource.Export(AFileSpec : String; AStatus : TResourceStatusProc ) : boolean;
+begin
+end;
+
+function TResource.Delete(AFileSpec : String; AStatus : TResourceStatusProc ) : boolean;
+begin
+end;
+
+function TResource.DeleteAll : boolean;
+var
+    E : integer;
+begin
+    DeleteAll := False;
+    if InvalidHandler then exit;
+    if FDataStart = -1 then begin
+        FResult := 103;
+        Exit;
+    end;
+    if FReadOnly then begin
+        FResult := 5;
+        Exit;
+    end;
+    FHandler^.Seek(FDataStart);
+    if HandlerError then exit;
+    FHandler^.Truncate;
+    FHasFooter := False;
+    if HandlerError then begin
+        E := FResult;
+        FHandler^.Close;
+        FResult := E;
+        Exit;
+    end;
+    DeleteAll := True;
+end;
+
 { --------------------- }
 
 procedure ProgramMessages; assembler;
@@ -343,7 +432,11 @@ asm
     db 'ERROR.1=invalid function "$"',0
     db 'ERROR.2=file "$" not found',0
     db 'ERROR.3=path "$" not found',0
-    db 'ERROR.4=access to "$" denied',0
+    db 'ERROR.5=access to "$" denied',0
+
+    db 'IMPORT=import: $',0
+    db 'EXPORT=export: $',0
+    db 'PERCENT=$%',0
 
     db 'HELP.0=Usage $: [options] [package]',0
     db 'HELP.1=',0
@@ -377,11 +470,11 @@ var
     S : String;
 begin
     R := Trim(ReplaceStr(NLS('ERROR'), '$', Err, false));
-    S := NLSstr('ERROR.' + Err, Data);
+    S := NLS('ERROR.' + Err);
     if S  = '' then
         R := ReplaceStr(R, '$', Data, false)
     else
-        R := ReplaceStr(R, '$', S, false);
+        R := ReplaceStr(R, '$', ReplaceStr(S, '$', Data, false), false);
     ErrorTxt := Trim(R);
 end;
 
@@ -439,15 +532,35 @@ begin
     Halt(0);
 end;
 
+function ImportMsg(AFileName : String; ACompleted : word) : boolean; far;
+const
+    LW : byte = 0;
+var
+    S : String;
+
+begin
+    ImportMsg:=True;
+    S := NLSStr('IMPORT', AFileName) + ' ' + NLSStr('PERCENT', IntStr(ACompleted));
+    if ACompleted <> 0 then
+        Write(ChrStr(#8, LW), Space(LW), ChrStr(#8, LW));
+    Write(S);
+    if ACompleted = 100 then begin
+        WriteLN;
+        LW := 0
+    end else
+        LW := Length(S);
+end;
+
 procedure Run;
 var
     PRes : PResource;
     RSearch : TResourceRec;
     Err : integer;
-    Opt : String;
+    Opt: String;
     CanCreate,
     CanModify,
-    CanAppend : boolean;
+    CanAppend,
+    NoPaths : boolean;
     I : integer;
 begin
 	if ParamCount = 0 then  DisplayHelp;
@@ -455,6 +568,7 @@ begin
 	CanCreate := False;
 	CanModify := False;
 	CanAppend := False;
+	NoPaths   := False;
 	PRes := nil;
 	Err := 0;
 
@@ -466,7 +580,7 @@ begin
     While I <= ParamCount do begin
 	    Opt := UCase(ParamStr(I));
 	    if (Length(Opt) < 2) or (Opt[1] <> SwitchChar) then begin
-        	WriteLn(ErrorMsg(1, Opt),1);
+        	WriteLn(ErrorMsg(1, Opt));
         	Err := 1;
         	Break;
 	    end;
@@ -484,24 +598,51 @@ begin
 	            CanAppend := True;
                 CanModify := True;
 	        end;
-	        'L' : begin
+	        'L' : begin {List Resource}
+	            if Not Assigned(PRes) then WriteHalt(ErrorMsg(5, 'CON:'),5);
                 PRes^.FindFirst('', RSearch);
                 While PRes^.GetResult = 0 do begin
                     WriteLn(RSearch.Name);
                     PRes^.FindNext(RSearch);
                 end;
                 if PRes^.GetResult <> 18 then begin
-                  	WriteLn(ErrorMsg(PRes^.GetResult, Opt),PRes^.GetResult);
+                  	WriteLn(ErrorMsg(PRes^.GetResult, Opt));
                     Err := PRes^.GetResult;
                     Break;
                 end;
-	        end; {List Resource}
-	        'E' : begin end; {Export File}
-	        'O' : begin end; {Export All Files}
-	        'I' : begin end; {Import file}
-	        'P' : begin end; {Ignore path data}
-	        'D' : begin end; {Delete resource}
-	        'X' : begin end; {Remove all Resource data}
+	        end;
+	        'E' : begin {Export File}
+	            if Not Assigned(PRes) then WriteHalt(ErrorMsg(5, 'CON:'),5);
+	        end;
+	        'O' : begin {Export All Files}
+	            if Not Assigned(PRes) then WriteHalt(ErrorMsg(5, 'CON:'),5);
+	        end;
+	        'I' : begin {Import file}
+	            if Not Assigned(PRes) then WriteHalt(ErrorMsg(5, 'CON:'),5);
+                Opt := ParamStr(I);
+	            Inc(I);
+                if not PRes^.Import(Opt, ImportMsg) then begin
+                	WriteLn(ErrorMsg(PRes^.GetResult, Opt));
+                	Err := PRes^.GetResult;
+        	        Break;
+                end;
+
+	        end;
+	        'P' : begin {Ignore path data}
+	            NoPaths := True;
+                if Assigned(PRes) then PRes^.FJunkPaths := NoPaths;
+	        end;
+	        'D' : begin  {Delete resource}
+	            if Not Assigned(PRes) then WriteHalt(ErrorMsg(5, 'CON:'),5);
+	        end;
+	        'X' : begin {Remove all Resource data}
+	            if Not Assigned(PRes) then WriteHalt(ErrorMsg(5, 'CON:'),5);
+	            if not PRes^.DeleteAll then begin
+                	WriteLn(ErrorMsg(PRes^.GetResult, Opt));
+                	Err := PRes^.GetResult;
+        	        Break;
+        	    end;
+	        end;
 	        'F' : begin { Set filename }
                 if Assigned(PRes) then Dispose(PRes, Destroy);
                 PRes := nil;
@@ -513,15 +654,16 @@ begin
 
                PRes := New(PResource, Create(Opt, New(PFile, Create)));
                PRes^.FReadOnly := not (CanCreate or CanModify or CanAppend);
+               PRes^.FJunkPaths := NoPaths;
                if CanAppend then PRes^.FExistOnly := False;
                if not PRes^.Open then begin
-                	WriteLn(ErrorMsg(PRes^.GetResult, Opt),PRes^.GetResult);
-                	Err := 1;
+                	WriteLn(ErrorMsg(PRes^.GetResult, Opt));
+                	Err := PRes^.GetResult;
         	        Break;
         	    end;
 	        end;
 	    else
-        	WriteLn(ErrorMsg(1, Opt),1);
+        	WriteLn(ErrorMsg(1, SwitchChar + Opt));
         	Err := 1;
         	Break;
         end;
