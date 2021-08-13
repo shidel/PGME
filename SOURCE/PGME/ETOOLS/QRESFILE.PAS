@@ -36,9 +36,11 @@ type
     	Name      : String;
     	Zero      : byte;        { = 0, Null terminator }
     end;
-    TFileBlock = record          { Maximum Sized File Block Header }
+    TResourceRec = record        { Maximum Sized File Block Header And Search }
+        Position : longint;
         Data : TFileBlockData;
-        Name : TFileBlockName;
+        Name : String;
+        Zero : byte;
     end;
 
     PResource = ^TResource;
@@ -57,6 +59,7 @@ type
       function    GetHandler : PAbstractFile; virtual;
       function    InvalidHandler : boolean; virtual;
       function    HandlerError : boolean; virtual;
+      function    InvalidBlock(var T : TResourceRec; Size : word) : boolean; virtual;
       function    GetFooter : boolean; virtual;
       function    PutFooter : boolean; virtual;
 	public { protected }
@@ -68,6 +71,8 @@ type
       function    IOResult : integer; virtual;
       function    Open : boolean; virtual;
       function    Close : boolean; virtual;
+      function    FindFirst(AFileSpec : String; var ARec : TResourceRec) : boolean; virtual;
+      function    FindNext(var ARec : TResourceRec) : boolean; virtual;
     end;
 
 function TResource.ObjectClass(AName : String) : String;
@@ -127,6 +132,32 @@ function TResource.HandlerError : boolean;
 begin
     FResult := FHandler^.IOResult;
     HandlerError := FResult <> 0;
+end;
+
+function TResource.InvalidBlock(var T : TResourceRec; Size : word) : boolean;
+begin
+    InvalidBlock := True;
+    if T.Position < 0 then begin
+        FResult := 103;
+        Exit;
+    end;
+    if Size < 16 then begin
+        FResult := 13; { Invalid data }
+        Exit;
+    end;
+    if (T.Data.BlockType = 0) then begin
+        if T.Data.BlockSize <> FDataStart then
+            FResult := 13
+        else
+            FResult := 18; { No Records }
+        exit;
+    end;
+    if (Size < Sizeof(T.Data) + 3) or (T.Data.BlockSize < Sizeof(T.Data) + 3) then begin
+        FResult := 13;
+        Exit;
+    end;
+    { Validate Position + Block Size against File Size }
+    InvalidBlock := False;
 end;
 
 function TResource.GetFooter : boolean;
@@ -248,6 +279,58 @@ begin
     Close := FResult = 0;
 end;
 
+function TResource.FindFirst(AFileSpec : String; var ARec : TResourceRec) : boolean;
+var
+    T : TResourceRec;
+    C : Word;
+begin
+    FindFirst := False;
+    FillChar(ARec, Sizeof(ARec), 0);
+    ARec.Position := -1;
+    if InvalidHandler then exit;
+    if FDataStart = -1 then begin
+        FResult := 103;
+        Exit;
+    end;
+    T.Position := FDataStart;
+    FHandler^.Seek(T.Position);
+    if HandlerError then Exit;
+    FHandler^.BlockRead(T.Data, Sizeof(T.Data) + Sizeof(T.Name), C);
+    if HandlerError then Exit;
+    if InvalidBlock(T, C) then Exit;
+    ARec.Position := T.Position;
+    ARec.Data := T.Data;
+    T.Name := ARec.Name;
+    FindFirst := True;
+end;
+
+function TResource.FindNext(var ARec : TResourceRec) : boolean;
+var
+    T : TResourceRec;
+    C : Word;
+begin
+    { Almost Identical to FindFirst, Could consolidate these. But, eh, why? }
+    FindNext := False;
+    if InvalidHandler then exit;
+    if (FDataStart = -1) then begin
+        FResult := 103;
+        Exit;
+    end;
+    if InvalidBlock(ARec, Sizeof(ARec)) then exit;
+    T.Position := ARec.Position + ARec.Data.BlockSize;
+    FHandler^.Seek(T.Position);
+    if HandlerError then Exit;
+    FHandler^.BlockRead(T.Data, Sizeof(T.Data) + Sizeof(T.Name), C);
+    if HandlerError then Exit;
+    if InvalidBlock(T, C) then Exit;
+    ARec.Position := T.Position;
+    ARec.Data := T.Data;
+    T.Name := ARec.Name;
+    FindNext := True;
+end;
+
+{ --------------------- }
+
 procedure ProgramMessages; assembler;
 asm
     db 'LANGUAGE=Built-in',0
@@ -359,6 +442,7 @@ end;
 procedure Run;
 var
     PRes : PResource;
+    RSearch : TResourceRec;
     Err : integer;
     Opt : String;
     CanCreate,
@@ -400,7 +484,18 @@ begin
 	            CanAppend := True;
                 CanModify := True;
 	        end;
-	        'L' : begin end; {List Resource}
+	        'L' : begin
+                PRes^.FindFirst('', RSearch);
+                While PRes^.GetResult = 0 do begin
+                    WriteLn(RSearch.Name);
+                    PRes^.FindNext(RSearch);
+                end;
+                if PRes^.GetResult <> 18 then begin
+                  	WriteLn(ErrorMsg(PRes^.GetResult, Opt),PRes^.GetResult);
+                    Err := PRes^.GetResult;
+                    Break;
+                end;
+	        end; {List Resource}
 	        'E' : begin end; {Export File}
 	        'O' : begin end; {Export All Files}
 	        'I' : begin end; {Import file}
