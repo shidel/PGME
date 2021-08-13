@@ -153,7 +153,9 @@ uses QClass;
 
 implementation
 
-  uses QErrors, QDos;
+  uses QDos;
+
+{$I ERRCONST.INC}
 
   const
     CRLF : String[2] = #13#10;

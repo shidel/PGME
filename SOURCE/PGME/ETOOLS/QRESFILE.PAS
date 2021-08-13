@@ -10,7 +10,7 @@
 {$I ETOOLS.DEF}
 program Eternity_Resource_File_Toolkit; { X Series }
 
-uses QObjects, QStrings, QErrors, QDos, QFiles, QNLS, QResrc, QCrt,
+uses QStrings, QDos, QFiles, QNLS, QResrc, QCrt,
     QClass;
 
 {$I ..\ETERNITY\LICENSE.INC}
@@ -77,8 +77,11 @@ type
       function    Close : boolean; virtual;
       function    FindFirst(AFileSpec : String; var ARec : TResourceRec) : boolean; virtual;
       function    FindNext(var ARec : TResourceRec) : boolean; virtual;
-      function    Import(AFileSpec : String; AStatus : TResourceStatusProc ) : boolean; virtual;
-      function    Export(AFileSpec : String; AStatus : TResourceStatusProc ) : boolean; virtual;
+      function    Import(ABasePath, AFileSpec : String; AStatus : TResourceStatusProc ) : boolean; virtual;
+      function    ExportResource(ABasePath : String; ARec : TResourceRec;
+        AStatus : TResourceStatusProc) : boolean; virtual;
+      function    Export(ABasePath, AFileSpec : String; AStatus : TResourceStatusProc ) : boolean; virtual;
+      function    ExportAll(ABasePath : String; AStatus : TResourceStatusProc ) : boolean; virtual;
       function    Delete(AFileSpec : String; AStatus : TResourceStatusProc ) : boolean; virtual;
       function    DeleteAll : boolean; virtual;
     end;
@@ -307,7 +310,6 @@ begin
     FHandler^.BlockRead(T.Data, Sizeof(T.Data) + Sizeof(T.Name), C);
     if HandlerError then Exit;
     if InvalidBlock(T, C) then Exit;
-    WriteLn(T.Position, ' ' + T.Name);
     ARec.Position := T.Position;
     ARec.Data := T.Data;
     ARec.Name := T.Name;
@@ -332,16 +334,14 @@ begin
     if HandlerError then Exit;
     FHandler^.BlockRead(T.Data, Sizeof(T.Data) + Sizeof(T.Name), C);
     if HandlerError then Exit;
-{    WriteLn(T.Position, ' ' + T.Name); }
     if InvalidBlock(T, C) then Exit;
-{    WriteLn(T.Position, ' ' + T.Name); }
     ARec.Position := T.Position;
     ARec.Data := T.Data;
     ARec.Name := T.Name;
     FindNext := True;
 end;
 
-function TResource.Import(AFileSpec : String; AStatus : TResourceStatusProc ) : boolean;
+function TResource.Import(ABasePath, AFileSpec : String; AStatus : TResourceStatusProc ) : boolean;
 const
     Zero : byte = 0;
 var
@@ -355,10 +355,14 @@ var
     C : Word;
     W : LongInt;
     LP, P : word;
+
 begin
     Abort := False;
     Import := False;
-    QDOS.FindFirst(AFileSpec, faAnyFile, FSearch);
+    if ABasePath <> '' then
+        QDOS.FindFirst(TailDelim(ABasePath) + AFileSpec, faAnyFile, FSearch)
+    else
+        QDOS.FindFirst(AFileSpec, faAnyFile, FSearch);
     if DOSError <> 0 then begin
         FResult := DOSError;
         exit;
@@ -414,7 +418,6 @@ begin
                                 if not AStatus(FN, P) then
                                     Abort := True;
                             LP := P;
-                            Delay(250);
                         end;
                     end;
 
@@ -450,8 +453,115 @@ begin
     Import := True;
 end;
 
-function TResource.Export(AFileSpec : String; AStatus : TResourceStatusProc ) : boolean;
+function TResource.ExportResource(ABasePath : String; ARec : TResourceRec;
+AStatus : TResourceStatusProc) : boolean;
+var
+    F : TFile;
+    FN, TFN : String;
+    Abort : boolean;
+    W : LongInt;
+    C : Word;
+    LP, P : Word;
 begin
+    Abort := False;
+    ExportResource := False;
+    if InvalidHandler then exit;
+    if (FDataStart = -1) then begin
+        FResult := 103;
+        Exit;
+    end;
+    if InvalidBlock(ARec, Sizeof(ARec)) then exit;
+    if ARec.Data.BlockType <> 1 then begin
+        FResult := 1;
+        Exit;
+    end;
+    FHandler^.Seek(ARec.Position + Sizeof(TResourceBlockData) +
+        Length(ARec.Name) + 2 );
+    if HandlerError then exit;
+    F.Create;
+    FN := ARec.Name;
+    if FJunkPaths then System.Delete(FN, 1, Length(PathOf(FN)));
+    if ABasePath <> '' then TFN := TailDelim(AbasePath) + FN else TFN := FN;
+    if Assigned(AStatus) then
+        if not AStatus(FN, 0) then Abort := True;
+    if (PathOf(TFN) <> '' ) and (not DirExists(NoTailDelim(Pathof(TFN)))) then begin
+        FResult := MakeDir(NoTailDelim(Pathof(TFN)));
+    end;
+    if FResult = 0 then begin
+        F.Assign(TFN);
+        F.Rewrite;
+        FResult := F.Result;
+        W := 0;
+        LP := 0;
+        while (FResult = 0) and (W < ARec.Data.Size) do begin
+            if  Sizeof(FBuffer) < (ARec.Data.Size - W) then
+                C := Sizeof(FBuffer)
+            else
+                C := ARec.Data.Size - W;
+            FHandler^.ReadRecord(FBuffer, C);
+            FResult := FHandler^.Result;
+            if FResult = 0 then begin
+                F.WriteRecord(FBuffer, C);
+                FResult := F.Result;
+                Inc(W, C);
+            end;
+            P := (W * 100 div ARec.Data.Size);
+            if (LP <> P) and (P < 100) then begin
+                if Assigned(AStatus) then
+                    if not AStatus(FN, P) then
+                        Abort := True;
+                LP := P;
+            end;
+        end;
+        if FResult = 0 then SetFTime(F.FRec, ARec.Data.Time);
+        F.Close;
+        if FResult = 0 then SetFAttr(F.FRec, ARec.Data.Attr);
+    end;
+    F.Destroy;
+    if Assigned(AStatus) and (FResult = 0) then
+        if not AStatus(FN, 100) then Abort := True;
+    ExportResource := (Not Abort) and (FResult = 0);
+end;
+
+function TResource.Export(ABasePath, AFileSpec : String; AStatus : TResourceStatusProc ) : boolean;
+var
+    ARec : TResourceRec;
+    S : String;
+begin
+    AFileSpec:=UCase(AFileSpec);
+    FindFirst('', ARec);
+    While FResult = 0 do begin
+        if ARec.Data.BlockType = 1 then begin
+            if MatchWildCard(AFileSpec, uCase(ARec.Name)) then begin
+                if not ExportResource(ABasePath, ARec, AStatus) then
+                    Break;
+            end;
+        end;
+        FindNext(ARec);
+    end;
+    if FResult = 18 then begin
+        FResult := 0;
+    end;
+    Export := FResult = 0;
+end;
+
+function TResource.ExportAll(ABasePath : String; AStatus : TResourceStatusProc ) : boolean;
+var
+    ARec : TResourceRec;
+    S : String;
+begin
+    FindFirst('', ARec);
+    While FResult = 0 do begin
+        if ARec.Data.BlockType = 1 then begin
+            if not ExportResource(ABasePath, ARec, AStatus) then
+                Break;
+        end;
+        FindNext(ARec);
+    end;
+    if FResult = 18 then begin
+        FResult := 0;
+    end;
+    ExportAll := FResult = 0;
 end;
 
 function TResource.Delete(AFileSpec : String; AStatus : TResourceStatusProc ) : boolean;
@@ -528,6 +638,14 @@ asm
     db 'EXPORT=export: $',0
     db 'PERCENT=$%',0
 
+    db 'NOFUNC=Sorry, the "$" option has not been implemented (yet).',0
+
+    db 'TYPE.UNKNOWN=UNKNOWN: Type $,',0
+    db 'TYPE.FILE=FILE: $,',0
+
+    db 'SIZE.DATA=$ byte(s)',0
+    db 'SIZE.FILE=$ byte(s)',0
+
     db 'HELP.0=Usage $: [options] [package]',0
     db 'HELP.1=',0
     db 'HELP.2=   $F filename     Specify filename with resource data',0
@@ -544,7 +662,7 @@ asm
     db 'HELP.13=   $E  filespec    Export resource to file',0
     db 'HELP.14=   $O              Export all resource data to files',0
     db 'HELP.15=   $I  filespec    Import resource from filename',0
-    db 'HELP.16=   $P              Ignore path information for resource',0
+    db 'HELP.16=   $J              Ignore path information for resource',0
     db 'HELP.17=',0
     db 'HELP.18=   $D  filespec    Delete resource filespec from file',0
     db 'HELP.19=   $X              Remove ALL resource data from file',0
@@ -641,6 +759,25 @@ begin
         LW := Length(S);
 end;
 
+function ExportMsg(AFileName : String; ACompleted : word) : boolean; far;
+const
+    LW : byte = 0;
+var
+    S : String;
+
+begin
+    ExportMsg:=True;
+    S := NLSStr('EXPORT', AFileName) + ' ' + NLSStr('PERCENT', IntStr(ACompleted));
+    if ACompleted <> 0 then
+        Write(ChrStr(#8, LW), Space(LW), ChrStr(#8, LW));
+    Write(S);
+    if ACompleted = 100 then begin
+        WriteLN;
+        LW := 0
+    end else
+        LW := Length(S);
+end;
+
 procedure Run;
 var
     PRes : PResource;
@@ -692,7 +829,13 @@ begin
 	            if Not Assigned(PRes) then WriteHalt(ErrorMsg(5, 'CON:'),5);
                 PRes^.FindFirst('', RSearch);
                 While PRes^.GetResult = 0 do begin
-                    WriteLn(RSearch.Name);
+                    if RSearch.Data.BlockType <> 1 then begin
+                        WriteLn(NLSStr('TYPE.UNKOWN', IntStr(RSearch.Data.BlockType)), ' ',
+                            NLSStr('SIZE.DATA', IntStr(RSearch.Data.BlockSize - 6)));
+                    end else begin
+                        WriteLn(NLSStr('TYPE.FILE', RSearch.Name), ' ',
+                            NLSStr('SIZE.FILE', IntStr(RSearch.Data.Size)));
+                    end;
                     PRes^.FindNext(RSearch);
                 end;
                 if PRes^.GetResult <> 18 then begin
@@ -703,27 +846,42 @@ begin
 	        end;
 	        'E' : begin {Export File}
 	            if Not Assigned(PRes) then WriteHalt(ErrorMsg(5, 'CON:'),5);
+                Opt := ParamStr(I);
+	            Inc(I);
+                if not PRes^.Export('', Opt, ExportMsg) then begin
+                	WriteLn(ErrorMsg(PRes^.GetResult, Opt));
+                	Err := PRes^.GetResult;
+        	        Break;
+                end;
 	        end;
 	        'O' : begin {Export All Files}
 	            if Not Assigned(PRes) then WriteHalt(ErrorMsg(5, 'CON:'),5);
+                if not PRes^.ExportAll('OUT', ExportMsg) then begin
+                	WriteLn(ErrorMsg(PRes^.GetResult, Opt));
+                	Err := PRes^.GetResult;
+        	        Break;
+                end;
 	        end;
 	        'I' : begin {Import file}
 	            if Not Assigned(PRes) then WriteHalt(ErrorMsg(5, 'CON:'),5);
                 Opt := ParamStr(I);
 	            Inc(I);
-                if not PRes^.Import(Opt, ImportMsg) then begin
+                if not PRes^.Import('', Opt, ImportMsg) then begin
                 	WriteLn(ErrorMsg(PRes^.GetResult, Opt));
                 	Err := PRes^.GetResult;
         	        Break;
                 end;
 
 	        end;
-	        'P' : begin {Ignore path data}
+	        'J' : begin {Ignore path data}
 	            NoPaths := True;
                 if Assigned(PRes) then PRes^.FJunkPaths := NoPaths;
 	        end;
 	        'D' : begin  {Delete resource}
 	            if Not Assigned(PRes) then WriteHalt(ErrorMsg(5, 'CON:'),5);
+	            WriteLn(NLSstr('NOFUNC', SwitchChar + Opt));
+	            Err := 1;
+	            Break;
 	        end;
 	        'X' : begin {Remove all Resource data}
 	            if Not Assigned(PRes) then WriteHalt(ErrorMsg(5, 'CON:'),5);
@@ -763,8 +921,8 @@ begin
 end;
 
 begin
-	ErrorsOnExit := false;
-	ErrorClrScr := false;
+	{ ErrorsOnExit := false;
+	ErrorClrScr := false; }
     SetBuiltInLanguage(@ProgramMessages);
     SetLanguage('');
 	Run;
