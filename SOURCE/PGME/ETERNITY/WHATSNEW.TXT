@@ -2,6 +2,9 @@
 
 2021-08
 
+    Add Support to UPX compress binaries in build process.
+    New QResFile, developer oriented executable resource management utility. It
+        replaces the clunky ADD2INS program used in the build process.
     Support to autohide menus without any visible programs.
     Automatic language/font/theme/keymap switching in QCrt based apps (PGME,
         EFontDesigner and Installer) when defaults are empty.

@@ -1,5 +1,6 @@
 @echo off
 
+if "%1" == "upx" goto BuildUPX
 if "%1" == "dev" goto TestTPC
 if "%1" == "scr" goto TestTPC
 if "%1" == "util" goto TestTPC
@@ -8,6 +9,9 @@ if "%1" == "noclean" goto CheckV8PT
 if not "%1" == "" goto %1
 if "%1" == "" goto CheckV8PT
 goto ErrorExit
+
+:BuildUPX
+set UPXPGME=yes
 
 REM Simple Test that V8Power Tools for DOS is installed
 :CheckV8PT
@@ -95,6 +99,10 @@ if errorlevel 1 goto ErrorExit
 call %SELF% make NoTemplates SecondPass
 if errorlevel 1 goto ErrorExit
 call %SELF% make Collect
+if errorlevel 1 goto ErrorExit
+if "%UPXPGME%" == "" goto NoUPXFiles
+upx --8086 bin\*.exe bin\*.bin bin\*.scr
+:NoUPXFiles
 if errorlevel 1 goto ErrorExit
 call %SELF% make Installer
 if errorlevel 1 goto ErrorExit
@@ -247,6 +255,9 @@ goto DoneMake
     verrlvl 0
     if exist INSTALL\NUL deltree /y INSTALL >NUL
     copy /y eternity\bin\install.exe bin
+    if "%UPXPGME" == "" goto NoUPXIns
+    rem upx --8086 bin\install.exe
+:NoUPXIns
     ETERNITY\bin\add2ins.exe bin
     if errorlevel 1 goto ErrorMAKE
     if not exist INSTALL\NUL mkdir INSTALL
@@ -502,5 +513,6 @@ vecho /fLightGreen Finished. /fGrey
 SET SELF=
 SET TPC=
 SET TPC_OPTS=
+SET UPXPGME=
 
 :VeryEnd
