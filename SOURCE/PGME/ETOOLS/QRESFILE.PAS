@@ -10,7 +10,7 @@
 {$I ETOOLS.DEF}
 program Eternity_Resource_File_Toolkit; { X Series }
 
-uses QStrings, QDos, QFiles, QNLS, QResrc, QCrt,
+uses QStrings, QDos, QFiles, QNLS, QResrc,
     QClass;
 
 {$I ..\ETERNITY\LICENSE.INC}
