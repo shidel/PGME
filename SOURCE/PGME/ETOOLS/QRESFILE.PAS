@@ -10,7 +10,7 @@
 {$I ETOOLS.DEF}
 program Eternity_Resource_File_Toolkit; { X Series }
 
-uses QObjects, QStrings, QErrors, QDos, QFiles, QNLS, QResrc,
+uses QObjects, QStrings, QErrors, QDos, QFiles, QNLS, QResrc, QCrt,
     QClass;
 
 {$I ..\ETERNITY\LICENSE.INC}
@@ -25,20 +25,20 @@ type
         HeadBlock  : LongInt;    { = File Position of first block in chain }
         Identifier : array[0..9] of byte; { = 'XBINRSRCv1' }
     end;
-    TFileBlockData = record
+    TResourceBlockData = record
         BlockType : word;        { = 1 }
         BlockSize : LongInt;     { Total size of block }
     	Attr      : byte;
     	Time      : LongInt;
     	Size      : LongInt;
     end;
-    TFileBlockName = record
+    TResourceBlockName = record
     	Name      : String;
     	Zero      : byte;        { = 0, Null terminator }
     end;
     TResourceRec = record        { Maximum Sized File Block Header And Search }
         Position : longint;
-        Data : TFileBlockData;
+        Data : TResourceBlockData;
         Name : String;
         Zero : byte;
     end;
@@ -48,6 +48,7 @@ type
     PResource = ^TResource;
     TResource = object (TObject)
 	public { private }
+	    FBuffer    : array[0..1023] of byte;
 	    FResID     : String;
 	    FHandler   : PAbstractFile;
 	    FResult    : Integer;
@@ -306,9 +307,10 @@ begin
     FHandler^.BlockRead(T.Data, Sizeof(T.Data) + Sizeof(T.Name), C);
     if HandlerError then Exit;
     if InvalidBlock(T, C) then Exit;
+    WriteLn(T.Position, ' ' + T.Name);
     ARec.Position := T.Position;
     ARec.Data := T.Data;
-    T.Name := ARec.Name;
+    ARec.Name := T.Name;
     FindFirst := True;
 end;
 
@@ -330,19 +332,29 @@ begin
     if HandlerError then Exit;
     FHandler^.BlockRead(T.Data, Sizeof(T.Data) + Sizeof(T.Name), C);
     if HandlerError then Exit;
+{    WriteLn(T.Position, ' ' + T.Name); }
     if InvalidBlock(T, C) then Exit;
+{    WriteLn(T.Position, ' ' + T.Name); }
     ARec.Position := T.Position;
     ARec.Data := T.Data;
-    T.Name := ARec.Name;
+    ARec.Name := T.Name;
     FindNext := True;
 end;
 
 function TResource.Import(AFileSpec : String; AStatus : TResourceStatusProc ) : boolean;
+const
+    Zero : byte = 0;
 var
     FSearch : TSearchRec;
+    DB : TResourceBlockData;
     F : TFile;
     FM : word;
     Abort : boolean;
+    FN : String;
+    E : integer;
+    C : Word;
+    W : LongInt;
+    LP, P : word;
 begin
     Abort := False;
     Import := False;
@@ -351,25 +363,80 @@ begin
         FResult := DOSError;
         exit;
     end else begin
+        if FReadOnly then begin
+            FResult := 5;
+            Exit;
+        end;
         FResult := 0;
         while (DOSError = 0) and (not Abort) and (FResult = 0) do begin
             if (FSearch.Attr and faDirectory <> faDirectory) and
             (FSearch.Attr and faVolumeID <> faVolumeID) then begin
+                if FJunkPaths then
+                    FN := FSearch.Name
+                else
+                    FN := PathOf(AFileSpec) + FSearch.Name;
                 if Assigned(AStatus) then
-                    if not AStatus(PathOf(AFileSpec) + FSearch.Name, 0) then
+                    if not AStatus(FN, 0) then
                         Abort := True;
+                 if FHasFooter then
+                    FHandler^.Seek(FHandler^.FileSize - SizeOf(TResourceBlockID))
+                else
+                    FHandler^.Seek(FHandler^.FileSize);
+                if HandlerError then exit;
                 FM := FileMode;
                 FileMode := 0;
                 F.Create;
                 F.Assign(PathOf(AFileSpec) + FSearch.Name);
                 F.Reset;
+                FileMode := FM;
                 if F.Result = 0 then begin
+                    LP := 0;
+                    FHasFooter := False;
+                    DB.BlockType := 1; { File }
+                    DB.Attr := FSearch.Attr;
+                    DB.Size := FSearch.Size;
+                    DB.Time := FSearch.Time;
+                    DB.BlockSize := SizeOf(DB) + Length(FN) + 2 + DB.Size;
+                    FHandler^.WriteRecord(DB, Sizeof(DB));
+                    if FHandler^.Result = 0 then
+                       FHandler^.WriteRecord(FN, Length(FN) + 1);
+                    if FHandler^.Result = 0 then
+                       FHandler^.WriteByte(Zero);
+                    W := 0;
+                    While (F.Result = 0) and (FHandler^.Result = 0)
+                    and (W < DB.Size) do begin
+                        F.BlockRead(FBuffer, Sizeof(FBuffer), C);
+                        FHandler^.WriteRecord(FBuffer, C);
+                        Inc(W, C);
+                        P := (W * 100 div DB.Size); { Meh }
+                        if (LP <> P) and (P < 100) then begin
+                            if Assigned(AStatus) then
+                                if not AStatus(FN, P) then
+                                    Abort := True;
+                            LP := P;
+                            Delay(250);
+                        end;
+                    end;
+
+                    if (F.Result = 0) and (FHandler^.Result = 0) then
+                        PutFooter;
+
                 end;
+
                 FResult := F.Result;
                 F.Close;
                 F.Destroy;
+                if FResult = 0 then FResult := FHandler^.Result;
+
+                if FResult <> 0 then begin
+                    { if Assigned(AStatus) then AStatus(FN, 0) then }
+                    E := FResult;
+                    FHandler^.Close;
+                    FResult := E;
+                    Exit;
+                end;
                 if Assigned(AStatus) then
-                    if not AStatus(PathOf(AFileSpec) + FSearch.Name, 100) then
+                    if not AStatus(FN, 100) then
                         Abort := True;
             end;
             QDOS.FindNext(FSearch);
@@ -388,7 +455,30 @@ begin
 end;
 
 function TResource.Delete(AFileSpec : String; AStatus : TResourceStatusProc ) : boolean;
+var
+    E : integer;
 begin
+    Delete := False;
+    if InvalidHandler then exit;
+    if FDataStart = -1 then begin
+        FResult := 103;
+        Exit;
+    end;
+    if FReadOnly then begin
+        FResult := 5;
+        Exit;
+    end;
+{    FHandler^.Seek(FDataStart);
+    if HandlerError then exit;
+    FHandler^.Truncate;
+    FHasFooter := False;
+    if HandlerError then begin
+        E := FResult;
+        FHandler^.Close;
+        FResult := E;
+        Exit;
+    end; }
+    Delete := True;
 end;
 
 function TResource.DeleteAll : boolean;
