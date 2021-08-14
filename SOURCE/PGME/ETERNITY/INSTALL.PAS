@@ -22,8 +22,8 @@ it pushes the command to trigger the next dialog. The last dialog pushes a cmQui
 close the program. There are several other ways to accomplish the same result, but
 this is one of the easiest. }
 
-uses QCrt, QCLass, QStrings, QFmtStr, QFiles, QDos, QErrors, QObjects, QControls,
-	QFileDlg, QResrc;
+uses QCrt, QCLass, QStrings, QFmtStr, QFiles, QDos, QErrors, QObjects,
+    QControls,	QFileDlg, QResrc;
 
 {$I LICENSE.INC}
 
@@ -55,45 +55,25 @@ const
 	IGOR		  : String = '';
 	GoodState	  : boolean = false;
 
-procedure SetInstallSize;
-var
-	F : TFile;
-	S : String;
-	C : Word;
-	Z : LongInt;
-	(* R : TInsFileHeader; *)
+   {$IFNDEF TEMPLATES}
+    var
+        IRes    : PResource;
+    {$ENDIF}
+
+procedure BadInstaller;
 begin
-(*	InstallSize := 0;
-	InstallFiles := 0;
-	F.Create;
-	F.Assign(ParamStr(0));
-	F.Reset;
-	F.Seek(InstallExeSize);
-	F.ReadRecord(S, Length(InstallHeader) + 1);
-	if S <> InstallHeader then begin
-		F.Destroy;
-		InstallSize := -1;
-		exit;
-	end;
-	C := 0;
-	Z := 0;
-	repeat
-		F.ReadRecord(R, Sizeof(R));
-		Inc(C);
-		Z := Z + R.Size;
-		if (R.Group <> igInstall) then
-			InstallUses := InstallUses + ((R.Size div 512) + 1) * 512;
-		if F.FilePos + R.Size > F.FileSize then begin
-			F.Destroy;
-			InstallSize := -1;
-			exit;
-		end;
-		F.Seek(F.FilePos + R.Size);
-	until F.FilePos >= F.FileSize;
-	InstallFiles := C;
-	InstallSize := Z;
-	F.Destroy;
-	*)
+    TextAttr := $4F;
+    GotoXY(1,WhereY);
+    ClrEol;
+    Write(' Sorry. But, it appears that the installer is corrupted.');
+    TextAttr := $07;
+    WriteLn;
+    ErrorsOnExit := False;
+    {$IFNDEF TEMPLATES}
+	if Assigned(IRes) then Dispose(IRes,Destroy);
+	IRes := nil;
+    {$ENDIF}
+    Halt(1);
 end;
 
 procedure Detective;
@@ -107,17 +87,12 @@ begin
 	InstallPath := '';
 
 	{ Verify installer }
-	SetInstallSize;
-	if InstallSize < 0 then begin
-		TextAttr := $4F;
-		GotoXY(1,WhereY);
-		ClrEol;
-		Write(' Sorry, but the installer appears corrupted.');
-		TextAttr := $07;
-		WriteLn;
-		ErrorsOnExit := False;
-		Halt;
-	end;
+    {$IFNDEF TEMPLATES}
+    InstallSize := IRes^.GetTotalSize(1);      { Block Type 1 for File }
+    InstallFiles := IRes^.GetTotalCount(1);
+	if (InstallSize < 10240) or (InstallFiles < 2) then  BadInstaller;
+    {$ENDIF}
+
 	{ Find and set path/filename for Igor. }
 
 	T := GetEnv('TEMP');
@@ -186,7 +161,7 @@ type
 	public
 			PFileName : PLabel;
 			PFProgress, PTProgress : PProgressBar;
-			FIn, FOut : TFile;
+{			FIn, FOut : TFile; }
 			Finished : boolean;
 			(* Current: TInsFileHeader; *)
 			CSize, TSize : LongInt;
@@ -298,17 +273,16 @@ end;
 
 destructor TInsPanel.Destroy;
 begin
-	FOut.Destroy;
-	FIn.Close;
-	FIn.Destroy;
 	inherited Destroy;
 end;
 
 procedure TInsPanel.SaveBatch;
 var
 	T : String;
+	FOut : TFile;
 begin
 	MakeDir(BatchPath);
+	FOut.Create;
 	FOut.Assign(Dir(BatchPath) + BatchName);
 	FOut.Rewrite;
 	PFilename^.SetCaption(LSpace(BatchName, 12));
@@ -339,6 +313,7 @@ begin
 	{$IFDEF SOUND}
 		Delay(250);
 	{$ENDIF}
+	FOut.Destroy;
 	Finished := True;
 end;
 
@@ -844,13 +819,14 @@ var
 	Installer : TInstaller;
 
 begin
-    Halt;
 	{$IFDEF SOUND}
 		NoSound;
 	{$ENDIF}
 	TextAttr := $07;
 	Write('Starting installer...');
 	{$IFNDEF TEMPLATES}
+    IRes := New(PResource, Create(ParamStr(0), New(PFile, Create)));
+    if not IRes^.Open then BadInstaller;
 	Detective;
 	{$ENDIF}
 	with Installer do begin
@@ -861,6 +837,10 @@ begin
 		Execute;
 		Destroy;
 	end;
+    {$IFNDEF TEMPLATES}
+	if Assigned(IRes) then Dispose(IRes,Destroy);
+	IRes := nil;
+    {$ENDIF}
 	if GoodState then begin
 		TextAttr := $0B;
 		GotoXY(1,WhereY);

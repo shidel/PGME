@@ -206,16 +206,13 @@ begin
 	FConfig.OpenSection('*');
 	{$IFDEF TEMPLATES}
 		FConfig.GetValue('TYPE', ftConfig);
+	{$ENDIF}
         TL := 'DEFAULT' + LanguageExt;
         TT := 'DEFAULT' + ThemeExt;
         TK := 'DEFAULT' + KeymapExt;
         TF := 'DEFAULT' + FontExt;
-    {$ELSE}
-        TL := ''; { 'DEFAULT' + LanguageExt; }
-        TT := ''; { 'DEFAULT' + ThemeExt; }
-        TK := ''; { 'DEFAULT' + KeymapExt; }
-        TF := ''; { 'DEFAULT' + FontExt; }
-	{$ENDIF}
+
+
     FLanguage.Create('Language');
     FLanguage.SetFreeOnDestroy(False);
     with FConfig do begin
@@ -228,7 +225,8 @@ begin
         TT := GetValue('THEME', TT);
         TK := GetValue('KEYBOARD', TK);
         TF := GetValue('FONT', TF);
-        OpenSection('*');
+
+    	FConfig.OpenSection('*');
         TL := GetValue('LANGUAGE', TL);
         TT := GetValue('THEME', TT);
         TK := GetValue('KEYBOARD', TK);
@@ -256,9 +254,9 @@ begin
 		FTheme.GetValue('ID', 'DEFAULT');
 		FTheme.GetValue('NAME', 'Default Theme');
 	{$ENDIF}
-	FKeyboard.SetFileName(TK);
-	FKeyboard.Read;
-	FKeyboard.SetAutoAdd(True);
+    FKeyboard.SetFileName(TK);
+    FKeyboard.Read;
+    FKeyboard.SetAutoAdd(True);
 	{$IFDEF TEMPLATES}
 		AddComments(FKeyboard, @KeyMapComments);
 		FKeyboard.OpenSection('*');

@@ -2,6 +2,7 @@
 
 if "%1" == "upx" goto BuildUPX
 if "%1" == "dev" goto TestTPC
+if "%1" == "ins" goto BuildInstaller
 if "%1" == "scr" goto TestTPC
 if "%1" == "util" goto TestTPC
 if "%1" == "clean" goto CheckV8PT
@@ -9,6 +10,13 @@ if "%1" == "noclean" goto CheckV8PT
 if not "%1" == "" goto %1
 if "%1" == "" goto CheckV8PT
 goto ErrorExit
+
+:BuildInstaller
+call %0 dev
+if errorlevel 1 goto ErrorExit
+call %0 make Installer
+if errorlevel 1 goto ErrorExit
+goto Done
 
 :BuildUPX
 set UPXPGME=yes

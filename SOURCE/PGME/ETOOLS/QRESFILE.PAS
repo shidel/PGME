@@ -46,6 +46,9 @@ asm
     db 'SIZE.DATA=$ byte(s)',0
     db 'SIZE.FILE=$ byte(s)',0
 
+    db 'COUNT.FILES=$ file(s)',0
+    db 'BYTES.FILES=$ bytes(s)',0
+
     db 'HELP.0=Usage $: [options] [package]',0
     db 'HELP.1=',0
     db 'HELP.2=   $F filename     Specify filename with resource data',0
@@ -140,7 +143,7 @@ begin
     Halt(0);
 end;
 
-function ImportMsg(AFileName : String; ACompleted : word) : boolean; far;
+function ImportMsg(AFileName : String; ACompleted, ABytes : word) : boolean; far;
 const
     LW : byte = 0;
 var
@@ -158,7 +161,7 @@ begin
         LW := Length(S);
 end;
 
-function ExportMsg(AFileName : String; ACompleted : word) : boolean; far;
+function ExportMsg(AFileName : String; ACompleted, ABytes : word) : boolean; far;
 const
     LW : byte = 0;
 var
@@ -189,6 +192,7 @@ var
     NoPaths : boolean;
     I : integer;
     OPath : String;
+    FCount, FSize : longint;
 begin
 	if ParamCount = 0 then  DisplayHelp;
     OPath     := '';
@@ -226,6 +230,8 @@ begin
                 CanModify := True;
 	        end;
 	        'L' : begin {List Resource}
+	            FCount := 0;
+	            FSize := 0;
 	            if Not Assigned(PRes) then WriteHalt(ErrorMsg(5, 'CON:'),5);
                 PRes^.FindFirst('', RSearch);
                 While PRes^.GetResult = 0 do begin
@@ -235,6 +241,8 @@ begin
                     end else begin
                         WriteLn(CON,NLSStr('TYPE.FILE', RSearch.Name), ' ',
                             NLSStr('SIZE.FILE', IntStr(RSearch.Data.Size)));
+                            Inc(FCount);
+                            Inc(FSize, RSearch.Data.Size );
                     end;
                     PRes^.FindNext(RSearch);
                 end;
@@ -243,6 +251,8 @@ begin
                     Err := PRes^.GetResult;
                     Break;
                 end;
+                WriteLn(CON,NLSStr('COUNT.FILES', IntStr(FCount)), ' ',
+                            NLSStr('BYTES.FILES', IntStr(FSize)));
 	        end;
 	        'E' : begin {Export File}
 	            if Not Assigned(PRes) then WriteHalt(ErrorMsg(5, 'CON:'),5);

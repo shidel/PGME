@@ -12,7 +12,7 @@ unit QRESRC; { QuickCrt Resource File Utilities }
 
 interface
 
-    uses QClass, QDos, QFiles;
+    uses QClass, QFiles;
 
 const
   	class_TResource : TObjectClass = 'TFile';
@@ -41,12 +41,12 @@ type
         Zero : byte;
     end;
 
-    TResourceStatusProc = function (AFileName : String; ACompleted : word) : boolean;
+    TResourceStatusProc = function (AFileName : String; ACompleted, ABytes : word) : boolean;
 
     PResource = ^TResource;
     TResource = object (TObject)
 	public { private }
-	    FBuffer    : array[0..1023] of byte;
+	    FBuffer    : array[0..10239] of byte;
 	    FResID     : String;
 	    FHandler   : PAbstractFile;
 	    FResult    : Integer;
@@ -73,8 +73,10 @@ type
       function    IOResult : integer; virtual;
       function    Open : boolean; virtual;
       function    Close : boolean; virtual;
+    { At present FindFirst/FindNext just return everything }
       function    FindFirst(AFileSpec : String; var ARec : TResourceRec) : boolean; virtual;
       function    FindNext(var ARec : TResourceRec) : boolean; virtual;
+      function    FindItem(AFileSpec : String; var ARec : TResourceRec) : boolean; virtual;
       function    Import(ABasePath, AFileSpec : String; AStatus : TResourceStatusProc ) : boolean; virtual;
       function    ExportResource(ABasePath : String; ARec : TResourceRec;
         AStatus : TResourceStatusProc) : boolean; virtual;
@@ -82,11 +84,14 @@ type
       function    ExportAll(ABasePath : String; AStatus : TResourceStatusProc ) : boolean; virtual;
       function    Delete(AFileSpec : String; AStatus : TResourceStatusProc ) : boolean; virtual;
       function    DeleteAll : boolean; virtual;
+      function    GetTotalSize(ABlockType : integer) : LongInt; virtual;
+      function    GetTotalCount(ABlockType : integer) : LongInt; virtual;
+      function    LoadItem(var AAddr; var ARec : TResourceRec) : boolean; virtual;
     end;
 
 implementation
 
-    uses QStrings;
+    uses QStrings, QDos;
 
 function TResource.ObjectClass(AName : String) : String;
 begin
@@ -343,6 +348,27 @@ begin
     FindNext := True;
 end;
 
+function TResource.FindItem(AFileSpec : String; var ARec : TResourceRec) : boolean;
+var
+    S : String;
+begin
+    AFileSpec:=UCase(AFileSpec);
+    FindFirst('', ARec);
+    While FResult = 0 do begin
+        if ARec.Data.BlockType = 1 then begin
+            if MatchWildCard(AFileSpec, uCase(ARec.Name)) then begin
+                FindItem := True;
+                Exit;
+            end;
+        end;
+        FindNext(ARec);
+    end;
+    if FResult = 18 then begin
+        FResult := 0;
+    end;
+    FindItem := False;
+end;
+
 function TResource.Import(ABasePath, AFileSpec : String; AStatus : TResourceStatusProc ) : boolean;
 const
     Zero : byte = 0;
@@ -382,7 +408,7 @@ begin
                 else
                     FN := PathOf(AFileSpec) + FSearch.Name;
                 if Assigned(AStatus) then
-                    if not AStatus(FN, 0) then
+                    if not AStatus(FN, 0, 0) then
                         Abort := True;
                  if FHasFooter then
                     FHandler^.Seek(FHandler^.FileSize - SizeOf(TResourceBlockID))
@@ -395,6 +421,7 @@ begin
                 F.Assign(PathOf(AFileSpec) + FSearch.Name);
                 F.Reset;
                 FileMode := FM;
+                C := 0;
                 if F.Result = 0 then begin
                     LP := 0;
                     FHasFooter := False;
@@ -417,7 +444,7 @@ begin
                         P := (W * 100 div DB.Size); { Meh }
                         if (LP <> P) and (P < 100) then begin
                             if Assigned(AStatus) then
-                                if not AStatus(FN, P) then
+                                if not AStatus(FN, P, C) then
                                     Abort := True;
                             LP := P;
                         end;
@@ -441,7 +468,7 @@ begin
                     Exit;
                 end;
                 if Assigned(AStatus) then
-                    if not AStatus(FN, 100) then
+                    if not AStatus(FN, 100, C) then
                         Abort := True;
             end;
             QDOS.FindNext(FSearch);
@@ -485,16 +512,18 @@ begin
     if FJunkPaths then System.Delete(FN, 1, Length(PathOf(FN)));
     if ABasePath <> '' then TFN := TailDelim(AbasePath) + FN else TFN := FN;
     if Assigned(AStatus) then
-        if not AStatus(FN, 0) then Abort := True;
+        if not AStatus(FN, 0, 0) then Abort := True;
     if (PathOf(TFN) <> '' ) and (not DirExists(NoTailDelim(Pathof(TFN)))) then begin
         FResult := MakeDir(NoTailDelim(Pathof(TFN)));
     end;
+    C := 0;
     if FResult = 0 then begin
         F.Assign(TFN);
         F.Rewrite;
         FResult := F.Result;
         W := 0;
         LP := 0;
+        C := 0;
         while (FResult = 0) and (W < ARec.Data.Size) do begin
             if  Sizeof(FBuffer) < (ARec.Data.Size - W) then
                 C := Sizeof(FBuffer)
@@ -510,7 +539,7 @@ begin
             P := (W * 100 div ARec.Data.Size);
             if (LP <> P) and (P < 100) then begin
                 if Assigned(AStatus) then
-                    if not AStatus(FN, P) then
+                    if not AStatus(FN, P, C) then
                         Abort := True;
                 LP := P;
             end;
@@ -521,7 +550,7 @@ begin
     end;
     F.Destroy;
     if Assigned(AStatus) and (FResult = 0) then
-        if not AStatus(FN, 100) then Abort := True;
+        if not AStatus(FN, 100, C) then Abort := True;
     ExportResource := (Not Abort) and (FResult = 0);
 end;
 
@@ -618,6 +647,81 @@ begin
         Exit;
     end;
     DeleteAll := True;
+end;
+
+function TResource.GetTotalSize(ABlockType : integer) : LongInt;
+var
+    ARec : TResourceRec;
+    Size : LongInt;
+begin
+    FindFirst('', ARec);
+    Size := 0;
+    While FResult = 0 do begin
+        if ABlockType = -1 then
+           Inc(Size, ARec.Data.BlockSize - 6)
+        else
+        if ABlockType = ARec.Data.BlockType then begin
+            if ARec.Data.BlockType = 1 then
+                Inc(Size, ARec.Data.Size)
+            else
+                Inc(Size, ARec.Data.BlockSize - 6);
+        end;
+        FindNext(ARec);
+    end;
+    if FResult = 18 then begin
+        FResult := 0;
+    end;
+    if FResult = 0 then
+        GetTotalSize := Size
+    else
+        GetTotalSize := -1;
+end;
+
+function TResource.GetTotalCount(ABlockType : integer) : LongInt;
+var
+    ARec : TResourceRec;
+    Count : LongInt;
+begin
+    FindFirst('', ARec);
+    Count := 0;
+    While FResult = 0 do begin
+        if ABlockType = -1 then
+           Inc(Count)
+        else
+        if ABlockType = ARec.Data.BlockType then begin
+            Inc(Count);
+        end;
+        FindNext(ARec);
+    end;
+    if FResult = 18 then begin
+        FResult := 0;
+    end;
+    if FResult = 0 then
+        GetTotalCount := Count
+    else
+        GetTotalCount := -1;
+end;
+
+
+function TResource.LoadItem(var AAddr; var ARec : TResourceRec) : boolean;
+begin
+    LoadItem := false;
+    if InvalidHandler then exit;
+    if (FDataStart = -1) then begin
+        FResult := 103;
+        Exit;
+    end;
+    if (ARec.Data.Size >= 65535) then begin
+        FResult := 8;
+        Exit;
+    end;
+    if InvalidBlock(ARec, Sizeof(ARec)) then exit;
+    FHandler^.Seek(ARec.Position + Sizeof(TResourceBlockData) +
+        Length(ARec.Name) + 2 );
+    if HandlerError then Exit;
+    FHandler^.ReadRecord(AAddr, ARec.Data.Size);
+    if HandlerError then Exit;
+    LoadItem := True;
 end;
 
 
