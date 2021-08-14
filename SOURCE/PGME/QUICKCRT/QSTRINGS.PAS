@@ -1236,8 +1236,8 @@ var
     I : integer;
 begin
     I := 0;
-    While (I < Length(S1)) and (I < Length[S2]) and (S1[i+1] = S2[I+2]) do Inc(I);
-    SamePartAsStr := Copy(S1, 1, I);
+    While (I < Length(S1)) and (I < Length(S2)) and (S1[i+1] = S2[I+2]) do Inc(I);
+    SamePartOfStr := Copy(S1, 1, I);
 end;
 
 

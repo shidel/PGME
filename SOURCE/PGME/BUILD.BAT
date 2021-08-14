@@ -83,6 +83,15 @@ goto ErrorMAKE
 REM ***************************************************************************
 REM Main Build Section
 :MainBuild
+type VERSION.INC | vstr /u /f "YEAR:" 2 | vstr /b/n/f ; 1 | set /p _YEAR=
+type VERSION.INC | vstr /u /f "MONTH:" 2 | vstr /b/n/f ; 1 | set /p _MONTH=
+type VERSION.INC | vstr /u /f "DAY:" 2 | vstr /b/n/f ; 1 | set /p _DAY=
+set _VERSION=%_YEAR%-%_MONTH%-%_DAY%
+if "%_YEAR%" == "" goto SetVerErr
+if "%_MONTH%" == "" goto SetVerErr
+if "%_DAY%" == "" goto SetVerErr
+echo Version Build=%_VERSION%
+
 set SELF=%0
 vecho Creating /fWhite Program Manager /fCyan Eternity /fGrey from source.
 if "%1" == "dev" goto DevBuildOnly
@@ -186,10 +195,13 @@ goto DoneMake
 	if not exist BIN\NUL mkdir BIN
 	if not exist BIN\NUL goto ErrorMAKE
 
-	if exist BIN\LICENSE.TXT goto MAKE_Prep_HasLic
     if exist LICENSE.TXT copy /y LICENSE.TXT BIN\LICENSE.TXT
     if exist VERSION.INC copy /y VERSION.INC QUICKCRT\
-    :MAKE_Prep_HasLic
+
+    if not exist PGME.LSM goto DoneMake
+
+    if not exist BIN\APPINFO\NUL mkdir BIN\APPINFO
+    type PGME.LSM | vstr /s $VERSION$ %_VERSION% >BIN\APPINFO\PGME.LSM
 
 goto DoneMake
 
@@ -269,7 +281,7 @@ goto DoneMake
     qresfile /m /f ..\install\install.exe /i *.cfg /i *.fnt /i *.bat
     qresfile /m /f ..\install\install.exe /i *.kmp /i *.thm /i *.lng /i *.mnu
     qresfile /m /f ..\install\install.exe /i WHATSUP.* /i SOMEDAY.* /i BLAHBLAH.*
-    qresfile /m /f ..\install\install.exe /i DEFAULTS\*.*
+    qresfile /m /f ..\install\install.exe /i DEFAULTS\*.* /i APPINFO\*.*
     cd ..
 
 goto DoneMake
@@ -496,6 +508,9 @@ echo Unable to find Turbo Pascal Compiler.
 verrlvl 1
 goto VeryEnd
 
+:SetVerErr
+echo Error setting version string value "%_VERSION%"
+
 :ErrorExit
 vecho /fYellow /bRed " Error building PGME" /e /fGrey /bBlack
 :ErrorEnd
@@ -517,5 +532,9 @@ SET SELF=
 SET TPC=
 SET TPC_OPTS=
 SET UPXPGME=
+set _YEAR=
+set _MONTH=
+set _DAY=
+set _VERSION=
 
 :VeryEnd
