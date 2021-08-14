@@ -2,6 +2,10 @@ Things TO-DO on PGME:
 
 Bugs and Known Issues:
 
+    Some DOSBox users have reported the time displayed in PGME and the Clock
+    Screen Saver showing times like 26th hour of the day. This is not a bug
+    in the time conversion routines in these programs.
+
 Maybe Eventual Improvements:
 
 	Convert PMGE Launcher to assembly.
@@ -11,7 +15,8 @@ Maybe Eventual Improvements:
 	Import of PMI from within PGME.
 	Improve Install Size Accuracy.
 	Add prompting and parsing for custom options in menu launchers.
-	Add PGME Value as Formatting to Options like %E for eternity path... for launchers.
+	Add PGME Value as Formatting to Options like %E for eternity path...
+	    (for improved program launching flexibility)
 	Change searching to search programs in order of appearance, not order of ID.
 	Ticker style viewing of really long text when selected or mouse is over.
 	Improve Installer to not require two builds and permit UPX compressed stub.

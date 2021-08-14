@@ -15,6 +15,9 @@ uses QStrings, QDos, QFiles, QNLS, QResrc;
 {$I ..\ETERNITY\LICENSE.INC}
 {$I ..\VERSION.INC}
 
+var
+    CON : Text;
+
 { --------------------- }
 
 procedure ProgramMessages; assembler;
@@ -90,7 +93,7 @@ end;
 
 procedure WriteHalt (Data : String; ExitCode : integer);
 begin
-    WriteLn(Data);
+    WriteLn(CON,Data);
     Halt(ExitCode);
 end;
 
@@ -100,20 +103,20 @@ var
 begin
     S:=NLSstr('SUPPORT', NLS('PROG.TITLE'));
     if S <> '' then begin
-        WriteLn(S);
-        WriteLn('');
+        WriteLn(CON,S);
+        WriteLn(CON,'');
     end;
 end;
 
 procedure DisplayVersion;
 begin
-    WriteLn(NLS('PROG.TITLE') + ', ' + NLSstr('PROG.VERSION',
+    WriteLn(CON,NLS('PROG.TITLE') + ', ' + NLSstr('PROG.VERSION',
         ZPad(IntStr(Version.Year), 4) + '-' +
         ZPad(IntStr(Version.Month), 2) + '-' +
         ZPad(IntStr(Version.Day), 2)
         ));
-    WriteLn(NLS('PROG.DESC'));
-    WriteLn('');
+    WriteLn(CON,NLS('PROG.DESC'));
+    WriteLn(CON,'');
 end;
 
 procedure DisplayHelp;
@@ -128,12 +131,12 @@ begin
     if W < 0 then Halt(1);
     H := W;
     while (H = W) do begin
-        WriteLn(S);
+        WriteLn(CON,S);
         Inc(I);
         W := GetNLS('HELP.' + IntStr(I), S);
         S := ReplaceStr(S, '$', SwitchChar, True);
     end;
-    WriteLn('');
+    WriteLn(CON,'');
     Halt(0);
 end;
 
@@ -142,13 +145,12 @@ const
     LW : byte = 0;
 var
     S : String;
-
 begin
     ImportMsg:=True;
     S := NLSStr('IMPORT', AFileName) + ' ' + NLSStr('PERCENT', IntStr(ACompleted));
     if ACompleted <> 0 then
-        Write(ChrStr(#8, LW), Space(LW), ChrStr(#8, LW));
-    Write(S);
+        Write(CON,ChrStr(#8, LW), Space(LW), ChrStr(#8, LW));
+    Write(CON,S);
     if ACompleted = 100 then begin
         WriteLN;
         LW := 0
@@ -166,8 +168,8 @@ begin
     ExportMsg:=True;
     S := NLSStr('EXPORT', AFileName) + ' ' + NLSStr('PERCENT', IntStr(ACompleted));
     if ACompleted <> 0 then
-        Write(ChrStr(#8, LW), Space(LW), ChrStr(#8, LW));
-    Write(S);
+        Write(CON,ChrStr(#8, LW), Space(LW), ChrStr(#8, LW));
+    Write(CON,S);
     if ACompleted = 100 then begin
         WriteLN;
         LW := 0
@@ -204,7 +206,7 @@ begin
     While I <= ParamCount do begin
 	    Opt := UCase(ParamStr(I));
 	    if (Length(Opt) < 2) or (Opt[1] <> SwitchChar) then begin
-        	WriteLn(ErrorMsg(1, Opt));
+        	WriteLn(CON,ErrorMsg(1, Opt));
         	Err := 1;
         	Break;
 	    end;
@@ -227,16 +229,16 @@ begin
                 PRes^.FindFirst('', RSearch);
                 While PRes^.GetResult = 0 do begin
                     if RSearch.Data.BlockType <> 1 then begin
-                        WriteLn(NLSStr('TYPE.UNKOWN', IntStr(RSearch.Data.BlockType)), ' ',
+                        WriteLn(CON,NLSStr('TYPE.UNKOWN', IntStr(RSearch.Data.BlockType)), ' ',
                             NLSStr('SIZE.DATA', IntStr(RSearch.Data.BlockSize - 6)));
                     end else begin
-                        WriteLn(NLSStr('TYPE.FILE', RSearch.Name), ' ',
+                        WriteLn(CON,NLSStr('TYPE.FILE', RSearch.Name), ' ',
                             NLSStr('SIZE.FILE', IntStr(RSearch.Data.Size)));
                     end;
                     PRes^.FindNext(RSearch);
                 end;
                 if PRes^.GetResult <> 18 then begin
-                  	WriteLn(ErrorMsg(PRes^.GetResult, Opt));
+                  	WriteLn(CON,ErrorMsg(PRes^.GetResult, Opt));
                     Err := PRes^.GetResult;
                     Break;
                 end;
@@ -246,7 +248,7 @@ begin
                 Opt := ParamStr(I);
 	            Inc(I);
                 if not PRes^.Export('', Opt, ExportMsg) then begin
-                	WriteLn(ErrorMsg(PRes^.GetResult, Opt));
+                	WriteLn(CON,ErrorMsg(PRes^.GetResult, Opt));
                 	Err := PRes^.GetResult;
         	        Break;
                 end;
@@ -254,7 +256,7 @@ begin
 	        'O' : begin {Export All Files}
 	            if Not Assigned(PRes) then WriteHalt(ErrorMsg(5, 'CON:'),5);
                 if not PRes^.ExportAll('OUT', ExportMsg) then begin
-                	WriteLn(ErrorMsg(PRes^.GetResult, Opt));
+                	WriteLn(CON,ErrorMsg(PRes^.GetResult, Opt));
                 	Err := PRes^.GetResult;
         	        Break;
                 end;
@@ -264,7 +266,7 @@ begin
                 Opt := ParamStr(I);
 	            Inc(I);
                 if not PRes^.Import('', Opt, ImportMsg) then begin
-                	WriteLn(ErrorMsg(PRes^.GetResult, Opt));
+                	WriteLn(CON,ErrorMsg(PRes^.GetResult, Opt));
                 	Err := PRes^.GetResult;
         	        Break;
                 end;
@@ -276,14 +278,14 @@ begin
 	        end;
 	        'D' : begin  {Delete resource}
 	            if Not Assigned(PRes) then WriteHalt(ErrorMsg(5, 'CON:'),5);
-	            WriteLn(NLSstr('NOFUNC', SwitchChar + Opt));
+	            WriteLn(CON,NLSstr('NOFUNC', SwitchChar + Opt));
 	            Err := 1;
 	            Break;
 	        end;
 	        'X' : begin {Remove all Resource data}
 	            if Not Assigned(PRes) then WriteHalt(ErrorMsg(5, 'CON:'),5);
 	            if not PRes^.DeleteAll then begin
-                	WriteLn(ErrorMsg(PRes^.GetResult, Opt));
+                	WriteLn(CON,ErrorMsg(PRes^.GetResult, Opt));
                 	Err := PRes^.GetResult;
         	        Break;
         	    end;
@@ -302,13 +304,13 @@ begin
                PRes^.FJunkPaths := NoPaths;
                if CanAppend then PRes^.FExistOnly := False;
                if not PRes^.Open then begin
-                	WriteLn(ErrorMsg(PRes^.GetResult, Opt));
+                	WriteLn(CON,ErrorMsg(PRes^.GetResult, Opt));
                 	Err := PRes^.GetResult;
         	        Break;
         	    end;
 	        end;
 	    else
-        	WriteLn(ErrorMsg(1, SwitchChar + Opt));
+        	WriteLn(CON,ErrorMsg(1, SwitchChar + Opt));
         	Err := 1;
         	Break;
         end;
@@ -318,9 +320,10 @@ begin
 end;
 
 begin
-	{ ErrorsOnExit := false;
-	ErrorClrScr := false; }
+    Assign(CON, '');
+    Append(CON);
     SetBuiltInLanguage(@ProgramMessages);
     SetLanguage('');
 	Run;
+	Close(CON);
 end.

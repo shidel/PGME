@@ -23,11 +23,9 @@ close the program. There are several other ways to accomplish the same result, b
 this is one of the easiest. }
 
 uses QCrt, QCLass, QStrings, QFmtStr, QFiles, QDos, QErrors, QObjects, QControls,
-	QFileDlg;
+	QFileDlg, QResrc;
 
-{$I INSTALL.INC}
 {$I LICENSE.INC}
-{$I INSFILE.INC}
 
 const
 	class_TInstallOptions : TObjectClass ='TInstallOptions';
@@ -63,9 +61,9 @@ var
 	S : String;
 	C : Word;
 	Z : LongInt;
-	R : TInsFileHeader;
+	(* R : TInsFileHeader; *)
 begin
-	InstallSize := 0;
+(*	InstallSize := 0;
 	InstallFiles := 0;
 	F.Create;
 	F.Assign(ParamStr(0));
@@ -95,6 +93,7 @@ begin
 	InstallFiles := C;
 	InstallSize := Z;
 	F.Destroy;
+	*)
 end;
 
 procedure Detective;
@@ -189,7 +188,7 @@ type
 			PFProgress, PTProgress : PProgressBar;
 			FIn, FOut : TFile;
 			Finished : boolean;
-			Current: TInsFileHeader;
+			(* Current: TInsFileHeader; *)
 			CSize, TSize : LongInt;
 		constructor Create(AParent : PControl; AName : String);
 		destructor Destroy; virtual;
@@ -286,14 +285,14 @@ begin
 		SetBounds(B);
 		SetAnchors(abNone);
 	end;
-	FIn.Create;
+(*	FIn.Create;
 	FIn.Assign(ParamStr(0));
 	FIn.Reset;
 	FIn.Seek(InstallExeSize + Length(InstallHeader) + 1);
 	FOut.Create;
 	FillChar(Current, 0, Sizeof(Current));
 	CSize := 0;
-	TSize := 0;
+	TSize := 0; *)
 	Finished := False;
 end;
 
@@ -334,8 +333,8 @@ begin
 		PInstaller(Application)^.PInstall^.Hide;
 		PutCommand(cmNone, nil);
 	end;
-	PFProgress^.SetProgress(((Current.Size - CSize) * 100) div Current.Size);
-	PTProgress^.SetProgress((TSize * 100) div InstallSize);
+(*	PFProgress^.SetProgress(((Current.Size - CSize) * 100) div Current.Size);
+	PTProgress^.SetProgress((TSize * 100) div InstallSize); *)
 	FOut.Close;
 	{$IFDEF SOUND}
 		Delay(250);
@@ -349,7 +348,7 @@ var
 	Max	: word;
 begin
 	if Finished then exit;
-	if (CSize = 0) then begin
+(*	if (CSize = 0) then begin
 		FIn.ReadRecord(Current, Sizeof(Current));
 		if (Current.Group = igInstall) or
 		((Current.Group = igConfig) and FileExists(Dir(InstallPath) + Current.Name)) then begin
@@ -397,6 +396,7 @@ begin
 	{$IFDEF SOUND}
 		if CSize = 0 then Delay(250);
 	{$ENDIF}
+	*)
 	if (TSize >= InstallSize) then SaveBatch;
 end;
 
@@ -844,6 +844,7 @@ var
 	Installer : TInstaller;
 
 begin
+    Halt;
 	{$IFDEF SOUND}
 		NoSound;
 	{$ENDIF}

@@ -88,7 +88,6 @@ implementation
 
     uses QStrings;
 
-
 function TResource.ObjectClass(AName : String) : String;
 begin
     if (AName = '') or (AName = class_TResource) then

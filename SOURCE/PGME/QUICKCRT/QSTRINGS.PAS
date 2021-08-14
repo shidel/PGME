@@ -149,7 +149,8 @@ function StrIndex(TheStr : String; Strs : array of String) : integer;
 { Caseless, Returns the index in an array of the string, or -1 if not found }
 procedure ROLStr(var AStr : String);
 { Rotates a string left, placing the first character at the end }
-
+function SamePartOfStr(S1, S2 : String) : String;
+{ return the start portion of the strings that are identical }
 
 implementation
 
@@ -1218,7 +1219,6 @@ asm
     pop     ds
 end;
 
-
 function StrAsHex(AStr : String) : String;
 var
     I : Integer;
@@ -1228,6 +1228,16 @@ begin
     for I := 1 to length(AStr) do
         S := S + HexByte(Ord(AStr[I]));
     StrAsHex := S;
+end;
+
+function SamePartOfStr(S1, S2 : String) : String;
+{ return the start portion of the strings that are identical }
+var
+    I : integer;
+begin
+    I := 0;
+    While (I < Length(S1)) and (I < Length[S2]) and (S1[i+1] = S2[I+2]) do Inc(I);
+    SamePartAsStr := Copy(S1, 1, I);
 end;
 
 

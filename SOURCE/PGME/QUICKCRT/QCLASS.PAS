@@ -1,10 +1,10 @@
 { Copyright 2015 Jerome Shidel }
 
-(* 
-		
+(*
+
 	This project and related files are subject to either the terms
 	specified in the included LICENSE.TXT file or the GNU GPLv2.0.
-	
+
 *)
 
 unit QClass; { QuickCRT Basic Object Classes }
@@ -14,10 +14,10 @@ interface
 
 {$DEFINE INTERFACE}
 
-uses 
-   {$IFDEF DEVLOG} QLog, {$ENDIF} 
+uses
+   {$IFDEF DEVLOG} QLog, {$ENDIF}
 	QCrt, QStrings;
-	
+
 {$IFNDEF STRINGPTRS}
 const
 	StringMax = 255;
@@ -28,7 +28,7 @@ type
 
 {$I TObject.inc}
 {$I TPersistent.inc}
-		
+
 {$UNDEF INTERFACE}
 
 implementation

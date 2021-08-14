@@ -170,8 +170,6 @@ REM ***************************************************************************
 	if errorlevel 1 goto ErrorMake
 	if exist ESAVER\BIN\NUL deltree /y ESAVER\BIN
 	if errorlevel 1 goto ErrorMake
-	if exist ETERNITY\INSTALL.INC deltree /y ETERNITY\INSTALL.INC
-	if errorlevel 1 goto ErrorMake
 	if exist ETERNITY\LICENSE.INC deltree /y ETERNITY\LICENSE.INC
 	if errorlevel 1 goto ErrorMake
 :MAKE_DevBuildClean
@@ -239,7 +237,9 @@ goto DoneMake
     if exist etools\bin\EFNTDSGN.exe move /y etools\bin\*.EXE bin
     if exist esaver\bin\blanker.scr move /y esaver\bin\*.scr bin
 
-    rem xcopy /y /d eternity\*.txt bin\
+    copy /y changes.txt bin\whatsup.en
+    copy /y todo bin\someday.en
+
     xcopy /y /d helpers\*.* bin\
 
     xcopy /y /d custom\config\*.* bin\
@@ -254,17 +254,23 @@ goto DoneMake
 
 :MAKE_Installer
     verrlvl 0
+
     if exist INSTALL\NUL deltree /y INSTALL >NUL
-    copy /y eternity\bin\install.exe bin
-    if "%UPXPGME" == "" goto NoUPXIns
-    rem upx --8086 bin\install.exe
-:NoUPXIns
-    ETERNITY\bin\add2ins.exe bin
-    if errorlevel 1 goto ErrorMAKE
     if not exist INSTALL\NUL mkdir INSTALL
-    del bin\install.exe >NUL
-    move bin\install.tmp install\install.exe
+    copy /y eternity\bin\install.exe INSTALL
+    if "%UPXPGME%" == "" goto NoUPXIns
+    upx --8086 INSTALL\install.exe
+:NoUPXIns
     if not exist install\install.exe goto ErrorMake
+    cd bin
+    qresfile /a /m /f ..\install\install.exe /i pgme.exe /i eternity.bin
+    qresfile /m /f ..\install\install.exe /i efntdsgn.exe  /i *.scr /i *.txt
+    qresfile /m /f ..\install\install.exe /i q*.exe /i raw2qfnt.exe
+    qresfile /m /f ..\install\install.exe /i *.cfg /i *.fnt /i *.bat
+    qresfile /m /f ..\install\install.exe /i *.kmp /i *.thm /i *.lng /i *.mnu
+    qresfile /m /f ..\install\install.exe /i WHATSUP.* /i SOMEDAY.* /i BLAHBLAH.*
+    qresfile /m /f ..\install\install.exe /i DEFAULTS\*.*
+    cd ..
 
 goto DoneMake
 
@@ -313,9 +319,7 @@ goto DoneMake
     move ETOOlS\BIN\DEFAULTS\*.* BIN\DEFAULTS
     if errorlevel 1 goto ErrorMAKE
     if not exist BIN\DEFAULTS\EFNTDSGN.LNG goto ErrorMake
-
 goto DoneMake
-
 
 :COMPILE
 if exist FAILED then del FAILED>NUL
@@ -341,18 +345,16 @@ REM ***************************************************************************
 :MAKE_ETERNITY_First
 :MAKE_ETERNITY_Second
     verrlvl 0
- 	if exist INSTALL.INC del INSTALL.INC>NUL
  	if exist LICENSE.INC del LICENSE.INC>NUL
  	if exist BIN\NUL deltree /y BIN
     if not exist BIN\NUL mkdir BIN
-	if not exist INSTALL.INC  copy /y INSTALL.PRE INSTALL.INC
 
     set TPC_OPTS=-M -L -EBIN -UBIN;..\QuickCRT\BIN -I..\QuickCRT
     call ..\%SELF% COMPILE PGME
     if exist FAILED goto ErrorMAKESUB
 
     REM compile tools and make license include file
-    call ..\%SELF% COMPILE ADDLIC ADD2INS EXESIZE SPLICE
+    call ..\%SELF% COMPILE ADDLIC SPLICE
     if exist FAILED goto ErrorMAKESUB
     bin\addlic.exe
 	if not exist LICENSE.INC ErrorMAKESUB
