@@ -60,12 +60,12 @@ asm
     db 'HELP.11=General functions:',0
     db 'HELP.12=   $L              List resources',0
     db 'HELP.13=   $E  filespec    Export resource to file',0
-    db 'HELP.14=   $O              Export all resource data to files',0
+    db 'HELP.14=   $X              Export all resource data to files',0
     db 'HELP.15=   $I  filespec    Import resource from filename',0
     db 'HELP.16=   $J              Ignore path information for resource',0
     db 'HELP.17=',0
     db 'HELP.18=   $D  filespec    Delete resource filespec from file',0
-    db 'HELP.19=   $X              Remove ALL resource data from file',0
+    db 'HELP.19=   $K              Remove ALL resource data from file',0
     db 'HELP.21=',0
     db 'HELP.22=   $?              Display help and exit',0
 
@@ -188,9 +188,10 @@ var
     CanAppend,
     NoPaths : boolean;
     I : integer;
+    OPath : String;
 begin
 	if ParamCount = 0 then  DisplayHelp;
-
+    OPath     := '';
 	CanCreate := False;
 	CanModify := False;
 	CanAppend := False;
@@ -253,9 +254,9 @@ begin
         	        Break;
                 end;
 	        end;
-	        'O' : begin {Export All Files}
+	        'X' : begin {Export All Files}
 	            if Not Assigned(PRes) then WriteHalt(ErrorMsg(5, 'CON:'),5);
-                if not PRes^.ExportAll('OUT', ExportMsg) then begin
+                if not PRes^.ExportAll(OPATH, ExportMsg) then begin
                 	WriteLn(CON,ErrorMsg(PRes^.GetResult, Opt));
                 	Err := PRes^.GetResult;
         	        Break;
@@ -282,7 +283,7 @@ begin
 	            Err := 1;
 	            Break;
 	        end;
-	        'X' : begin {Remove all Resource data}
+	        'K' : begin {Remove all Resource data}
 	            if Not Assigned(PRes) then WriteHalt(ErrorMsg(5, 'CON:'),5);
 	            if not PRes^.DeleteAll then begin
                 	WriteLn(CON,ErrorMsg(PRes^.GetResult, Opt));
