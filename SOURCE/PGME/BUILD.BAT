@@ -239,7 +239,8 @@ goto DoneMake
     if exist etools\bin\EFNTDSGN.exe move /y etools\bin\*.EXE bin
     if exist esaver\bin\blanker.scr move /y esaver\bin\*.scr bin
 
-    xcopy /y /d eternity\*.txt bin\
+    rem xcopy /y /d eternity\*.txt bin\
+    xcopy /y /d helpers\*.* bin\
 
     xcopy /y /d custom\config\*.* bin\
     xcopy /y /d custom\docs\*.* bin\
