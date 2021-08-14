@@ -287,7 +287,8 @@ goto DoneMake
     qresfile /m /f ..\install\install.exe /i efntdsgn.exe  /i *.scr /i *.txt
     qresfile /m /f ..\install\install.exe /i q*.exe /i raw2qfnt.exe
     qresfile /m /f ..\install\install.exe /i *.cfg /i *.fnt /i *.bat
-    qresfile /m /f ..\install\install.exe /i *.kmp /i *.thm /i *.lng /i *.mnu
+    qresfile /m /f ..\install\install.exe /i *.thm /i *.lng /i *.mnu
+    qresfile /m /f ..\install\install.exe /i *.kmp
     qresfile /m /f ..\install\install.exe /i WHATSUP.* /i SOMEDAY.* /i BLAHBLAH.*
     qresfile /m /f ..\install\install.exe /i DEFAULTS\*.* /i APPINFO\*.*
     cd ..

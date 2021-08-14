@@ -47,7 +47,9 @@ const
 	InstallFiles  : Word = 0;
 	InstallPath   : String = '';
 	InstallError  : integer = 0;
-	InstallUses	  : LongInt = 512;
+	InstallUses	  : LongInt = 512; { could improve accuracy by scanning first }
+	LstDir        : String = '';
+	LsmDir        : String = '';
 	BatchPath	  : String = '';
 	BatchName	  : String = 'PGM.BAT';
 	ExecName	  : String = 'PGME.EXE';
@@ -55,10 +57,13 @@ const
 	IGOR		  : String = '';
 	GoodState	  : boolean = false;
 
-   {$IFNDEF TEMPLATES}
+    {$IFNDEF TEMPLATES}
     var
         IRes    : PResource;
     {$ENDIF}
+
+    var
+        PLst : PFile;
 
 procedure BadInstaller;
 begin
@@ -72,6 +77,8 @@ begin
     {$IFNDEF TEMPLATES}
 	if Assigned(IRes) then Dispose(IRes,Destroy);
 	IRes := nil;
+	if Assigned(PLst) then Dispose(PLst,Destroy);
+	PLst := nil;
     {$ENDIF}
     Halt(1);
 end;
@@ -86,9 +93,16 @@ begin
 	BatchPath := '';
 	InstallPath := '';
 
+	T := TailDelim(GetEnv('DOSDIR'));
+	if T <> '' then begin
+	    if DirExists(T + 'APPINFO') then LsmDir:= TailDelim(T + 'APPINFO');
+	    if DirExists(T + 'PACKAGES') then LstDir:= TailDelim(T + 'PACKAGES');
+	end;
+
 	{ Verify installer }
     {$IFNDEF TEMPLATES}
     InstallSize := IRes^.GetTotalSize(1);      { Block Type 1 for File }
+    InstallUses := InstallSize;
     InstallFiles := IRes^.GetTotalCount(1);
 	if (InstallSize < 10240) or (InstallFiles < 2) then  BadInstaller;
     {$ENDIF}
@@ -161,10 +175,8 @@ type
 	public
 			PFileName : PLabel;
 			PFProgress, PTProgress : PProgressBar;
-{			FIn, FOut : TFile; }
+			IRec : TResourceRec;
 			Finished : boolean;
-			(* Current: TInsFileHeader; *)
-			CSize, TSize : LongInt;
 		constructor Create(AParent : PControl; AName : String);
 		destructor Destroy; virtual;
 		procedure Copy; virtual;
@@ -204,6 +216,25 @@ type
 	end;
 
 { --- File Installing Panel --- }
+var
+    PIns : PInsPanel;
+    IBytes : longInt;
+
+function Progress(AFileName : String; ACompleted, ABytes : word) : boolean; far;
+var
+    P : Longint;
+begin
+    Progress:=True;
+    Inc(IBytes, ABytes);
+    P := (IBytes * 100 div InstallSize) - 1;
+    if P < 0 then P := 0;
+    if P > 100 then P := 100;
+    if Assigned(PIns) then begin
+        PIns^.PFProgress^.SetProgress(ACompleted);
+        PIns^.PTProgress^.SetProgress(P);
+    end;
+end;
+
 function TInsPanel.ObjectClass(AName : String) : String;
 begin
 	if (AName = '') or (AName = class_TInstallPanel) then
@@ -218,15 +249,17 @@ var
 	B : TBounds;
 begin
 	inherited Create(AParent, AName);
+    PIns := @Self;
+    {$IFNDEF TEMPLATES}
+	IRes^.FindFirst('',IRec);
+	{$ELSE}
+	IRec.Data.BlockType := 0;
+	{$ENDIF}
+
+	IBytes := 0;
+
 	TextAttr := $70;
 	Bounds(1, 3, 1, 1, B);
-{	P := New(PLabel, Create(@Self, 'Label'));
-	with PLabel(P)^ do begin
-		SetCaption('File:');
-		Bounds(3, B.Top, 5, 1, B);
-		FHAlign := AlignLeft;
-		SetBounds(B);
-	end; }
 	TextAttr := $70;
 	PFileName := New(PLabel, Create(@Self, 'Name'));
 	with PLabel(PFileName)^ do begin
@@ -260,19 +293,12 @@ begin
 		SetBounds(B);
 		SetAnchors(abNone);
 	end;
-(*	FIn.Create;
-	FIn.Assign(ParamStr(0));
-	FIn.Reset;
-	FIn.Seek(InstallExeSize + Length(InstallHeader) + 1);
-	FOut.Create;
-	FillChar(Current, 0, Sizeof(Current));
-	CSize := 0;
-	TSize := 0; *)
 	Finished := False;
 end;
 
 destructor TInsPanel.Destroy;
 begin
+    PIns := nil;
 	inherited Destroy;
 end;
 
@@ -282,6 +308,8 @@ var
 	FOut : TFile;
 begin
 	MakeDir(BatchPath);
+	T := Dir(BatchPath) + BatchName;
+	if Assigned(PLst) then PLst^.WriteLn(T);
 	FOut.Create;
 	FOut.Assign(Dir(BatchPath) + BatchName);
 	FOut.Rewrite;
@@ -307,8 +335,8 @@ begin
 		PInstaller(Application)^.PInstall^.Hide;
 		PutCommand(cmNone, nil);
 	end;
-(*	PFProgress^.SetProgress(((Current.Size - CSize) * 100) div Current.Size);
-	PTProgress^.SetProgress((TSize * 100) div InstallSize); *)
+	PFProgress^.SetProgress(100);
+	PTProgress^.SetProgress(100);
 	FOut.Close;
 	{$IFDEF SOUND}
 		Delay(250);
@@ -319,60 +347,60 @@ end;
 
 procedure TInsPanel.Copy;
 var
-	Buf : array[0..511] of byte;
-	Max	: word;
+    L, S : String;
+
 begin
 	if Finished then exit;
-(*	if (CSize = 0) then begin
-		FIn.ReadRecord(Current, Sizeof(Current));
-		if (Current.Group = igInstall) or
-		((Current.Group = igConfig) and FileExists(Dir(InstallPath) + Current.Name)) then begin
-			FIn.Seek(FIn.FilePos + Current.Size);
-			Inc(TSize, Current.Size);
-		end else begin
-			CSize := Current.Size;
-			MakeDir(InstallPath);
-			FOut.Assign(Dir(InstallPath) + Current.Name);
-			FOut.Rewrite;
-			PFilename^.SetCaption(LSpace(Current.Name, 12));
-			PFProgress^.SetProgress(0);
-			{$IFDEF SOUND}
-				Sound(250);
-				Delay(25);
-				NoSound;
-				Delay(50);
-			{$ENDIF}
-		end;
-	end;
-	if (CSize > 0) then begin
-		Max := Sizeof(Buf);
-		if Max > CSize then Max := CSize;
-		FIn.ReadRecord(Buf, Max);
-		FOut.WriteRecord(Buf, Max);
-		InstallError := FOut.IOResult;
+	if IRec.Data.BlockType = 1 then begin
+	    S := IRec.Name;
+	    L := Dir(InstallPath) + S;
+	    Delete(S, 1, Length(PathOf(S)));
+		PFilename^.SetCaption(LSpace(S, 12));
+		PFProgress^.SetProgress(0);
+		{$IFDEF SOUND}
+			Sound(250);
+			Delay(25);
+			NoSound;
+			Delay(50);
+		{$ENDIF}
+        {$IFNDEF TEMPLATES}
+        if (Not Assigned(PLst)) and (LstDir <> '') then begin
+            PLst := New(PFile, Create);
+            PLst^.Assign(LstDir + 'PGME.LST');
+            PLst^.Rewrite;
+        end;
+        if NoTailDelim(PathOf(IRec.Name)) = 'APPINFO' then begin
+            if Assigned(PLst) then begin
+        	    L := Dir(GetEnv('DOSDIR')) + IRec.Name;
+                PLst^.WriteLn(L);
+                IRes^.ExportResource(Dir(GetEnv('DOSDIR')), IRec, Progress);
+            end;
+        end else begin
+            if Assigned(PLst) then PLst^.WriteLn(L);
+            IRes^.ExportResource(Dir(InstallPath), IRec, Progress);
+        end;
+        InstallError := IRes^.GetResult;
+        {$ELSE}
+        InstallError := 0;
+        {$ENDIF}
 		if InstallError <> 0 then begin
 			PInstaller(Application)^.PInstall^.Hide;
 			PutCommand(cmNone, nil);
-			CSize := 0;
 			Finished := True;
+			Exit;
 		end;
-		Dec(CSize, Max);
-		if CSize = 0 then begin
-			FOut.Close;
-{
-			SetFTime(FOut.FRec, Current.Time);
-			SetFAttr(FOut.FRec, Current.Attr);
-}
-			Inc(TSize, Current.Size);
-		end;
-		PFProgress^.SetProgress(((Current.Size - CSize) * 100) div Current.Size);
+        {$IFNDEF TEMPLATES}
+            if not IRes^.FindNext(IRec) then
+                IRec.Data.BlockType := 0;
+        {$ENDIF}
 	end;
-	PTProgress^.SetProgress((TSize * 100) div InstallSize);
-	{$IFDEF SOUND}
-		if CSize = 0 then Delay(250);
-	{$ENDIF}
-	*)
-	if (TSize >= InstallSize) then SaveBatch;
+	if IRec.Data.BlockType = 0 then begin
+        {$IFNDEF TEMPLATES}
+	    SaveBatch;
+	    {$ENDIF}
+	    if Assigned(PLst) then PLst^.Close;
+	    Finished := True;
+	end;
 end;
 
 { --- Main Installer Application --- }
@@ -840,6 +868,8 @@ begin
     {$IFNDEF TEMPLATES}
 	if Assigned(IRes) then Dispose(IRes,Destroy);
 	IRes := nil;
+	if Assigned(PLst) then Dispose(PLst,Destroy);
+	PLst := nil;
     {$ENDIF}
 	if GoodState then begin
 		TextAttr := $0B;
