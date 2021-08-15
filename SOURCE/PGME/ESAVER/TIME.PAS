@@ -16,6 +16,7 @@ program Time;
 
   var
     Ticks : longint absolute $0040:$006c;
+    ScaleX, ScaleY : integer;
 
   const
     Speed : word = 0;
@@ -27,10 +28,17 @@ program Time;
     Colr : word = 0;
     NChg : word = 0;
 
-    Rows = 21;
-    ScaleX = 1;
-    ScaleY = ScaleX;
+    Scale : word = 0;
+    NewScale : word = 0;
+    Scales : array [0..3] of TPoint = (
+        (X:1; Y:1),
+        (X:1; Y:2),
+        (X:2; Y:2),
+        (X:2; Y:3)
+    );
 
+const
+    Rows = 21;
     MWide : word = 0; { Will self-adjust on first draw }
 
   type
@@ -354,19 +362,19 @@ program Time;
         end;
     end;
 
-  procedure OpenVideo; assembler;
+    procedure OpenVideo; assembler;
     asm
       MOV AX, $0013
       INT $10
     end;
 
-  procedure CloseVideo; assembler;
+    procedure CloseVideo; assembler;
     asm
       MOV AX, $0003
       INT $10
     end;
 
-  procedure Clear ( X1, Y1, X2, Y2 : word; Color : byte );
+    procedure Clear ( X1, Y1, X2, Y2 : word; Color : byte );
     var
       Wide : word;
       J    : Word;
@@ -415,6 +423,20 @@ program Time;
         VPos := Random(200 - Rows * ScaleY);
     end;
 
+    procedure Rescale;
+    begin
+        if NewScale = Scale then exit;
+        Scale:=NewScale;
+        ScaleX:= Scales[Scale].X;
+        ScaleY:= Scales[Scale].Y;
+        if HPos + MWide * ScaleX >= 320 then
+            HPos :=320 - MWide * ScaleX - 1;
+        if VPos + MWide * ScaleX >= 200 then
+            VPos := 200 - Rows * ScaleY - 1;
+        RandPos;
+        RandColor;
+    end;
+
     procedure ShowTime;
     var
         I, X : word;
@@ -425,7 +447,8 @@ program Time;
         T := ZPad(IntStr(H), 2) + ':' + ZPad(IntStr(M), 2) + ':' + ZPad(IntStr(S), 2);
         if T = LTime then Exit;
         LTime := T;
-     	Clear (HPos, VPos, HPOS + MWide * ScaleX, VPOS + Rows - 1, 0);
+     	Clear (HPos, VPos, HPOS + MWide * ScaleX, VPOS + (Rows * ScaleY) - 1, 0);
+     	Rescale;
         if NChg = 0 then begin
             NChg := Random(10) + 5;
             if Random(3) <> 0 then
@@ -440,7 +463,6 @@ program Time;
         MWide := X;
     end;
 
-
 type
 	TESaver = object (TScreenSaver)
 		constructor Create;
@@ -448,6 +470,7 @@ type
 		procedure Refresh; virtual;
 		procedure Show; virtual;
 		procedure Hide; virtual;
+        procedure CheckEvent(var Event : TEvent); virtual;
 	end;
 
 constructor TESaver.Create;
@@ -479,6 +502,8 @@ var
     X, Y : word;
 begin
 	inherited Show;
+	ScaleX := Scales[Low(Scales)].X;
+	ScaleY := Scales[Low(Scales)].Y;
 	Randomize;
 	OpenVideo;
 	WriteScreen := Ptr($A000, 0);
@@ -495,6 +520,16 @@ procedure TESaver.Hide;
 begin
 	CloseVideo;
 	inherited Hide;
+end;
+
+procedure TESaver.CheckEvent(var Event : TEvent);
+begin
+    if Event.What = evKeyDown then
+        if (UCase(Event.CharCode) = 'S') then begin
+            Inc(NewScale);
+            if NewScale > High(Scales) then NewScale := Low(Scales);
+            ClearEvent(Event);
+        end;
 end;
 
 var

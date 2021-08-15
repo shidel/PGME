@@ -1,10 +1,10 @@
-{ Copyright 2015 Jerome Shidel }
+{ Copyright 2015-2021 Jerome Shidel }
 
-(* 
-		
+(*
+
 	This project and related files are subject to either the terms
 	specified in the included LICENSE.TXT file or the GNU GPLv2.0.
-	
+
 *)
 
 unit QScrnSvr; { QuickCrt Screen Saver }
@@ -13,10 +13,10 @@ unit QScrnSvr; { QuickCrt Screen Saver }
 interface
 
 {$IFDEF TEMPLATES}
-	uses QClass, QObjects, QCrt, QInfo; 
+	uses QClass, QObjects, QCrt, QInfo;
 {$ELSE}
 	uses QClass, QCrt, QInfo;
-	
+
 	const
 		ftESaver = 'ESAVER';
 {$ENDIF}
@@ -31,28 +31,29 @@ type
 		Info : TInformation;
 		function  ObjectClass ( AName : String ) : String; virtual;
 	public
-		constructor Create; 
+		constructor Create;
 		destructor Destroy; virtual;
 		procedure Refresh; virtual;
 		procedure Show; virtual;
 		procedure Hide; virtual;
 		procedure Execute; virtual;
 		procedure Configure; virtual;
+		procedure CheckEvent(var Event : TEvent); virtual;
 	end;
-	
+
 implementation
 
 const
 	TickCount : integer = 0;
 	LastTick : longint = 0;
-	
+
 var
 	TimerTick : LongInt absolute $0040:$006c;
 
 
-function TScreenSaver.ObjectClass(AName : String) : String; 
+function TScreenSaver.ObjectClass(AName : String) : String;
 begin
-	if (AName = '') or (AName = class_TScreenSaver) then 
+	if (AName = '') or (AName = class_TScreenSaver) then
 		ObjectClass := class_TScreenSaver
 	else
 		ObjectClass := inherited ObjectClass(AName);
@@ -60,7 +61,7 @@ end;
 
 constructor TScreenSaver.Create;
 begin
-	Info.Create(ftESaver); 
+	Info.Create(ftESaver);
 end;
 
 destructor TScreenSaver.Destroy;
@@ -90,21 +91,22 @@ begin
 	TurnMouseOff;
 	CheckScroll := False;
 	HideCursor;
-	
+
 	Show;
 	repeat
-		ClearEvent(Event); 
+		ClearEvent(Event);
 		GetEvent(Event);
 		Refresh;
 		if (TickCount < 18) and (LastTick <> TimerTick) then begin
-			PurgeEvents;		
+			PurgeEvents;
 			Inc(TickCount);
 			LastTick := TimerTick;
 		end;
+		CheckEvent(Event);
 	until (Event.What <> evNothing) and (TickCount >= 18);
 	Hide;
-	
-	SetQCrtState(QCrtSettings);	
+
+	SetQCrtState(QCrtSettings);
 	if Assigned(Screen) then
 		begin
 			Temp := GetVideoPtr;
@@ -135,5 +137,9 @@ procedure TScreenSaver.Hide;
 begin
 end;
 
+procedure TScreenSaver.CheckEvent(var Event : TEvent);
+begin
+end;
+
 end.
-
+

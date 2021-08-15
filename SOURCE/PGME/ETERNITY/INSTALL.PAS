@@ -347,7 +347,7 @@ end;
 
 procedure TInsPanel.Copy;
 var
-    L, S : String;
+    L, S, T : String;
 
 begin
 	if Finished then exit;
@@ -368,13 +368,22 @@ begin
             PLst := New(PFile, Create);
             PLst^.Assign(LstDir + 'PGME.LST');
             PLst^.Rewrite;
+            T := Dir(InstallPath) + 'ETERNITY.DAT'; { add non-existing cache
+            file to the uninstall list }
+            PLst^.WriteLn(T);
         end;
+
+        if  NoTailDelim(PathOf(IRec.Name)) = 'INSTALL' then begin
+            { Skip Installer Specific Files}
+            Inc(IBytes, IRec.Data.Size);
+        end else
         if NoTailDelim(PathOf(IRec.Name)) = 'APPINFO' then begin
             if Assigned(PLst) then begin
         	    L := Dir(GetEnv('DOSDIR')) + IRec.Name;
                 PLst^.WriteLn(L);
                 IRes^.ExportResource(Dir(GetEnv('DOSDIR')), IRec, Progress);
-            end;
+            end else
+                Inc(IBytes, IRec.Data.Size);
         end else begin
             if Assigned(PLst) then PLst^.WriteLn(L);
             IRes^.ExportResource(Dir(InstallPath), IRec, Progress);

@@ -13,13 +13,11 @@ Maybe Eventual Improvements:
 	Restore all paths on exit.
 	Do QDETUNE.
 	Import of PMI from within PGME.
-	Improve Install Size Accuracy.
 	Add prompting and parsing for custom options in menu launchers.
 	Add PGME Value as Formatting to Options like %E for eternity path...
 	    (for improved program launching flexibility)
 	Change searching to search programs in order of appearance, not order of ID.
 	Ticker style viewing of really long text when selected or mouse is over.
-	Improve Installer to not require two builds and permit UPX compressed stub.
 
 Todo Someday:
 
@@ -29,13 +27,6 @@ Todo Someday:
 	Add Flip & Flop to EFNTDSGN.
 	Add Ability to Click and Draw in EFNTDSGN.
 	Make Reboot Utility.
-	Multi-Language option inside installer.
+	Multi-Language support inside installer.
 	Add color attributes for disabled thumb toggle text.
     Add Read Ahead caching to cache file.
-
-What's left for upcoming Release:
-
-    Improve QScroll smooth scrolling
-    Add UPX compression to build process and Compress most of them.
-    Verify Translations, make TR & FR Themes
-    Verity Installer Files and Paths.

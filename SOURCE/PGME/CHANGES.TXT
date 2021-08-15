@@ -2,6 +2,8 @@
 
 2021-08
 
+    Added support to uninstall using FreeDOS package managers.
+    Changed installer to use QResFile binrary resources.
     Add Support to UPX compress binaries in build process.
     New QResFile, developer oriented executable resource management utility. It
         replaces the clunky ADD2INS program used in the build process.

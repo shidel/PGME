@@ -283,6 +283,11 @@ goto DoneMake
 :NoUPXIns
     if not exist install\install.exe goto ErrorMake
     cd bin
+    if not exist INSTALL\NUL mkdir install
+
+    if exist FR-INST.LNG move /y FR-INST.LNG INSTALL\
+    if exist TR-INST.LNG move /y TR-INST.LNG INSTALL\
+
     qresfile /a /m /f ..\install\install.exe /i pgme.exe /i eternity.bin
     qresfile /m /f ..\install\install.exe /i efntdsgn.exe  /i *.scr /i *.txt
     qresfile /m /f ..\install\install.exe /i q*.exe /i raw2qfnt.exe
@@ -290,7 +295,9 @@ goto DoneMake
     qresfile /m /f ..\install\install.exe /i *.thm /i *.lng /i *.mnu
     qresfile /m /f ..\install\install.exe /i *.kmp
     qresfile /m /f ..\install\install.exe /i WHATSUP.* /i SOMEDAY.* /i BLAHBLAH.*
-    qresfile /m /f ..\install\install.exe /i DEFAULTS\*.* /i APPINFO\*.*
+    qresfile /m /f ..\install\install.exe /i DEFAULTS\E*.*
+    qresfile /m /f ..\install\install.exe /i INSTALL\*.*
+    qresfile /m /f ..\install\install.exe /i APPINFO\*.*
     cd ..
 
 goto DoneMake
