@@ -6,6 +6,18 @@ Bugs and Known Issues:
     Screen Saver showing times like 26th hour of the day. This is not a bug
     in the time conversion routines in these programs.
 
+    On some hardware, the text flickers in QScroll when upward (backwards)
+    scrolling. As a work around, when smooth scrolling is enabled, you can
+    toggle just upward scrolling with the "U" key. I have an idea on how to
+    reduce the issue. But, that will have to wait until the next release.
+
+    QScroll doesn't do smooth scrolling in my virtual machine! When QScroll
+    detects it is running in a virtual machine other than DOSBox, it will
+    automatically turn off smooth scrolling. You can try to enable it by
+    pressing the "S" key. But, it's doubtful that it will work. The only
+    virtual machines I've seen that implement the required VGA features to
+    perform smooth scrolling in text mode are based on DOSBox.
+
 Maybe Eventual Improvements:
 
 	Convert PMGE Launcher to assembly.
@@ -30,3 +42,6 @@ Todo Someday:
 	Multi-Language support inside installer.
 	Add color attributes for disabled thumb toggle text.
     Add Read Ahead caching to cache file.
+    Improve QScroll upward scrolling flicker on some hardware.
+    Add automatic preserving settings for QScroll, TIME and whatever else.
+    FR & TR Themes (to support different text lengths)

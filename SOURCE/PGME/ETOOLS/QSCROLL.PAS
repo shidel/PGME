@@ -26,6 +26,7 @@ type
 
 const
 	Smooth : boolean = True;
+	SmoothUp : boolean = True;
 	MousePage = 10;
 	const
 	    ProgramUsage : string =
@@ -163,19 +164,19 @@ var
 	I : byte;
 	P : Pointer;
 begin
-	if Smooth then begin
+	if Smooth and SmoothUp then begin
 		P := GetVideoPtr;
 		ScreenMax := ScreenMax + $100;
 		WindMax := ScreenMax;
 		GotoXY(1,1);
 		WaitSync;
-		ScanStart(FontHeight);
+		ScanStart(FontHeight-1);
 	end;
 	GotoXY(1,1);
 	InsLine;
 	FWrite(PtrStr(Top^.Line));
 	ClrEol;
-	if Smooth then begin
+	if Smooth and SmoothUp then begin
 		Stepping := 1 shl Stepping;
 		I := 0;
 		while (I < FontHeight) and (Stepping > 0) do begin
@@ -297,6 +298,10 @@ begin
 				ClearEvent(E);
 				Smooth := not Smooth;
 			end;
+			if Smooth and (UCase(E.CharCode) = 'U') then begin
+				ClearEvent(E);
+				SmoothUp := not SmoothUp;
+			end;
 		end else if E.What and evMouseMove <> evNothing then begin
 			ClearEvent(E);
 			B := E.Where.Y - MouseHomeY;
@@ -363,6 +368,7 @@ end;
 
 begin
     Smooth := IsDOSBox or (not IsVirtual);
+    SmoothUp := Smooth;
 	TurnMouseOff;
 	if ParamCount = 0 then
 		ShowHelp
