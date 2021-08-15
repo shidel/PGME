@@ -181,6 +181,8 @@ REM ***************************************************************************
     verrlvl 0
 	if exist QUICKCRT\BIN\NUL deltree /y QUICKCRT\BIN
 	if errorlevel 1 goto ErrorMake
+	if exist QUICKCRT\TEMPLATE.DEF deltree /y QUICKCRT\TEMPLATE.DEF
+	if errorlevel 1 goto ErrorMake
 	if exist ETERNITY\BIN\NUL deltree /y ETERNITY\BIN
 	if errorlevel 1 goto ErrorMake
 	if exist ETOOLS\BIN\NUL deltree /y ETOOLS\BIN
