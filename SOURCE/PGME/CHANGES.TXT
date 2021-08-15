@@ -1,6 +1,6 @@
 ### The Program Manager Eternity What's Up File
 
-2021-08
+2021-08-15
 
     Added support to uninstall using FreeDOS package managers.
     Changed installer to use QResFile binrary resources.
