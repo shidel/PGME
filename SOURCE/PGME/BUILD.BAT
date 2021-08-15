@@ -263,6 +263,8 @@ goto DoneMake
     copy /y todo bin\someday.en
 
     xcopy /y /d helpers\*.* bin\
+    xcopy /y /d eternity\kiosk.on bin\
+    xcopy /y /d eternity\kiosk.off bin\
 
     xcopy /y /d custom\config\*.* bin\
     xcopy /y /d custom\docs\*.* bin\
@@ -296,6 +298,7 @@ goto DoneMake
     qresfile /m /f ..\install\install.exe /i *.cfg /i *.fnt /i *.bat
     qresfile /m /f ..\install\install.exe /i *.thm /i *.lng /i *.mnu
     qresfile /m /f ..\install\install.exe /i *.kmp
+    qresfile /m /f ..\install\install.exe /i kiosk.on /i kiosk.off
     qresfile /m /f ..\install\install.exe /i WHATSUP.* /i SOMEDAY.* /i BLAHBLAH.*
     qresfile /m /f ..\install\install.exe /i DEFAULTS\E*.*
     qresfile /m /f ..\install\install.exe /i INSTALL\*.*
