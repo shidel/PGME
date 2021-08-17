@@ -1,5 +1,10 @@
 ### The Program Manager Eternity What's Up File
 
+2021
+
+    QResFile (and format) updated to support using UPX on EXE files at any
+        time. Now not limited attaching files only after compression.
+
 2021-08-15
 
     Added U keyboard option to QScroll to toggle Smooth upward scrolling.

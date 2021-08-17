@@ -299,7 +299,8 @@ goto DoneMake
     qresfile /m /f ..\install\install.exe /i *.thm /i *.lng /i *.mnu
     qresfile /m /f ..\install\install.exe /i *.kmp
     qresfile /m /f ..\install\install.exe /i kiosk.on /i kiosk.off
-    qresfile /m /f ..\install\install.exe /i WHATSUP.* /i SOMEDAY.* /i BLAHBLAH.*
+    qresfile /m /f ..\install\install.exe /i WHATSUP.* /i SOMEDAY.*
+    qresfile /m /f ..\install\install.exe /i QRESFILE.* /i BLAHBLAH.*
     qresfile /m /f ..\install\install.exe /i DEFAULTS\E*.*
     qresfile /m /f ..\install\install.exe /i INSTALL\*.*
     qresfile /m /f ..\install\install.exe /i APPINFO\*.*

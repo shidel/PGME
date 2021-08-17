@@ -16,12 +16,14 @@ interface
 
 const
   	class_TResource : TObjectClass = 'TFile';
+  	XBINRSRC : string[10] = 'XBINRSRCv2';
 
 type
-    TResourceBlockID = record   { size 16 bytes }
+    TResourceBlockID = record   { size 20 bytes }
         BlockType  : word;       { = 0 }
         HeadBlock  : LongInt;    { = File Position of first block in chain }
-        Identifier : array[0..9] of byte; { = 'XBINRSRCv1' }
+        LastSize   : Longint;    { = Last size of file when footer was written }
+        Identifier : array[0..9] of byte; { = 'XBINRSRCv2' }
     end;
     TResourceBlockData = record
         BlockType : word;        { = 1 }
@@ -53,6 +55,7 @@ type
 	    FResName   : String;
 	    FReadOnly  : boolean;
 	    FExistOnly : boolean; { Must already have resource data }
+	    FOriginalStart,
 	    FDataStart : longint;
 	    FHasFooter : boolean;
 	    FModified  : boolean;
@@ -104,11 +107,12 @@ end;
 constructor TResource.Create;
 begin
     inherited Create('');
-    FResID := 'XBINRSRCv1';
+    FResID := XBINRSRC;
     FResName := AResName;
     FReadOnly := True;
     FExistOnly := True;
     FDataStart := -1;
+    FOriginalStart := FDataStart;
     FHasFooter := False;
     FModified := False;
     FJunkPaths := False;
@@ -165,7 +169,7 @@ begin
         Exit;
     end;
     if (T.Data.BlockType = 0) then begin
-        if T.Data.BlockSize <> FDataStart then
+        if T.Data.BlockSize <> FOriginalStart then
             FResult := 13
         else
             FResult := 18; { No Records }
@@ -183,22 +187,31 @@ function TResource.GetFooter : boolean;
 var
     ID : TResourceBlockID;
     S  : String;
+    O : LongInt;
 begin
+    O := 0;
     GetFooter := false;
     FHasFooter := false;
     FDataStart := -1;
+    FOriginalStart := -1;
     if InvalidHandler then exit;
 
-    if FHandler^.FileSize >= Sizeof(ID) then begin
-        FHandler^.Seek(FHandler^.FileSize - SizeOf(ID));
+    if FHandler^.FileSize >= Sizeof(TResourceBlockID) then begin
+        FHandler^.Seek(FHandler^.FileSize - SizeOf(TResourceBlockID));
         if HandlerError then exit;
-        FHandler^.ReadRecord(ID, Sizeof(ID));
+        FHandler^.ReadRecord(ID, Sizeof(TResourceBlockID));
         if HandlerError then exit;
         S := Space(Length(FResID));
         Move(ID.Identifier, S[1], Sizeof(ID.Identifier));
         if (ID.BlockType = 0) and (S = FResID) then begin
             FHasFooter := true;
             FDataStart := ID.HeadBlock;
+            FOriginalStart := FDataStart;
+            O := ID.LastSize - FHandler^.FileSize;
+            if O <> 0 then begin
+                FDataStart := FDataStart - O;
+                { WriteLn('(', ID.LastSize, ':', FHandler^.FileSize, '=', O, ')'); }
+            end;
         end;
     end;
 
@@ -209,7 +222,8 @@ begin
         end;
         { We can append resource to an existing or new file }
         FDataStart := FHandler^.FileSize;
-        Fmodified := True;
+        FOriginalStart := FDataStart;
+        FModified := True;
     end;
 
     GetFooter := True;
@@ -218,6 +232,7 @@ end;
 function TResource.PutFooter : boolean;
 var
     ID : TResourceBlockID;
+    P : longInt;
 begin
     PutFooter := false;
     if InvalidHandler then exit;
@@ -227,18 +242,24 @@ begin
     end;
 
     if FHasFooter then
-        FHandler^.Seek(FHandler^.FileSize - SizeOf(ID))
+        P := FHandler^.FileSize - SizeOf(TResourceBlockID)
     else
-        FHandler^.Seek(FHandler^.FileSize);
+        P := FHandler^.FileSize;
+
+    FHandler^.Seek(P);
     if HandlerError then exit;
 
     FillChar(ID, Sizeof(ID), 0);
     ID.HeadBlock := FDataStart;
+    Inc(P, Sizeof(TResourceBlockID));
+    ID.LastSize := P;
     Move(FResID[1], ID.Identifier, Sizeof(ID.Identifier));
-    FHandler^.WriteRecord(ID, Sizeof(ID));
+    FHandler^.WriteRecord(ID, Sizeof(TResourceBlockID));
     if HandlerError then exit;
     FHasFooter := True;
-
+    { if P <> FHandler^.FileSize then begin
+        WriteLn('W ERROR : ', P, ':', FHandler^.FileSize);
+    end;}
     PutFooter := True;
 end;
 

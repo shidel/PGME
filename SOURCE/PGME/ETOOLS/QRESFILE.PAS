@@ -66,7 +66,7 @@ asm
     db 'HELP.14=   $X              Export all resource data to files',0
     db 'HELP.15=   $I  filespec    Import resource from filename',0
     db 'HELP.16=   $J              Ignore path information for resource',0
-    db 'HELP.17=',0
+    db 'HELP.17=   $G  filename    Read instructions from file',0
     db 'HELP.18=   $D  filespec    Delete resource filespec from file',0
     db 'HELP.19=   $K              Remove ALL resource data from file',0
     db 'HELP.21=',0
@@ -180,36 +180,98 @@ begin
         LW := Length(S);
 end;
 
-procedure Run;
+type
+    TParamStrFunc = function (I : integer) : String;
+    TParamCountFunc = function : integer;
+
+procedure Run(FParamCount : TParamCountFunc; FParamStr : TParamStrFunc); forward;
+
 var
     PRes : PResource;
-    RSearch : TResourceRec;
-    Err : integer;
-    Opt: String;
     CanCreate,
     CanModify,
     CanAppend,
     NoPaths : boolean;
+    Opts : String;
+
+function GetParamStr(I : integer) : String; far;
+begin
+    GetParamStr := ParamStr(I);
+end;
+
+function GetParamCount : integer; far;
+begin
+    GetParamCount := ParamCount;
+end;
+
+function GetOptStr(I : integer) : String; far;
+var
+    N, S : String;
+    X : integer;
+begin
+    if I  = 0 then begin
+        GetOptStr := ParamStr(0);
+        Exit;
+    end;
+    S := Opts;
+    for X := 1 to I do
+        GetOptStr := PullStr(' ', S);
+end;
+
+function GetOptCount : integer; far;
+var
+    S : String;
+    I : Integer;
+begin
+    S := Opts;
+    I := 0;
+    While (S <> '') do begin
+        Inc(I);
+        PullStr(' ', S);
+    end;
+    GetOptCount := I;
+end;
+
+procedure RunFile(AFileName : String);
+var
+    FM : integer;
+    F : TFile;
+begin
+    FM := FileMode;
+    FileMode := FM;
+    F.Create;
+    F.Assign(AFilename);
+    F.Reset;
+    FileMode := FM;
+    while F.Result = 0 do begin
+        F.ReadLn(Opts, Sizeof(Opts) - 1);
+        Opts := Trim(Opts);
+        if (F.Result = 0) and (Opts <> '') then
+        	Run(GetOptCount, GetOptStr);
+    end;
+    F.Destroy;
+end;
+
+procedure Run(FParamCount : TParamCountFunc; FParamStr : TParamStrFunc);
+var
+    RSearch : TResourceRec;
+    Err : integer;
+    Opt: String;
     I : integer;
     OPath : String;
     FCount, FSize : longint;
 begin
-	if ParamCount = 0 then  DisplayHelp;
+	if FParamCount = 0 then  DisplayHelp;
     OPath     := '';
-	CanCreate := False;
-	CanModify := False;
-	CanAppend := False;
-	NoPaths   := False;
-	PRes := nil;
 	Err := 0;
 
-	for I := 0 to ParamCount do
-	    if (ParamStr(I) = '/?')
-	    or (UCase(ParamStr(I)) = '/H') then DisplayHelp;
+	for I := 0 to FParamCount do
+	    if (FParamStr(I) = '/?')
+	    or (UCase(FParamStr(I)) = '/H') then DisplayHelp;
 
     I := 1;
-    While I <= ParamCount do begin
-	    Opt := UCase(ParamStr(I));
+    While I <= FParamCount do begin
+	    Opt := UCase(FParamStr(I));
 	    if (Length(Opt) < 2) or (Opt[1] <> SwitchChar) then begin
         	WriteLn(CON,ErrorMsg(1, Opt));
         	Err := 1;
@@ -256,7 +318,7 @@ begin
 	        end;
 	        'E' : begin {Export File}
 	            if Not Assigned(PRes) then WriteHalt(ErrorMsg(5, 'CON:'),5);
-                Opt := ParamStr(I);
+                Opt := FParamStr(I);
 	            Inc(I);
                 if not PRes^.Export('', Opt, ExportMsg) then begin
                 	WriteLn(CON,ErrorMsg(PRes^.GetResult, Opt));
@@ -274,7 +336,7 @@ begin
 	        end;
 	        'I' : begin {Import file}
 	            if Not Assigned(PRes) then WriteHalt(ErrorMsg(5, 'CON:'),5);
-                Opt := ParamStr(I);
+                Opt := FParamStr(I);
 	            Inc(I);
                 if not PRes^.Import('', Opt, ImportMsg) then begin
                 	WriteLn(CON,ErrorMsg(PRes^.GetResult, Opt));
@@ -293,6 +355,12 @@ begin
 	            Err := 1;
 	            Break;
 	        end;
+	        'G' : begin  {Delete resource}
+	            Opt := FParamStr(I);
+	            Inc(I);
+	            if Opt = '' then WriteHalt(ErrorMsg(5, 'CON:'),5);
+	            RunFile(Opt);
+	        end;
 	        'K' : begin {Remove all Resource data}
 	            if Not Assigned(PRes) then WriteHalt(ErrorMsg(5, 'CON:'),5);
 	            if not PRes^.DeleteAll then begin
@@ -304,7 +372,7 @@ begin
 	        'F' : begin { Set filename }
                 if Assigned(PRes) then Dispose(PRes, Destroy);
                 PRes := nil;
-	            Opt := ParamStr(I);
+	            Opt := FParamStr(I);
 	            Inc(I);
 	            if (Opt = '') or ((Not CanCreate) and (Not FileExists(Opt))) then begin
   	                WriteHalt(ErrorMsg(2, Opt),2);
@@ -326,15 +394,23 @@ begin
         	Break;
         end;
     end;
-	if Assigned(PRes) then Dispose(PRes, Destroy);
-	If Err <> 0 then Halt(Err);
+	if Err <> 0 then begin
+    	if Assigned(PRes) then Dispose(PRes, Destroy);
+	    Halt(Err);
+	end;
 end;
 
 begin
+	CanCreate := False;
+	CanModify := False;
+	CanAppend := False;
+	NoPaths   := False;
+	PRes := nil;
     Assign(CON, '');
     Append(CON);
     SetBuiltInLanguage(@ProgramMessages);
     SetLanguage('');
-	Run;
+	Run(GetParamCount, GetParamStr);
 	Close(CON);
+	if Assigned(PRes) then Dispose(PRes, Destroy);
 end.
