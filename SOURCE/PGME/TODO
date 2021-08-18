@@ -2,6 +2,8 @@ Things TO-DO on PGME:
 
 Bugs and Known Issues:
 
+    * FIX new typing in find box goes behind clock UI Bug.(minor, self corrects)
+
     Some DOSBox users have reported the time displayed in PGME and the Clock
     Screen Saver showing times like 26th hour of the day. This is not a bug
     in the time conversion routines in these programs.

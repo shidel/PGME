@@ -1,16 +1,17 @@
-Copyright 1992-2021, Jerome Shidel.
+Copyright 1992-2021, Jerome Shidel.\
+GNU General Public License, version 2.0
 
-### Program Manager Eternity
+### The Program Manager Eternity
 
-This version of **_Program Manager Eternity_** and related files are released under the GNU GPL v2.0.
+This version of * * _Program Manager Eternity_* *  and related files are released under the GNU GPL v2.0.
 
 Simple Instructions for compiling PGME from archive sources.
 
 	First you must have Turbo Pascal 7.0.
 
-	Then either download the latest archives of PGME and QuickCRT.
+	Then either download the latest archive of PGME.
 
-	Extract the PGME archive. Then Extract the QuickCrt archive inside the PGME directory.
+	Extract the PGME archive.
 
 	then from a dos prommpt run make in the pgme directory.
 
@@ -41,3 +42,59 @@ migrated to support assembly only projects as well as Pascal. It is at
 
 None of those living versions are not actually "better" than any of the others.
 They are just different from each other with different purposes.
+
+
+### What's Up
+
+## 2021-08-15
+
+* Added U keyboard option to QScroll to toggle Smooth upward scrolling.
+* Added S keyboard option to TIME Screen Saver to change display scale.
+* Added support to uninstall using FreeDOS package managers.
+* Changed installer to use QResFile binrary resources.
+* Add Support to UPX compress binaries in build process.
+* New QResFile, developer oriented executable resource management utility. It replaces the clunky ADD2INS program used in the build process.
+* Support to autohide menus without any visible programs.
+* Automatic language/font/theme/keymap switching in QCrt based apps (PGME, EFontDesigner and Installer) when defaults are empty.
+* New Clock, Conway and Static screen savers.
+* Removed Extra spacing in alternate language help text
+* Added support to scroll to item in unsorted lists (for the dropdowns)
+* Improved startup message (beginning/resuming/updating) display and duration
+* Watch for Package (Un)Installs under FreeDOS, improved Auto-Hide.
+* Installer ignore drive Z: under DOSBox.
+* Auto disable QSCROLL smooth scrolling in common non-DOSBox Virtual Machines
+* Added ability to auto-hide uninstalled/missing programs.
+* Ignore CPUCache setting in DOSBOX.
+* Added suport to use CPUCACHE to disable/enable CPU caching for old games.
+* Added CPU Idle/power saving option to Config Dialog.
+* Added "<none>" option to Config and Display Dialogs for File based options.
+* Fix display options only save when theme was changed bug.
+* Mouse flicker reduced some.
+* Added Config Dialog option to turn sound on/off
+* Added config file option to save power, CPU_IDLE=ANY, APM, HALT or NONE
+* Added wait on return for individual programs, WAIT=OFF, FOREVER, DEFAULT or time in seconds.
+* Added wait on return default per menu global WAIT=OFF, FOREVER or seconds.
+* Assigned Edit Menu popup tp EditItem Command (default Alt+E).
+* Changed Edit button mapping from EditFile to EditItem
+* Create menu with wildcard character, bug fix.
+* Some grammer and spelling corrections.
+
+## 2015-07-26
+
+* Fixed non-FreeDOS/DosBox "Path Not Found" compatibility issue.
+* Some grammer and spelling corrections.
+
+## 2015-07-09
+
+* Added Whatsnew.txt (this file)
+* QScroll Added Line to separate multiple files when loading more than one.
+* QScroll Added command line switch /S- to set smooth scrolling to off. (/S and /S+ turn it on which is the default for now);
+* QScroll Pressing "S" key toggles smooth scrolling.
+* QScroll Exit on mouse click.
+* QScroll Scroll by mouse movement.
+* Improved compatibility for keyboards without insert lock key.
+
+## 2015-07-05
+
+* Initial Beta Version. Mostly Functional.
+
