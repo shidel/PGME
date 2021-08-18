@@ -1,17 +1,17 @@
 { Copyright 2015 Jerome Shidel }
 
-(* 
-		
+(*
+
 	This project and related files are subject to either the terms
 	specified in the included LICENSE.TXT file or the GNU GPLv2.0.
-	
+
 *)
 
 {$IFDEF INTERFACE}
 const
 	class_TFontEdit = 'TFontEdit';
 
-type 
+type
 	PFontEdit = ^TFontEdit;
 	TFontEdit = object(TBox)
 	public { protected }
@@ -24,7 +24,7 @@ type
 		FHotColor,
 		FBitColor,
 		FDemoColor,
-		FContColor : Integer; 
+		FContColor : Integer;
 		FPressKey : String;
 		FClipboard : array[0..31] of byte;
 		function GetCharByte(Row : Integer) : Integer; virtual;
@@ -58,9 +58,9 @@ type
 {$ENDIF}
 
 {$IFDEF IMPLEMENTATION}
-function TFontEdit.ObjectClass ( AName : String ) : String; 
+function TFontEdit.ObjectClass ( AName : String ) : String;
 begin
-	if (AName = '') or (AName = class_TFontEdit) then 
+	if (AName = '') or (AName = class_TFontEdit) then
 		ObjectClass := class_TFontEdit
 	else
 		ObjectClass := inherited ObjectClass(AName);
@@ -96,7 +96,7 @@ begin
 	inherited Destroy;
 end;
 
-procedure TFontEdit.SetCurrentBounds(AValue : TBounds); 
+procedure TFontEdit.SetCurrentBounds(AValue : TBounds);
 var
 	ExtraSize : integer;
 begin
@@ -107,32 +107,32 @@ begin
 	FMUL.Y := 1;
 	FOFS.X := 0;
 	FOFS.Y := 0;
-	
+
 	{ Fix Height }
 	if FShadow then Dec(ExtraSize, 1);
-	
-	if Assigned(FFont) and (FFont^.GetHeight > 0) then 
+
+	if Assigned(FFont) and (FFont^.GetHeight > 0) then
 		AValue.Height := FFont^.GetHeight
 	else if Assigned(UserFontPtr) and (Seg(UserFontPtr^) <> $C000)then
 		AValue.Height := FontHeight
 	else
 		AValue.Height := 16;
 
-	if AValue.Height > GetMaxHeight then 
+	if AValue.Height > GetMaxHeight then
 		AValue.Height := GetMaxHeight;
 
 	if ((Application^.FFont.GetEnabled) and (Application^.FFont.GetHeight >= 12)) or
-		(GetMaxHeight < 30) then 
+		(GetMaxHeight < 30) then
 		FMUL.X := 2;
-		
+
 	if ExtraSize > 0 then begin
 		Inc(FOFS.X);
 		Inc(FOFS.Y);
 	end;
-	{ if running in less than an 8x10 font then dont do doublewide } 
+	{ if running in less than an 8x10 font then dont do doublewide }
 	AValue.Width := 8 * FMUL.X + ExtraSize;
 
-		
+
 	AValue.Height := AValue.Height * FMUL.Y + ExtraSize;
 	AValue.Top := (PControl(Parent)^.Height div 2) - (AValue.Height div 2);
 	inherited SetCurrentBounds(AValue);
@@ -150,10 +150,10 @@ begin
 	  (PControl(Parent)^.FMargin.Bottom) -
 	  ExtraSize { - 2};
 	if ExtraSize > 32 then ExtraSize := 32;
-	GetMaxHeight := ExtraSize;	
+	GetMaxHeight := ExtraSize;
 end;
 
-function TFontEdit.GetCharByte(Row : Integer) : Integer; 
+function TFontEdit.GetCharByte(Row : Integer) : Integer;
 begin
 	if Not Assigned(FFont) then exit;
 	if Not Assigned(FFont^.FFontPtr) then exit;
@@ -162,7 +162,7 @@ begin
 	GetCharByte := Bytes(FFont^.FFontPtr^)[FCurrent * FFont^.GetHeight + Row];
 end;
 
-procedure TFontEdit.SetCharByte(Row : Integer; Value : Integer); 
+procedure TFontEdit.SetCharByte(Row : Integer; Value : Integer);
 begin
 	if Not Assigned(FFont) then exit;
 	if Not Assigned(FFont^.FFontPtr) then exit;
@@ -196,18 +196,18 @@ begin
 	end;
 end;
 
-procedure TFontEdit.UpdatePoint(XY : TPoint; Toggle : boolean); 
+procedure TFontEdit.UpdatePoint(XY : TPoint; Toggle : boolean);
 var
 	R : integer;
 begin
 	if FCurrent = -1 then exit;
-	Window(FWindow.Left + FMargin.Left - 1, FWindow.Top + FMargin.Top - 1, 
-		FWindow.Left + FWindow.Width - FMargin.Right + 1, 
+	Window(FWindow.Left + FMargin.Left - 1, FWindow.Top + FMargin.Top - 1,
+		FWindow.Left + FWindow.Width - FMargin.Right + 1,
 		FWindow.Top + FWindow.Height - FMargin.Bottom + 1);
 	gotoXY( FOfs.X + XY.X * FMul.X + 1, FOFS.Y + XY.Y * FMul.Y + 1);
 	R := GetCharByte(XY.Y);
 	if Toggle then
-		TextAttr := FHotColor				
+		TextAttr := FHotColor
 	else
 		TextAttr := FBitColor;
 	if R and (1 shl (7 - XY.X)) <> 0 then
@@ -216,7 +216,7 @@ begin
 		FWrite(ChrStr(#32, FMUL.X));
 end;
 
-procedure TFontEdit.CheckMouse(var AEvent : TEvent); 
+procedure TFontEdit.CheckMouse(var AEvent : TEvent);
 var
 	P : TPoint;
 	Hold : TEvent;
@@ -239,14 +239,14 @@ begin
 		if (X >= FFont^.GetWidth ) or (Y >= FFont^.GetHeight) then exit;
 	end;
 	if Hold.What = evMouseUp then begin
-		ClearEvent(Hold);	
-		SetCharByte(P.Y, GetCharByte(P.Y) xor (1 shl (7 - P.X))); 	
+		ClearEvent(Hold);
+		SetCharByte(P.Y, GetCharByte(P.Y) xor (1 shl (7 - P.X)));
 	end;
 	UpdatePoint(P, True);
 	FLPos := P;
 end;
 
-procedure TFontEdit.Load(AFilename : String); 
+procedure TFontEdit.Load(AFilename : String);
 begin
 	FFont^.SetFileName(AFilename);
 	if FFont^.GetHeight > GetMaxHeight then begin
@@ -255,7 +255,7 @@ begin
 	end;
 	FCurrent := -1;
 	if FFont^.GetFileName <> '' then begin
-		FCurrent := 65;		
+		FCurrent := 65;
 	end;
 	SetCurrentBounds(FRBounds);
 end;
@@ -273,13 +273,13 @@ var
 	Screen, Temp : Pointer;
 	Event : TEvent;
 	QCrtSettings : TQCrtSettings;
-	
+
 begin
 	with Application^ do begin
 		FillChar(TempDac, Sizeof(TempDac), 0);
 		FConfig.OpenSection('DISPLAY');
 		Fader := StrBool(FConfig.GetValue('USE_FADER', BoolStr(FUseFader)))
-			and StrBool(FConfig.GetValue('USE_DAC', BoolStr(FUseDAC)));	
+			and StrBool(FConfig.GetValue('USE_DAC', BoolStr(FUseDAC)));
 		Screen := nil;
 		GetQCrtState(QCrtSettings);
 
@@ -299,11 +299,19 @@ begin
 		ClrScr;
 
 		FFont.SetEnabled(False);
+        HideCursor;
 
-		DemoFont(Fader);	
-		
+		DemoFont(Fader);
+
 		if Fader then
 			FadeInDAC(0,256,FDefaultDAC^);
+
+        Delay(StrInt(FConfig.GetValue('DELAY', '1000')));
+        FWriteLn('');
+        FWriteLn('');
+        TextAttr := FContColor;
+        FWriteLn(CSpace(FPressKey, Lo(ScreenMax) + 1));
+        TextAttr := FDemoColor;
 
 		ClearEvent(Event);
 		While Event.What = evNothing do GetEvent(Event);
@@ -315,13 +323,13 @@ begin
 
 		TextAttr := $07;
 		ClrScr;
-		
-		Self.FFont^.SetEnabled(False);		
-		
-		SetQCrtState(QCrtSettings);	
-		
+
+		Self.FFont^.SetEnabled(False);
+
+		SetQCrtState(QCrtSettings);
+
 		FFont.SetEnabled(True);
-		
+
 		if Fader then
 			WriteDac(0,256,TempDac);
 
@@ -339,12 +347,12 @@ begin
 			end;
 		if Fader then
 			FadeInDAC(0,256,FDefaultDAC^);
-				
+
 	end;
 end;
 
 procedure TFontEdit.DemoFont;
-var	
+var
 	I : Integer;
 	TempDac : array[0..$300] of byte;
 begin
@@ -355,32 +363,26 @@ begin
 	TextAttr := FDemoColor;
 	ClrScr;
 	for I := 0 to 255 do begin
-		
+
 		gotoXY (8 + (I and $1F) * 2, 2 + I shr 5 );
 		FWrite(Chr(I));
-		
+
 	end;
-	FWriteLn('');
-	FWriteLn('');
-	TextAttr := FContColor;
-	FWriteLn(CSpace(FPressKey, Lo(ScreenMax) + 1));
-	TextAttr := FDemoColor;
-	
 end;
 
 procedure TFontEdit.ApplyTheme (AConfig : PConfigFile);
-var 
+var
 	S : String;
 begin
 	inherited ApplyTheme(AConfig);
 	AConfig^.GetInts('NULLCOLOR', FNullColor, Sizeof(FNullColor) div SizeOf(Integer));
-	S := Copy(AConfig^.GetHexStr('NULLCHAR', StrHex(FNullChar, False)),1 ,1);   
+	S := Copy(AConfig^.GetHexStr('NULLCHAR', StrHex(FNullChar, False)),1 ,1);
 	if S = '' then FNullChar := 'X' else FNullChar := S[1];
 	AConfig^.GetInts('DEMOCOLOR', FDEMOColor, Sizeof(FDemoColor) div SizeOf(Integer));
 	AConfig^.GetInts('CONTCOLOR', FCONTColor, Sizeof(FContColor) div SizeOf(Integer));
 	AConfig^.GetInts('HOTCOLOR', FHotColor, Sizeof(FHotColor) div SizeOf(Integer));
 	AConfig^.GetInts('BITCOLOR', FBitColor, Sizeof(FBitColor) div SizeOf(Integer));
-	S := Copy(AConfig^.GetHexStr('BITCHAR', StrHex(FBitChar, False)),1 ,1);   
+	S := Copy(AConfig^.GetHexStr('BITCHAR', StrHex(FBitChar, False)),1 ,1);
 	if S = '' then FBitChar := #$B2 else FBitChar := S[1];
 end;
 
@@ -390,7 +392,7 @@ begin
 	FPressKey := AConfig^.GetValue(GetPathID + '.CONTINUE', FPressKey );
 end;
 
-procedure TFontEdit.NewFont(AHeight : integer; AClone, AStretch : boolean); 
+procedure TFontEdit.NewFont(AHeight : integer; AClone, AStretch : boolean);
 begin
 	if AHeight > GetMaxHeight then AHeight := GetMaxHeight;
 	if AHeight < 1 then AHeight := 1;
@@ -405,7 +407,7 @@ begin
 		end else begin
 			FFont^.CopyROMFont(rf8x16);
 			if AStretch then Stretch(AHeight) else Resize(AHeight);
-		end;		
+		end;
 	end else begin
 		FFont^.EmptyFont(AHeight);
 		FFont^.FHeader.Add(New(PListItem, Create('TITLE=New 8x' + IntStr(AHeight) + ' Font')));
@@ -414,7 +416,7 @@ begin
 	SetCurrentBounds(FRBounds);
 end;
 
-procedure TFontEdit.Stretch(AHeight : integer); 
+procedure TFontEdit.Stretch(AHeight : integer);
 var
 	Line : array[0..7] of integer;
 	P, R : Pointer;
@@ -427,21 +429,21 @@ begin
 	GetMem(R, 1024);
 	FillChar(P^, AHeight * 256, 0);
 	for J := 0 to 255 do begin
-		for I := 0 to FFont^.FHeight - 1 do 
-			for K := 0 to AHeight - 1 do 
+		for I := 0 to FFont^.FHeight - 1 do
+			for K := 0 to AHeight - 1 do
 				Bytes(R^)[I * AHeight + K] := Bytes(FFont^.FFontPtr^)[J * FFont^.FHeight + I];
 		for I := 0 to AHeight - 1 do begin
 			FillChar(Line, Sizeof(Line), 0);
 			for K := 0 to FFont^.FHeight - 1 do begin
 				T := Bytes(R^)[I * FFont^.FHeight + K];
-				for L := 0 to 7 do	
+				for L := 0 to 7 do
 					if T and (1 shl (7-L)) <> 0 then
 						Inc(Line[L], 10);
 			end;
 			T := 0;
 			for L := 0 to 7 do
-				if Line[L] div AHeight > 4 then 
-					T := T or (1 shl (7-L)); 
+				if Line[L] div AHeight > 4 then
+					T := T or (1 shl (7-L));
 			Bytes(P^)[J * AHeight + I] := T;
 		end;
 	end;
@@ -453,7 +455,7 @@ begin
 	SetCurrentBounds(FRBounds);
 end;
 
-procedure TFontEdit.Resize(AHeight : integer); 
+procedure TFontEdit.Resize(AHeight : integer);
 var
 	P : Pointer;
 	I, J : integer;
@@ -464,7 +466,7 @@ begin
 	GetMem(P, AHeight * 256);
 	FillChar(P^, AHeight * 256, 0);
 	for J := 0 to 255 do begin
-		for I := 0 to FFont^.FHeight - 1 do 
+		for I := 0 to FFont^.FHeight - 1 do
 			Bytes(P^)[J * AHeight + I] := Bytes(FFont^.FFontPtr^)[J * FFont^.FHeight + I];
 	end;
 	FreeMem(FFont^.FFontPtr, FFont^.GetHeight * 256);
@@ -479,28 +481,28 @@ var
 	I : integer;
 begin;
 	if not Assigned(FFont^.FFontPtr) then exit;
-	for I := 0 to FFont^.GetHeight - 1 do 
+	for I := 0 to FFont^.GetHeight - 1 do
 		SetCharByte(I, (GetCharByte(I) shl 1) or (GetCharByte(I) shr 7) );
 	Update;
 end;
 
-procedure TFontEdit.ShiftRight; 
+procedure TFontEdit.ShiftRight;
 var
 	I : integer;
 begin;
 	if not Assigned(FFont^.FFontPtr) then exit;
-	for I := 0 to FFont^.GetHeight - 1 do 
+	for I := 0 to FFont^.GetHeight - 1 do
 		SetCharByte(I, (GetCharByte(I) shr 1) or (GetCharByte(I) shl 7) );
 	Update;
 end;
 
-procedure TFontEdit.ShiftUp; 
+procedure TFontEdit.ShiftUp;
 var
 	T, I : integer;
 begin;
 	if not Assigned(FFont^.FFontPtr) then exit;
 	T := GetCharByte(0);
-	for I := 0 to FFont^.GetHeight - 2 do 
+	for I := 0 to FFont^.GetHeight - 2 do
 		SetCharByte(I, GetCharByte(I + 1));
 	SetCharByte(FFont^.GetHeight - 1, T);
 	Update;
@@ -512,7 +514,7 @@ var
 begin;
 	if not Assigned(FFont^.FFontPtr) then exit;
 	T := GetCharByte(FFont^.GetHeight - 1);
-	for I := 1 to FFont^.GetHeight - 1 do 
+	for I := 1 to FFont^.GetHeight - 1 do
 		SetCharByte(FFont^.GetHeight - I, GetCharByte(FFont^.GetHeight - I - 1));
 	SetCharByte(0, T);
 	Update;

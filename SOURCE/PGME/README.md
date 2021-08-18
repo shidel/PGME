@@ -10,6 +10,7 @@ This version of **_Program Manager Eternity_** and related files are released un
 
 ### Next release
 
+* Added delay to font preview in Font Designer for easier viewing.
 * Time Screen saver now remembers scale setting.
 * QScroll now remembers Smooth scroll settings.
 * Fixed new typing in find box goes behind clock UI bug. (minor, self corrects)
