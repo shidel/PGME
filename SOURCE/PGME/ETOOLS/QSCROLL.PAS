@@ -10,7 +10,7 @@
 {$I ETOOLS.DEF}
 program Eternity_Text_Scroller; { X Series }
 
-uses QCrt, QStrings;
+uses QCrt, QStrings, QFiles, QDos;
 {$I ..\ETERNITY\LICENSE.INC}
 
 {$I-} { No I/O Checking }
@@ -278,7 +278,31 @@ procedure Viewer;
 var
 	E : TEvent;
 	Y, B : integer;
+	Cfg : TFile;
+	ISmooth : boolean;
+	ISmoothUp : boolean;
+	FM : Word;
+	CFN, S, O : String;
 begin
+    Cfn:=Dir(GetExePath) + GetExeBase + '.CFG';
+    FM := FileMode;
+    FileMode := 0;
+    Cfg.Create;
+    Cfg.Assign(Cfn);
+    Cfg.Reset;
+    While (Cfg.Result = 0) and (Not Cfg.EOF) do begin
+        Cfg.ReadLn(S, Sizeof(S) - 1);
+        O := Ucase(Trim(FilterChar(PullStr('=', S),#9)));
+        S := Trim(S);
+        if (O = 'SMOOTH') and (S<>'') then
+            Smooth:=StrBool(S)
+        else if (O = 'SMOOTH_UP') and (S<>'') then
+            SmoothUp:=StrBool(S);
+    end;
+    Cfg.Close;
+    FileMode := FM;
+    ISmooth:= Smooth;
+    ISmoothUp := SmoothUp;
 	HideCursor;
 	CheckScroll := False;
 	CheckCursor := False;
@@ -351,6 +375,17 @@ begin
     GotoXY(1,Hi(ScreenMax)+1);
     ClrEol;
 	NormalCursor;
+	if (ISmooth <> Smooth) or (ISmoothUp <> SmoothUp) then begin
+        Cfg.Rewrite;
+        S := '[QSCROLL]';
+        Cfg.WriteLn(S);
+        S := #9+'SMOOTH=' +BoolStr(Smooth);
+        Cfg.WriteLn(S);
+        S := #9+'SMOOTH_UP=' +BoolStr(SmoothUp);
+        Cfg.WriteLn(S);
+        Cfg.Close;
+    end;
+    Cfg.Destroy;
 end;
 
 procedure ShowHelp;
@@ -365,6 +400,7 @@ begin
 	while S <> '' do
 		FWriteLn(Space(4) + PullStr(#13, S));
 end;
+
 
 begin
     Smooth := IsDOSBox or (not IsVirtual);

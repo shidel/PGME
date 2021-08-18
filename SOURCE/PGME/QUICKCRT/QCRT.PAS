@@ -459,6 +459,7 @@ interface
   end;
 
   BYTES = array[0..$FFFE] of byte;
+  CHARS = array[0..$FFFE] of char;
   WORDS = array[0..$7FFE] of word;
   INTEGERS = array[0..$7FFE] of integer;
   LONGINTS = array[0..$3FFE] of longint;
@@ -474,6 +475,15 @@ interface
 
   PCodeMap = ^TCodeMap;
   TCodeMap = array[0..$0FFE] of TCodeMapEntry;
+
+  TWindowSettings = record
+    TextAttr: Byte;         { Current text attribute }
+    TextChar: Char;         { Current background fill character }
+    WindMin: Word;          { Window upper left coordinates }
+    WindMax: Word;          { Window lower right coordinates }
+    X, Y : integer;         { Position of Cursor }
+    Cursor : word;          { Cursor Size / Shape }
+  end;
 
   TQCrtSettings = record
     CheckBreak: Boolean;
@@ -704,6 +714,9 @@ interface
 { Procedures to preserve and restore settings in QCrt }
   procedure GetQCrtState(var ASettings : TQCrtSettings);
   procedure SetQCrtState(var ASettings : TQCrtSettings);
+
+  procedure GetWindowState(var ASettings : TWindowSettings);
+  procedure SetWindowState(var ASettings : TWindowSettings);
 
 { Unit variable reset procedure; Must call if an external procedure changes
   video modes (InitQCrt is called internally by TextMode, and at application
@@ -1566,37 +1579,45 @@ end;
     @@Done:
     end;
 
+  procedure GetWindowState(var ASettings : TWindowSettings);
+  begin
+      ASettings.Cursor := GetCursor;
+      ASettings.X := WhereX;
+      ASettings.Y := WhereY;
+      ASettings.WindMin := WindMin;
+      ASettings.WindMax := WindMax;
+      ASettings.TextAttr := TextAttr;
+      ASettings.TextChar := TextChar;
+  end;
+
+  procedure SetWindowState(var ASettings : TWindowSettings);
+  begin
+      if (ASettings.WindMin <> WindMin) or (ASettings.WindMax <> WindMax) then begin
+          Window(Lo(ASettings.WindMin) + 1, Hi(ASettings.WindMin) + 1,
+              Lo(ASettings.WindMax) + 1, Hi(ASettings.WindMax) + 1);
+          GotoXY ( ASettings.X, ASettings.Y );
+          MoveCursor;
+      end;
+      if (WhereX <> ASettings.X) or (WhereY <> ASettings.Y) then begin
+        GotoXY(ASettings.X, ASettings.Y);
+        MoveCursor;
+      end;
+      TextAttr := ASettings.TextAttr;
+      TextChar := ASettings.TextChar;
+      SetCursor(ASettings.Cursor);
+  end;
+
   procedure IdleMouseProc; far;
     var
-      X, Y,
-      Attr   : byte;
-      WMin, WMax,
-      Cursor : word;
-      MVC    : boolean;
+        WS : TWindowSettings;
     begin
 {        if (@IdleProc <> @DefaultIdle) and (@IdleProc <> @NullProc) then
       	begin  }
-		  Cursor := GetCursor;
-		  X := WhereX;
-		  Y := WhereY;
-		  WMin := WindMin;
-		  WMax := WindMax;
-		  Attr := TextAttr;
-		  MVC := False;
-
-{		  Window(1, 1, Lo(ScreenMax) + 1, Hi(ScreenMax) + 1); }
           MemCheck(0);
+          GetWindowState(WS);
+{		  Window(1, 1, Lo(ScreenMax) + 1, Hi(ScreenMax) + 1); }
 		  IdleProc;
-		  if (WMin <> WindMin) or (WMax <> WindMax) then begin
-    		  Window(Lo(WMin) + 1, Hi(WMin) + 1, Lo(WMax) + 1, Hi(WMax) + 1);
-    		  MVC := True;
-    	  end;
-    	  if (WhereX <> X) or (WhereY <> Y) then begin
-    		  GotoXY ( X, Y );
-    	  end;
-		  TextAttr := Attr;
-          if MVC then MoveCursor;
-		  SetCursor(Cursor);
+		  SetWindowState(WS);
 {		end; }
     end;
 
@@ -3789,10 +3810,12 @@ end;
       Source : String = '';
       OfsX   : byte = 0;
       CurX   : byte = 255;
+
     var
       OrgX,  OrgY : Byte;
       Cursor      : word;
       DoneFlag    : Boolean;
+      MyState     : TWindowSettings;
 
     procedure EditCursor;
       begin
@@ -4069,9 +4092,11 @@ end;
       repeat
         DoneFlag := False;
         EditCursor;
+        GetWindowState(MyState);
         repeat
           GetEvent(Event);
         until Event.What <> evNothing;
+        SetWindowState(MyState);
         HideCursor;
         if Event.What and evCommand = evCommand then HandleCommand else { Command is in evSystem }
         if Event.What and evSystem <> evNothing then DoneFlag := True else

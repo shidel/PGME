@@ -8,6 +8,12 @@ This version of **_Program Manager Eternity_** and related files are released un
 
 ## What's Up
 
+### Next release
+
+* QScroll now remembers Smooth scroll settings.
+* Fixed new typing in find box goes behind clock UI bug. (minor, self corrects)
+* QResFile (and format) updated to support using UPX on EXE files at any time. Now not limited attaching files only after compression.
+
 ### 2021-08-15
 
 * Added U keyboard option to QScroll to toggle Smooth upward scrolling.
