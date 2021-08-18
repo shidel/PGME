@@ -22,9 +22,9 @@ Instructions on compiling from svn sources.
 	You still need turbo pascal 7.0.
 
 	svn checkout svn://svn.code.sf.net/p/pgme/svn/trunk pgme
-	(or from github at https://github.com/shidel/PGME)
+	(or from [github](https://github.com/shidel/PGME))
 
-	then from a dos prommpt run make in the pgme directory.
+    Then from a dos prommpt run *build* in the pgme directory.
 
 A QuickCRT snapshot is now included in the main PGME repository tree. This
 snapshot is not kept in sync with the main version of QuickCRT. Rather
