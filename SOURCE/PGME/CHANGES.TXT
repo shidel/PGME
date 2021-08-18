@@ -2,6 +2,7 @@
 
 Next release
 
+    Time Screen saver now remembers scale setting.
     QScroll now remembers Smooth scroll settings.
     Fixed typing in find box goes behind clock UI bug. (minor, self corrects)
     QResFile (and format) updated to support using UPX on EXE files at any

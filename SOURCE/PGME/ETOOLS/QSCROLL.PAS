@@ -377,7 +377,9 @@ begin
 	NormalCursor;
 	if (ISmooth <> Smooth) or (ISmoothUp <> SmoothUp) then begin
         Cfg.Rewrite;
-        S := '[QSCROLL]';
+        S := '['+ GetEXEBase + ']';
+        Cfg.WriteLn(S);
+        S := '';
         Cfg.WriteLn(S);
         S := #9+'SMOOTH=' +BoolStr(Smooth);
         Cfg.WriteLn(S);

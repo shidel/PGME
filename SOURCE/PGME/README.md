@@ -10,6 +10,7 @@ This version of **_Program Manager Eternity_** and related files are released un
 
 ### Next release
 
+* Time Screen saver now remembers scale setting.
 * QScroll now remembers Smooth scroll settings.
 * Fixed new typing in find box goes behind clock UI bug. (minor, self corrects)
 * QResFile (and format) updated to support using UPX on EXE files at any time. Now not limited attaching files only after compression.

@@ -10,7 +10,7 @@
 {$I ESAVER.DEF}
 program Time;
 
-  uses QCrt, QDos, QStrings, QScrnSvr;
+  uses QCrt, QDos, QStrings, QScrnSvr, QFiles;
 
 {$I ..\ETERNITY\LICENSE.INC}
 
@@ -425,6 +425,7 @@ const
 
     procedure Rescale;
     begin
+        if Scale > High(Scales) then Scale := High(Scales);
         if NewScale = Scale then exit;
         Scale:=NewScale;
         ScaleX:= Scales[Scale].X;
@@ -532,13 +533,48 @@ begin
         end;
 end;
 
+procedure Run;
 var
 	ESaver : TESaver;
-
+	Cfg : TFile;
+	IScale : Integer;
+	FM : Word;
+	CFN, S, O : String;
 begin
+    Cfn:=Dir(GetExePath) + GetExeBase + '.CFG';
+    FM := FileMode;
+    FileMode := 0;
+    Cfg.Create;
+    Cfg.Assign(Cfn);
+    Cfg.Reset;
+    While (Cfg.Result = 0) and (Not Cfg.EOF) do begin
+        Cfg.ReadLn(S, Sizeof(S) - 1);
+        O := Ucase(Trim(FilterChar(PullStr('=', S),#9)));
+        S := Trim(S);
+        if (O = 'SCALE') and (S<>'') then
+            NewScale:=StrInt(S)
+    end;
+    Cfg.Close;
+    IScale := NewScale;
+    FileMode := FM;
     IdleMethod := imAny;
 	ESaver.Create;
 	ESaver.Execute;
 	ESaver.Destroy;
+	if (IScale <> Scale) then begin
+        Cfg.Rewrite;
+        S := '['+ GetEXEBase + ']';
+        Cfg.WriteLn(S);
+        S := '';
+        Cfg.WriteLn(S);
+        S := #9+'SCALE=' + IntStr(Scale);
+        Cfg.WriteLn(S);
+        Cfg.Close;
+    end;
+    Cfg.Destroy;
+end;
+
+begin
+    Run;
 end.
 
