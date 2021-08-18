@@ -1,4 +1,5 @@
-Copyright 1992-2021, Jerome Shidel.\
+Copyright 1992-2021, Jerome Shidel.
+<br />
 GNU General Public License, version 2.0
 
 ## The Program Manager Eternity
