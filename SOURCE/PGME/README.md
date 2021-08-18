@@ -3,7 +3,7 @@ GNU General Public License, version 2.0
 
 ### The Program Manager Eternity
 
-This version of * * _Program Manager Eternity_* *  and related files are released under the GNU GPL v2.0.
+This version of **_Program Manager Eternity_** and related files are released under the GNU GPL v2.0.
 
 Simple Instructions for compiling PGME from archive sources.
 
