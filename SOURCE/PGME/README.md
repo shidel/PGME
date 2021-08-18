@@ -1,7 +1,7 @@
 Copyright 1992-2021, Jerome Shidel.\
 GNU General Public License, version 2.0
 
-### The Program Manager Eternity
+## The Program Manager Eternity
 
 This version of **_Program Manager Eternity_** and related files are released under the GNU GPL v2.0.
 
@@ -44,9 +44,9 @@ None of those living versions are not actually "better" than any of the others.
 They are just different from each other with different purposes.
 
 
-### What's Up
+## What's Up
 
-## 2021-08-15
+### 2021-08-15
 
 * Added U keyboard option to QScroll to toggle Smooth upward scrolling.
 * Added S keyboard option to TIME Screen Saver to change display scale.
@@ -79,12 +79,12 @@ They are just different from each other with different purposes.
 * Create menu with wildcard character, bug fix.
 * Some grammer and spelling corrections.
 
-## 2015-07-26
+### 2015-07-26
 
 * Fixed non-FreeDOS/DosBox "Path Not Found" compatibility issue.
 * Some grammer and spelling corrections.
 
-## 2015-07-09
+### 2015-07-09
 
 * Added Whatsnew.txt (this file)
 * QScroll Added Line to separate multiple files when loading more than one.
@@ -94,7 +94,7 @@ They are just different from each other with different purposes.
 * QScroll Scroll by mouse movement.
 * Improved compatibility for keyboards without insert lock key.
 
-## 2015-07-05
+### 2015-07-05
 
 * Initial Beta Version. Mostly Functional.
 
