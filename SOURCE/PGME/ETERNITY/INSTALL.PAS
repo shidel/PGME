@@ -1,4 +1,4 @@
-{ Copyright 2015 Jerome Shidel }
+{ Copyright 2015-2021 Jerome Shidel }
 
 (*
 
@@ -57,6 +57,17 @@ const
 	IGOR		  : String = '';
 	GoodState	  : boolean = false;
 
+	MessageAborted   : String =
+	    'The Program Manager Eternity installation program has been aborted.';
+	MessageInstalled : String =
+	    'The Program Manager Eternity has been installed.';
+	MessageLaunch    : String =
+	    '0; It may be launched by entering "%0" from the command line.';
+	MessageGoodBye   : String =
+	    'Goodbye.';
+	MessageCorrupt   : String =
+	    'Sorry. But, it appears that the installer is corrupted.';
+
     {$IFNDEF TEMPLATES}
     var
         IRes    : PResource;
@@ -70,7 +81,7 @@ begin
     TextAttr := $4F;
     GotoXY(1,WhereY);
     ClrEol;
-    Write(' Sorry. But, it appears that the installer is corrupted.');
+    Write(' ', MessageCorrupt);
     TextAttr := $07;
     WriteLn;
     ErrorsOnExit := False;
@@ -203,6 +214,7 @@ type
 		constructor Create;
 		destructor Destroy; virtual;
 		procedure Idle; virtual;
+        procedure Configure; virtual;
 	end;
 
 	POptionDialog = ^TOptionDialog;
@@ -812,6 +824,22 @@ begin
 	ClrEol;
 end;
 
+procedure TInstaller.Configure;
+const
+    Prefix = 'INSTALLER.EXIT.MESSAGE.';
+begin
+    inherited Configure;
+    with FLanguage do begin
+        OpenSection('STRINGS');
+        MessageCorrupt := GetValue(Prefix + 'CORRUPT', MessageCorrupt);
+        MessageAborted := GetValue(Prefix + 'ABORTED', MessageAborted);
+        MessageInstalled := GetValue(Prefix + 'INSTALLED', MessageInstalled);
+        MessageLaunch := GetValue(Prefix + 'LAUNCH', MessageLaunch);
+        MessageGoodBye := GetValue(Prefix + 'GOODBYE', MessageGoodBye);
+        OpenSection('*');
+    end;
+end;
+
 { --- TOptionDialog --- }
 function TOptionDialog.ObjectClass(AName : String) : String;
 begin
@@ -852,9 +880,10 @@ begin
 	inherited CheckLocal(AEvent);
 end;
 
+procedure Run;
 var
 	Installer : TInstaller;
-
+	S : String;
 begin
 	{$IFDEF SOUND}
 		NoSound;
@@ -886,18 +915,25 @@ begin
 		TextAttr := $07;
 		ClrEol;
 		WriteLn;
-		WriteLn('The Program Manager Eternity has been installed.');
-		WriteLn('It may be launched by entering "PGM.BAT" from the command line.');
+		WriteLn(MessageInstalled);
+		S := MessageLaunch;
+		PullStr('0;', S);
+		S := Trim(S);
+		Write(PullStr('%0', S));
+		TextAttr := $0E;
+		Write('PGM.BAT');
+		TextAttr := $07;
+		WriteLn(S);
 		WriteLn;
 		TextAttr := $0B;
-		Write('Goodbye.');
+		Write(MessageGoodBye);
 		TextAttr := $07;
 		WriteLn;
 	end else begin
 		{$IFNDEF TEMPLATES}
 		TextAttr := $4F;
 		GotoXY(1,WhereY);
-		Write(' The Program Manager Eternity installation program has been aborted.');
+		Write(' ', MessageAborted);
 		ClrEol;
 		TextAttr := $07;
 		WriteLn;
@@ -905,4 +941,8 @@ begin
 		ErrorsOnExit := False;
 		Halt(1);
 	end;
+end;
+
+begin
+    Run;
 end.
