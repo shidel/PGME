@@ -31,6 +31,7 @@ type
 		FFocused, FMouseFocus : PControl;
 		FDefaultDAC, FUserDAC : Pointer;
 		FTerminator, FCanQuit : boolean;
+		FSingleClose, FDoubleClose, FCharCLose : String;
 	{ User Config Stuff }
 		FClrScr,
 		FUseFader,
@@ -127,6 +128,9 @@ begin
 	FInSound := True;
 	FOutSound := True;
 	FCanQuit := True;
+	FSingleClose := #$B4#$20#$C3;
+	FDoubleClose := #$B5#$20#$C6;
+	FCharClose := #$FE;
 
 	FStartTone := '200:2,300:2,400:2,500:3,0:3,400:2,500:6';
 	FEndTone := '500:1,100:1,300:1';
@@ -254,6 +258,10 @@ begin
 		FTheme.GetValue('ID', 'DEFAULT');
 		FTheme.GetValue('NAME', 'Default Theme');
 	{$ENDIF}
+    FSingleClose := FTheme.GetHexStr('CLOSE.SINGLE', StrHex(FSingleClose, True));
+    FDoubleClose := FTheme.GetHexStr('CLOSE.DOUBLE', StrHex(FDoubleClose, True));
+    FCharClose := FTheme.GetHexStr('CLOSE.BUTTON', StrHex(FCharClose, True));
+
     FKeyboard.SetFileName(TK);
     FKeyboard.Read;
     FKeyboard.SetAutoAdd(True);

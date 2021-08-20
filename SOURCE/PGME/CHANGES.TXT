@@ -2,6 +2,12 @@
 
 Next release
 
+2021-08-20
+
+    Added Window Close characters to themes
+    Corrected Config for correct French font filename
+    French & Turkish Language basic rough themes
+    Some font improvements
     Added delay to font preview in Font Designer for easier viewing.
     Time Screen saver now remembers scale setting.
     QScroll now remembers Smooth scroll settings.

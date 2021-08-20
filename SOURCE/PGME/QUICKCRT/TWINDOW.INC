@@ -1,10 +1,10 @@
-{ Copyright 2015 Jerome Shidel }
+{ Copyright 2015-2021 Jerome Shidel }
 
-(* 
-		
+(*
+
 	This project and related files are subject to either the terms
 	specified in the included LICENSE.TXT file or the GNU GPLv2.0.
-	
+
 *)
 
 { ---TWindow --- }
@@ -12,8 +12,8 @@
 {$IFDEF INTERFACE}
 const
 	class_TWindow = 'TWindow';
-	
-type			
+
+type
 	PWindow = ^TWindow;
 	TWindow = object(TBox)
 	private
@@ -40,11 +40,11 @@ type
 		function GetTitle : String; virtual;
 		function GetCanClose : boolean; virtual;
 		procedure SetCanClose(AValue : Boolean); virtual;
-		procedure Draw; virtual;	
-		function ShowModal : integer; virtual;	
-		function GetModalResult : integer; virtual;	
+		procedure Draw; virtual;
+		function ShowModal : integer; virtual;
+		function GetModalResult : integer; virtual;
 		procedure SetMainWindow(AValue : boolean); virtual;
-		function GetMainWindow : boolean; virtual;	
+		function GetMainWindow : boolean; virtual;
 		procedure SetTextAttr(AValue : integer); virtual;
 		procedure SetBackground(AValue : integer); virtual;
 		procedure ApplyTheme( AConfig : PConfigFile ); virtual;
@@ -53,15 +53,15 @@ type
 
 {$IFDEF IMPLEMENTATION}
 
-function TWindow.ObjectClass(AName : String) : String; 
+function TWindow.ObjectClass(AName : String) : String;
 begin
-	if (AName = '') or (AName = class_TWindow) then 
+	if (AName = '') or (AName = class_TWindow) then
 		ObjectClass := class_TWindow
 	else
 		ObjectClass := inherited ObjectClass(AName);
 end;
 
-procedure TWindow.CheckLocal(var AEvent : TEvent); 
+procedure TWindow.CheckLocal(var AEvent : TEvent);
 begin
 	inherited CheckLocal(AEvent);
 	if AEvent.What = evCommand then
@@ -100,7 +100,7 @@ begin
 					AEvent.Command := cmQuit;
 					PutEvent(AEvent);
 					ClearEvent(AEvent);
-				end;				
+				end;
 			end;
 		end;
 end;
@@ -110,7 +110,7 @@ begin
 	FResult := AValue;
 end;
 
-function TWindow.GetModalResult : integer; 
+function TWindow.GetModalResult : integer;
 begin
 	GetModalResult := FResult;
 end;
@@ -124,19 +124,19 @@ begin
 	FAutoEndModal := False;
 	FCloseBtn.Create(nil, 'FRAME.BUTTON.CLOSE' );
 	FCloseBtn.FAllowOutside := True;
-	FCloseBtn.FCaption := #$FE; 
+	FCloseBtn.FCaption := Application^.FCharClose;
 	FCloseBtn.FCaptionAsChar := True;
 	FCloseBtn.SetTextColor($A);
 	FCloseBtn.FCommand := cmCloseWindow;
 	FCloseBtn.FFreeOnDestroy := False;
-	AddChild(@FCloseBtn); 
-	
+	AddChild(@FCloseBtn);
+
 	FTitle.Create(nil, 'FRAME.TITLE');
 	FTitle.FAllowOutside := True;
 	FTitle.FClearWindow := False;
 	FTitle.SetTextColor($B);
 	FTitle.FFreeOnDestroy := False;
-	AddChild(@FTitle); 
+	AddChild(@FTitle);
 	FResult := -1;
 	FStartTone := '';
 	FEndTone := '';
@@ -177,18 +177,20 @@ begin
 	WMax := WindMax;
 	if FCloseBtn.FVisible then
 		begin
+            if FCloseBtn.FCaption <> Application^.FCharClose then
+            	FCloseBtn.FCaption := Application^.FCharClose;
 			with FCloseBtn.FWindow do Window(Left - 1, Top, Left + 2, Top);
 			if (FStyle = bxSingle) or (FStyle = bxDoubleSide) then
-				FWrite(#$B4#$20#$C3)
+				FWrite(Application^.FSingleClose)
 			else
-				FWrite(#$B5#$20#$C6);
+				FWrite(Application^.FDoubleClose);
 		end;
-	
+
 {	Margins are already set. so no need to do them again!
-	Window(Lo(WMin) + FMargin.Left + 1, Hi(WMin) + FMargin.Top + 1, 
+	Window(Lo(WMin) + FMargin.Left + 1, Hi(WMin) + FMargin.Top + 1,
 		Lo(WMax) - FMargin.Right + 1, Hi(WMax) - FMargin.Bottom + 1);  }
 
-	Window(Lo(WMin) + 1, Hi(WMin) + 1, Lo(WMax) + 1, Hi(WMax) + 1);  
+	Window(Lo(WMin) + 1, Hi(WMin) + 1, Lo(WMax) + 1, Hi(WMax) + 1);
 end;
 
 function TWindow.GetCanCLose : boolean;
@@ -196,12 +198,12 @@ begin
 	GetCanClose := FCanClose;
 end;
 
-procedure TWindow.SetCanClose(AValue : Boolean); 
+procedure TWindow.SetCanClose(AValue : Boolean);
 begin
 	If AValue = FCanClose then exit;
 	FCanClose := AValue;
 {	FCloseBtn.SetVisible(AValue); }
-	Update;			
+	Update;
 end;
 
 function TWindow.ShowModal : integer;
@@ -211,14 +213,14 @@ var
 		TempStr : String;
 	{$ENDIF}
 begin
-	{$IFDEF DEVLOG} 
+	{$IFDEF DEVLOG}
 		writeLog('Show Modal:' + GetPathID);
 		LogInc;
 	{$ENDIF}
 	FVisible := True;
 	AdjustSize;
 	if Not FShown then Show;
-	MouseVerify;	
+	MouseVerify;
 	{$IFDEF DEVLOG}
 		WriteLog('Start ShowModal Loop');
 		LogInc;
@@ -227,9 +229,9 @@ begin
 	FResult := mrNone;
 	if FStartTone <> '' then SpeakerPlay(FStartTone);
 	repeat
-		ClearEvent(Event);		
+		ClearEvent(Event);
 		while Event.What = evNothing do begin
-			GetEvent(Event);			
+			GetEvent(Event);
 			if (Event.What = evNothing) and Assigned(Application) then Application^.Idle;
 		end;
 		{$IFDEF DEVLOG_EVENTS}
@@ -239,7 +241,7 @@ begin
 				evNone : TempStr := TempStr + 'evNone';
 				evKeyboard :  begin
 					TempStr := TempStr + 'evKeyboard ';
-					TempStr := TempStr + ZPad(BinStr(Event.ShiftCode), 16) + ':' + 
+					TempStr := TempStr + ZPad(BinStr(Event.ShiftCode), 16) + ':' +
 						ZPad(HexStr(Event.KeyCode), 4);
 					if Event.Original <> 0 then
 						TempStr := TempStr + ' (' + ZPad(HexStr(Event.Original), 4) + ')';
@@ -247,13 +249,13 @@ begin
 				evCommand : begin
 					TempStr	:= TempStr + ' evCommand ' + Application^.GetCommandName(Event.Command);
 				end;
-			end;		
+			end;
 			WriteLog(TempStr);
 		end;
-		{$ENDIF}			
+		{$ENDIF}
 		CheckEvent(Event);
-	until (Not FShown) or (not FVisible) or FStopModal or 
-	(Assigned(Application) and Application^.FTerminator); 
+	until (Not FShown) or (not FVisible) or FStopModal or
+	(Assigned(Application) and Application^.FTerminator);
 	if FEndTone <> '' then SpeakerPlay(FEndTone);
 	if Assigned(Application) then Application^.FFocused := nil;
 
@@ -266,7 +268,7 @@ begin
 	ClearEvent(Event);
 	MouseVerify;
 	{ Hide; }
-	{$IFDEF DEVLOG} 
+	{$IFDEF DEVLOG}
 		LogDec;
 		writeLog('End Modal:' + GetPathID + ' (' + IntStr(FResult) + ')');
 	{$ENDIF}
@@ -274,7 +276,7 @@ begin
 	FVisible := False;
 end;
 
-procedure TWindow.SetCurrentBounds(AValue : TBounds); 
+procedure TWindow.SetCurrentBounds(AValue : TBounds);
 begin
 	inherited SetCurrentBounds(AValue);
 	Bounds(4 - FMargin.Left, 1-FMargin.Top, 1, 1, AValue);
@@ -308,7 +310,7 @@ begin
 	FCloseBtn.SetBackground(AValue);
 end;
 
-procedure TWindow.CheckMouse(var AEvent : TEvent); 
+procedure TWindow.CheckMouse(var AEvent : TEvent);
 var
 	Hold : TEvent;
 begin
@@ -317,14 +319,14 @@ begin
 	if not GetVisible then exit;
 	if not GetShown then exit;
 	if (Not FMouseOver) and (FAutoEndModal) and (Hold.What = evMouseDown) then
-		FStopModal := True;	
+		FStopModal := True;
 end;
 
 procedure TWindow.ApplyTheme( AConfig : PConfigFile );
 begin
 	inherited ApplyTheme(AConfig);
-	FStartTone := AConfig^.GetValue('TONE.START', FStartTone);	
-	FEndTone := AConfig^.GetValue('TONE.END', FEndTone);	
+	FStartTone := AConfig^.GetValue('TONE.START', FStartTone);
+	FEndTone := AConfig^.GetValue('TONE.END', FEndTone);
 end;
 
 {$ENDIF}
