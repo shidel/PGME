@@ -16,9 +16,11 @@ synchronized commits. Both locations make up the home of PGME and although
 both are the same, neither is location is actually a mirror of the other.
 
 [PGME on SourceForge](https://sourceforge.net/projects/pgme/)
+
 [PGME on GitHub](https://github.com/shidel/PGME)
 
 All language translations, fonts, themes, keyboard profiles and the similar
-files are kept and maintained at the
-[FreeDOS Translation Project](https://github.com/shidel/fd-nls/tree/master/pgme)
+files are kept and maintained at
+
+the [FreeDOS Translation Project](https://github.com/shidel/fd-nls/tree/master/pgme)
 
