@@ -258,9 +258,14 @@ begin
 		FTheme.GetValue('ID', 'DEFAULT');
 		FTheme.GetValue('NAME', 'Default Theme');
 	{$ENDIF}
-    FSingleClose := FTheme.GetHexStr('CLOSE.SINGLE', StrHex(FSingleClose, True));
-    FDoubleClose := FTheme.GetHexStr('CLOSE.DOUBLE', StrHex(FDoubleClose, True));
-    FCharClose := FTheme.GetHexStr('CLOSE.BUTTON', StrHex(FCharClose, True));
+
+    FTheme.OpenSection('*');
+    S := HexToStr(FilterChar(FTheme.GetValue('CLOSE.SINGLE', StrHex(FSingleClose, false)), '#'));
+    if S <> '' then FSingleClose := S;
+    S := HexToStr(FilterChar(FTheme.GetValue('CLOSE.DOUBLE', StrHex(FDoubleClose, false)), '#'));
+    if S <> '' then FDoubleClose := S;
+    S := HexToStr(FilterChar(FTheme.GetValue('CLOSE.BUTTON', StrHex(FCharClose, false)), '#'));
+    if S <> '' then FCharClose := S;
 
     FKeyboard.SetFileName(TK);
     FKeyboard.Read;
