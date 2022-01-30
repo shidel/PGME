@@ -5,7 +5,7 @@
         FILE.DATE=0[X3.2],1[L2],2[Z2];%1/%2/%0
         FILE.NONE=<none>
         FILE.TIME=0[Z2],1[L2],2[Z2],3[Z2],4{a,p};%1:%2%4
-        ID=GERMAN
+        ID=de_DE
         MERGE=
         NAME=German
         THEME=DE-ETERN.THM
@@ -75,7 +75,13 @@
         PGM.DIALOG.CONFIG.LANGUAGE.DROP.LIST.LIST=
         PGM.DIALOG.CONFIG.LANGUAGE.DROP.LIST.LIST.VSCROLL=
         PGM.DIALOG.CONFIG.LANGUAGE.LABEL=
-        PGM.DIALOG.CONFIG.SOUND.TOGGLE=
+	PGM.DIALOG.CONFIG.SOUND.LABEL=
+	PGM.DIALOG.CONFIG.SOUND.TOGGLE=Verwenden Sie den Schalter "Soundeffekte" um die
+
+		+=Musiknoten zu aktivieren / deaktivieren, die von PGME beim Start von
+		+=PGME, beim Start eines Programms, beim Herunterfahren usw. abgespielt
+		+=werden.
+
         PGM.DIALOG.DOSCOMMAND=Die "DOS Command" Dialogbox.
 
                 +=
@@ -103,7 +109,7 @@
                 +=Zweitens, es befindet sich auf einem Wechselmedium, welches aktuell nicht
                 +=verfÅgbar ist.
                 +=Oder die Hauptdatei ist in der ETERNITY.CFG Datei mit einem Hilfs-Betrachter
-                +=(Viewer) verknÅpft und der Betrachter (Viewer) konnte nicht gefunden werden.
+                +=(Viewer) verknÅpft und der Betrachter (Viewer) konnte nicht gefunden werden.  
 
         PGM.DIALOG.EXECMISSING.FRAME.BUTTON.CLOSE=
         PGM.DIALOG.EXECMISSING.FRAME.TITLE=
@@ -156,7 +162,7 @@
                 +=Wenn Sie PGME keinen Schreibzugriff auf diesen Speicherort oder diese Datei
                 +=geben kînnen, kann PGME nur einen einfachen Start durchfÅhren. Mîglicherweise
                 +=kînnen Sie das Problem lîsen, indem Sie die Datei manuell lîschen, den
-                +=Computer neu starten oder auf nur einem Bein stehen, auf und ab hÅpfen und
+                +=Computer neu starten oder auf nur einem Bein stehen, auf und ab hÅpfen und 
                 +=Ihren vollstÑndigen Namen dreimal rÅckwÑrts buchstabieren. :-D
 
         PGM.DIALOG.GORNERROR.FRAME.BUTTON.CLOSE=
@@ -205,7 +211,7 @@
 
         PGM.DIALOG.MENU.ADD.FRAME.BUTTON.CLOSE=
         PGM.DIALOG.MENU.ADD.FRAME.TITLE=
-        PGM.DIALOG.MENU.ADD.LONG.EDIT=Verwende die "Langform" der "MenÅtitel Beschreibung" um
+        PGM.DIALOG.MENU.ADD.LONG.EDIT=Verwende die "Langform" der "MenÅtitel Beschreibung" um 
 
                 +=den vollen Titel des MenÅs einzugeben.
 
@@ -247,13 +253,13 @@
         PGM.DIALOG.MENU.EDIT.LOCK.LABEL=
         PGM.DIALOG.MENU.EDIT.LOCK.TOGGLE=Der Schalter "MenÅ sperren" Ñndert das ausgewÑhlte MenÅ
 
-                +=auf schreibgeschÅtzt um, indem er das Flag "beschreibbar" auf
+                +=auf schreibgeschÅtzt um, indem er das Flag "beschreibbar" auf 
                 +="false" (falsch) setzt. Wenn dieses Flag gesetzt ist, kînnen Sie keine
                 +=Programme zum MenÅ hinzufÅgen oder entfernen oder das MenÅ aus PGME lîschen.
                 +=Sie kînnen nicht einmal das Flag wieder deaktivieren oder diese Dialogbox fÅr
                 +=das MenÅ îffnen. Der einzige Weg, dieses MenÅ wieder beschreibbar zu machen
                 +=ist, die MenÅdatei manuell zu bearbeiten und unter Verwendung eines Text-
-                +=editors den "beschreibbar"-Flag zu aktivieren.
+                +=editors den "beschreibbar"-Flag zu aktivieren. 
 
         PGM.DIALOG.MENU.EDIT.LONG.EDIT=Verwende die "Lange MenÅtitelbeschreibung" um den vollen
 
@@ -333,7 +339,7 @@
 
         PGM.DIALOG.OPTIONS=Die Program Manager Eternity Programm-Dialogbox "Anzeige".
 
-                +=Hier kînnen Sie das Verhalten und das Auftreten von PGME verÑndern.
+                +=Hier kînnen Sie das Verhalten und das Auftreten von PGME verÑndern. 
 
         PGM.DIALOG.OPTIONS.BUTTON.OK=5;Verwende die "%0" Taste um alle énderungen anzuwenden und
 
@@ -574,7 +580,7 @@
 
                 +=Sie funktionieren nur, wenn das Popup-MenÅ sichtbar ist.
 
-        PGM.PROGRAMS.POPUP.EDITMENU.BTN.CONFIG=5;"%0" Option: WÑhlen Sie diese Option um einige Verhaltensoptionen von PGME zu Ñndern.
+        PGM.PROGRAMS.POPUP.EDITMENU.BTN.CONFIG=5;"%0" Option: WÑhlen Sie diese Option um einige Verhaltensoptionen von PGME zu Ñndern. 
 
                 +=Die Standard-Tastenkombination ist "P".
 
@@ -723,8 +729,8 @@
         PGM.BOOT.CACHE.UPDATE=Aktualisiere MenÅcache...
         PGM.BOOT.PAUSE=DrÅcken Sie eine Taste zum weitermachen . . .
         PGM.BOOT.RESUME=Setze Eternity fort...
-        PGM.DIALOG.ABOUT.FRAME.TITLE= öber PGM Eternity
-        PGM.DIALOG.ABOUT.MESSAGE=
+        PGM.DIALOG.ABOUT.FRAME.TITLE= öber PGM Eternity 
+        PGM.DIALOG.ABOUT.MESSAGE= 
 
                 +=Die Program Manager Eternity Edition
                 +=Copyright 2015-2022.
@@ -732,9 +738,8 @@
                 +=Das QuickCRT Framework
                 +=Copyright 1990-2022.
                 +=
-                +=Sowohl PGME als auch QuickCRT sind
-                +=Open Source und bei Sourceforge
-                +=erhÑltlich unter:
+                +=Sowohl PGME als auch QuickCRT sind Open Source und
+                +=bei Sourceforge erhÑltlich unter:
                 +=
                 +=http://pgme.sourceforge.net
                 +=http://quickcrt.sourceforge.net
@@ -746,17 +751,18 @@
         PGM.DIALOG.CONFIG.IDLE.DROP.ITEM.HALT=CPU Halt
         PGM.DIALOG.CONFIG.IDLE.DROP.ITEM.OFF=<deaktiviert>
         PGM.DIALOG.CONFIG.IDLE.DROP.LIST.FRAME.TITLE=
-        PGM.DIALOG.CONFIG.IDLE.DROP.LIST.LIST.COLUMN.NONE=
-        PGM.DIALOG.CONFIG.IDLE.LABEL=Energiesparen::
+        PGM.DIALOG.CONFIG.IDLE.DROP.LIST.LIST.COLUMN.NONE= 
+        PGM.DIALOG.CONFIG.IDLE.LABEL=Energiesparen:
         PGM.DIALOG.CONFIG.LANGUAGE.DROP.LIST.FRAME.TITLE=
-        PGM.DIALOG.CONFIG.LANGUAGE.DROP.LIST.LIST.COLUMN.NONE=
+        PGM.DIALOG.CONFIG.LANGUAGE.DROP.LIST.LIST.COLUMN.NONE= 
         PGM.DIALOG.CONFIG.LANGUAGE.LABEL=Sprachdatei:
-        PGM.DIALOG.CONFIG.SOUND.TOGGLE=Sound Effects
+	PGM.DIALOG.CONFIG.SOUND.LABEL=Soundeffekte:
+        PGM.DIALOG.CONFIG.SOUND.TOGGLE=aus,EIN
         PGM.DIALOG.DOSCOMMAND.BUTTON.OK=OK
-        PGM.DIALOG.DOSCOMMAND.FRAME.TITLE= FÅge DOS-Befehl hinzu
+        PGM.DIALOG.DOSCOMMAND.FRAME.TITLE= FÅge DOS-Befehl hinzu 
         PGM.DIALOG.DOSCOMMAND.LABEL=Verwendeter DOS Befehl:
-        PGM.DIALOG.EXECMISSING.FRAME.TITLE= Oh nein, es tut mir so leid! :(
-        PGM.DIALOG.EXECMISSING.MESSAGE=
+        PGM.DIALOG.EXECMISSING.FRAME.TITLE= Oh nein, es tut mir so leid! :( 
+        PGM.DIALOG.EXECMISSING.MESSAGE= 
 
 
                 +=PGME konnte eine erforderliche ausfÅhrbare Datei nicht
@@ -774,22 +780,22 @@
         PGM.DIALOG.FINDEXEC.DIRECTORY.COLUMN.3=DATUM
         PGM.DIALOG.FINDEXEC.DIRECTORY.COLUMN.4=ZEIT
         PGM.DIALOG.FINDEXEC.DIRECTORY.COLUMN.5=WENN
-        PGM.DIALOG.FINDEXEC.DIRECTORY.COLUMN.NONE=
+        PGM.DIALOG.FINDEXEC.DIRECTORY.COLUMN.NONE= 
         PGM.DIALOG.FINDEXEC.DIRECTORY.PARENT=<öBERVERZEICHNIS>
         PGM.DIALOG.FINDEXEC.DIRECTORY.SUBDIR=<UNTERVERZEICHNIS>
         PGM.DIALOG.FINDEXEC.FILTER.LIST.FRAME.TITLE=
-        PGM.DIALOG.FINDEXEC.FILTER.LIST.LIST.COLUMN.NONE=
+        PGM.DIALOG.FINDEXEC.FILTER.LIST.LIST.COLUMN.NONE= 
         PGM.DIALOG.FINDEXEC.FILTERS=Executable (*.EXE;*.COM;*.BAT)
 
                 +=Bildschirmschoner (*.SCR)
                 +=Anschaubar (*.DOC;*.ME;*.TXT)
                 +=Alle Dateien (*.*)
 
-        PGM.DIALOG.FINDEXEC.FRAME.TITLE= WÑhle Programm
+        PGM.DIALOG.FINDEXEC.FRAME.TITLE= WÑhle Programm 
         PGM.DIALOG.FINDEXEC.PATH.LIST.FRAME.TITLE=
-        PGM.DIALOG.FINDEXEC.PATH.LIST.LIST.COLUMN.NONE=
-        PGM.DIALOG.GORNERROR.FRAME.TITLE= Oh nein, es tut mir so leid! :(
-        PGM.DIALOG.GORNERROR.MESSAGE=
+        PGM.DIALOG.FINDEXEC.PATH.LIST.LIST.COLUMN.NONE= 
+        PGM.DIALOG.GORNERROR.FRAME.TITLE= Oh nein, es tut mir so leid! :( 
+        PGM.DIALOG.GORNERROR.MESSAGE= 
 
                 +=Es hat sich beim Versuch, in die temporÑre PGMEGORN.BAT
                 +=zu schreiben, ein Fehler ereignet. Die Datei kann ge-
@@ -801,10 +807,10 @@
 
         PGM.DIALOG.LANGTOO.BUTTON.NO=Nie!
         PGM.DIALOG.LANGTOO.BUTTON.YES=JA
-        PGM.DIALOG.LANGTOO.FRAME.TITLE= Hmmm. Noch etwas?
-        PGM.DIALOG.LANGTOO.MESSAGE=
+        PGM.DIALOG.LANGTOO.FRAME.TITLE= Hmmm. Noch etwas? 
+        PGM.DIALOG.LANGTOO.MESSAGE= 
 
-                +=Hey, das Thema das Sie anwenden mîchten, mîchte
+                +=Hey, das Thema das Sie anwenden mîchten, mîchte 
                 +=unbedingt eine andere Sprache verwenden.
                 +=
                 +=1;Wollen Sie also zum Sprache %0 wechseln?
@@ -819,23 +825,23 @@
         PGM.DIALOG.LAUNCH.LABEL=ProzessausfÅhrung:
         PGM.DIALOG.LAUNCH.PROCLIST.COLUMN.0=BEFEHL
         PGM.DIALOG.LAUNCH.PROCLIST.COLUMN.1=OPTIONEN
-        PGM.DIALOG.LAUNCH.PROCLIST.COLUMN.NONE=
+        PGM.DIALOG.LAUNCH.PROCLIST.COLUMN.NONE= 
         PGM.DIALOG.MENU.ADD.BUTTON.OK=Erstelle
         PGM.DIALOG.MENU.ADD.FILE.LABEL=MenÅdateiname:
         PGM.DIALOG.MENU.ADD.FILE.NAME=
-        PGM.DIALOG.MENU.ADD.FRAME.TITLE= Erstelle neues MenÅ
+        PGM.DIALOG.MENU.ADD.FRAME.TITLE= Erstelle neues MenÅ 
         PGM.DIALOG.MENU.ADD.LONG.LABEL=AusfÅhrliche MenÅtitelbeschreibung:
         PGM.DIALOG.MENU.ADD.SHORT.LABEL=Kurzer MenÅname:
         PGM.DIALOG.MENU.DELETE.BUTTON.NO=Abbrechen
         PGM.DIALOG.MENU.DELETE.BUTTON.OK=Lîschen
-        PGM.DIALOG.MENU.DELETE.FRAME.TITLE= Lîsche MenÅ
-        PGM.DIALOG.MENU.DELETE.MESSAGE=
+        PGM.DIALOG.MENU.DELETE.FRAME.TITLE= Lîsche MenÅ 
+        PGM.DIALOG.MENU.DELETE.MESSAGE= 
 
                 +=Sind Sie sicher, da· Sie dieses MenÅ vom
                 +=Computer lîschen wollen?
 
         PGM.DIALOG.MENU.EDIT.BUTTON.OK=Update
-        PGM.DIALOG.MENU.EDIT.FRAME.TITLE= MenÅoptionen
+        PGM.DIALOG.MENU.EDIT.FRAME.TITLE= MenÅoptionen 
         PGM.DIALOG.MENU.EDIT.LOCK.ACCEPT=Ja, wirklich.Really. Sperre das MenÅ permanent.
         PGM.DIALOG.MENU.EDIT.LOCK.LABEL=Sperre das MenÅ und verhindere énderungen:
         PGM.DIALOG.MENU.EDIT.LOCK.TOGGLE=aus,EIN
@@ -843,14 +849,14 @@
         PGM.DIALOG.MENU.EDIT.SHORT.LABEL=Kurzer MenÅname:
         PGM.DIALOG.MOVE.BUTTON.OK=OK
         PGM.DIALOG.MOVE.CHECKBOX.MOVE=Verschieben statt Kopieren.
-        PGM.DIALOG.MOVE.FRAME.TITLE= Dupliziere oder verschiebe Programm
+        PGM.DIALOG.MOVE.FRAME.TITLE= Dupliziere oder verschiebe Programm 
         PGM.DIALOG.MOVE.NAME.LABEL=Programmtitel:
         PGM.DIALOG.MOVE.NAME.TEXT=Ein Programm
         PGM.DIALOG.MOVE.TARGET.LABEL=ZielmenÅ:
         PGM.DIALOG.MOVE.TARGET.LIST.LIST.FRAME.TITLE=
-        PGM.DIALOG.MOVE.TARGET.LIST.LIST.LIST.COLUMN.NONE=
-        PGM.DIALOG.NOBATCH.FRAME.TITLE= Oh nein, es tut mir so leid!
-        PGM.DIALOG.NOBATCH.MESSAGE=
+        PGM.DIALOG.MOVE.TARGET.LIST.LIST.LIST.COLUMN.NONE= 
+        PGM.DIALOG.NOBATCH.FRAME.TITLE= Oh nein, es tut mir so leid! 
+        PGM.DIALOG.NOBATCH.MESSAGE= 
 
                 +=UnglÅcklicherweise haben Sie nicht die Startdatei PGM.BAT
                 +=verwendet und PGME kann momentan nur einfaches Starten
@@ -858,8 +864,8 @@
                 +=
                 +=Bitte verwenden Sie beim nÑchsten Start von PGME PGM.BAT.
 
-        PGM.DIALOG.NOTEMPDIR.FRAME.TITLE= Oh nein, es tut mir so leid! :(
-        PGM.DIALOG.NOTEMPDIR.MESSAGE=
+        PGM.DIALOG.NOTEMPDIR.FRAME.TITLE= Oh nein, es tut mir so leid! :( 
+        PGM.DIALOG.NOTEMPDIR.MESSAGE= 
 
                 +=UnglÅcklicherweise hat das System kein TEMP-Verzeichnis
                 +=definiert. Deshalb kann ich dieses Programm momentan
@@ -878,20 +884,20 @@
         PGM.DIALOG.OPTIONS.DAC.CHECK=Benutzerdefinierbare Farben
         PGM.DIALOG.OPTIONS.ESAVER.DELAY=0,1{Sek,Min};Timeout %0 %1:
         PGM.DIALOG.OPTIONS.ESAVER.DROP.LIST.FRAME.TITLE=
-        PGM.DIALOG.OPTIONS.ESAVER.DROP.LIST.LIST.COLUMN.NONE=
+        PGM.DIALOG.OPTIONS.ESAVER.DROP.LIST.LIST.COLUMN.NONE= 
         PGM.DIALOG.OPTIONS.ESAVER.LABEL=Bildschirmschoner:
         PGM.DIALOG.OPTIONS.FADER.CHECK=öberblendregler
         PGM.DIALOG.OPTIONS.FONT.DROP.LIST.FRAME.TITLE=
-        PGM.DIALOG.OPTIONS.FONT.DROP.LIST.LIST.COLUMN.NONE=
+        PGM.DIALOG.OPTIONS.FONT.DROP.LIST.LIST.COLUMN.NONE= 
         PGM.DIALOG.OPTIONS.FONT.LABEL=Font-Datei
-        PGM.DIALOG.OPTIONS.FRAME.TITLE= Eternity Anzeigeoptionen
+        PGM.DIALOG.OPTIONS.FRAME.TITLE= Eternity Anzeigeoptionen 
         PGM.DIALOG.OPTIONS.THEME.DROP.LIST.FRAME.TITLE=
-        PGM.DIALOG.OPTIONS.THEME.DROP.LIST.LIST.COLUMN.NONE=
+        PGM.DIALOG.OPTIONS.THEME.DROP.LIST.LIST.COLUMN.NONE= 
         PGM.DIALOG.OPTIONS.THEME.LABEL=Themendatei:
         PGM.DIALOG.PROG.ADD.BUTTON.OK=Erstelle
         PGM.DIALOG.PROG.ADD.CPUCACHE.LABEL=Deaktiviere CPU Cache:
         PGM.DIALOG.PROG.ADD.CPUCACHE.TOGGLE=aus,EIN
-        PGM.DIALOG.PROG.ADD.FRAME.TITLE=FÅge neues Programm hinzu
+        PGM.DIALOG.PROG.ADD.FRAME.TITLE=FÅge neues Programm hinzu 
         PGM.DIALOG.PROG.ADD.FREE.LABEL=Gib gesamten Speicher frei:
         PGM.DIALOG.PROG.ADD.FREE.TOGGLE=aus,EIN
         PGM.DIALOG.PROG.ADD.LAUNCH.BUTTON=WÑhle aus
@@ -902,8 +908,8 @@
         PGM.DIALOG.PROG.ADD.TONE.LABEL=Sound starten::
         PGM.DIALOG.PROG.DELETE.BUTTON.NO=Abbrechen
         PGM.DIALOG.PROG.DELETE.BUTTON.OK=Lîsche
-        PGM.DIALOG.PROG.DELETE.FRAME.TITLE=Entferne Programm
-        PGM.DIALOG.PROG.DELETE.MESSAGE=
+        PGM.DIALOG.PROG.DELETE.FRAME.TITLE=Entferne Programm 
+        PGM.DIALOG.PROG.DELETE.MESSAGE= 
 
                 +=Sind Sie sicher, da· Sie dieses Programm aus dem
                 +=MenÅ entfernen wollen?
@@ -911,7 +917,7 @@
         PGM.DIALOG.PROG.EDIT.BUTTON.OK=Update
         PGM.DIALOG.PROG.EDIT.CPUCACHE.LABEL=Deaktiviere CPU Cache:
         PGM.DIALOG.PROG.EDIT.CPUCACHE.TOGGLE=aus, EIN
-        PGM.DIALOG.PROG.EDIT.FRAME.TITLE= Bearbeite Programm
+        PGM.DIALOG.PROG.EDIT.FRAME.TITLE= Bearbeite Programm 
         PGM.DIALOG.PROG.EDIT.FREE.LABEL=Gib gesamten Speicher frei:
         PGM.DIALOG.PROG.EDIT.FREE.TOGGLE=aus, EIN
         PGM.DIALOG.PROG.EDIT.LAUNCH.BUTTON=Modifiziere
@@ -922,15 +928,15 @@
         PGM.DIALOG.PROG.EDIT.TONE.LABEL=Sound starten:
         PGM.DIALOG.THEMETOO.BUTTON.NO=Nie!
         PGM.DIALOG.THEMETOO.BUTTON.YES=Ja
-        PGM.DIALOG.THEMETOO.FRAME.TITLE= Hmmm. Noch etwas?
-        PGM.DIALOG.THEMETOO.MESSAGE=
+        PGM.DIALOG.THEMETOO.FRAME.TITLE= Hmmm. Noch etwas? 
+        PGM.DIALOG.THEMETOO.MESSAGE= 
 
-                +=Hey, die Sprache die Sie anwenden mîchten, mîchte
+                +=Hey, die Sprache die Sie anwenden mîchten, mîchte 
                 +=unbedingt ein anderes Thema verwenden.
                 +=
                 +=0;Wollen Sie also zum Thema %0 wechseln?
 
-        PGM.HELP.FRAME.TITLE=0; Hilfe Åber "%0"
+        PGM.HELP.FRAME.TITLE=0; Hilfe Åber "%0" 
         PGM.MENU.TEXT.EMPTY=
         PGM.MENU.TEXT.UNDESCRIBED=Unbenanntes MenÅ
         PGM.MENU.TEXT.UNNAMED=kein Name
@@ -938,14 +944,14 @@
         PGM.MENUS.CLOCK.DATE=0[Z4],1{Null,Jan,Feb,MÑr,Apr,Mai,Jun,Jul,Aug,Sep,Okt,Nov,Dez},2,3{Son,Mon,Die,Mit,Don,Frei,Sam};%3 %1 %2, %0
         PGM.MENUS.CLOCK.TIME=0[Z2],1[L2],2[Z2],3[Z2],4{am,pm};%1:%2:%3 %4
         PGM.MENUS.LABEL=VerfÅgbare MenÅs:
-        PGM.MENUS.MENUS.COLUMN.NONE=
+        PGM.MENUS.MENUS.COLUMN.NONE= 
         PGM.MENUS.SEARCH.LABEL= Finde>
         PGM.PROGRAMS.BUTTON.EDIT=Bearbeite
         PGM.PROGRAMS.BUTTON.HELP=Hilfe
         PGM.PROGRAMS.BUTTON.QUIT=Beende
         PGM.PROGRAMS.BUTTON.RUN=FÅhre aus
         PGM.PROGRAMS.BUTTON.SEARCH=Suche
-        PGM.PROGRAMS.FRAME.TITLE= Program Manager Eternity
+        PGM.PROGRAMS.FRAME.TITLE= Program Manager Eternity 
         PGM.PROGRAMS.POPUP.EDITMENU.BTN.CONFIG=Config Einstellungen...
         PGM.PROGRAMS.POPUP.EDITMENU.BTN.MENU.ADD=FÅge MenÅ hinzu...
         PGM.PROGRAMS.POPUP.EDITMENU.BTN.MENU.DELETE=Lîsche MenÅ...
@@ -956,6 +962,6 @@
         PGM.PROGRAMS.POPUP.EDITMENU.BTN.PROG.EDIT=Bearbeite Programm...
         PGM.PROGRAMS.POPUP.EDITMENU.BTN.PROG.MOVE=Verschiebe Programm...
         PGM.PROGRAMS.POPUP.EDITMENU.FRAME.TITLE=
-        PGM.PROGRAMS.PROGRAMS.COLUMN.NONE=
+        PGM.PROGRAMS.PROGRAMS.COLUMN.NONE= 
         PGM.PROGRAMS.TITLE.LABEL=MenÅtitel:
         PGM.TITLE.SAM_I_AM=0[Z4,X3.2],1,2[Z2];Version %1/%2/%0
