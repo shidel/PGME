@@ -293,6 +293,7 @@ goto DoneMake
 
     if exist FR-INST.LNG move /y FR-INST.LNG INSTALL\
     if exist TR-INST.LNG move /y TR-INST.LNG INSTALL\
+    if exist DE-INST.LNG move /y DE-INST.LNG INSTALL\
 
     qresfile /a /m /f ..\install\install.exe /i pgme.exe /i eternity.bin
     qresfile /m /f ..\install\install.exe /i efntdsgn.exe  /i *.scr /i *.txt
