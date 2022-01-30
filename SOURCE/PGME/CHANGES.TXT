@@ -2,6 +2,8 @@
 
 Next release
 
+	Fix label for Sound effects toggle using wrong component id.
+	Build script improvements and fixes.
 	Including updated and additional language translations, fonts and themes.
 
 2021-08-20

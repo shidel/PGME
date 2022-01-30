@@ -119,6 +119,8 @@ call %SELF% make Collect
 if errorlevel 1 goto ErrorExit
 if "%UPXPGME%" == "" goto NoUPXFiles
 upx --8086 bin\*.exe bin\*.bin bin\*.scr
+rem ignore UPX errors
+verrlvl 0
 :NoUPXFiles
 if errorlevel 1 goto ErrorExit
 call %SELF% make Installer
@@ -482,8 +484,8 @@ goto DoneMakeSub
     if exist FAILED goto ErrorMAKESUB
     call ..\%SELF% COMPILE QBIOS QFILES
     if exist FAILED goto ErrorMAKESUB
-    call ..\%SELF% COMPILE QDIR QVESA
-    if exist FAILED goto ErrorMAKESUB
+    rem call ..\%SELF% COMPILE QDIR QVESA
+    rem if exist FAILED goto ErrorMAKESUB
     call ..\%SELF% COMPILE QCONTROL QDIRCNTL QFILEDLG QLOG
     if exist FAILED goto ErrorMAKESUB
     call ..\%SELF% COMPILE QMORE QSCRNSVR QSPEAKER QTIMER

@@ -99,7 +99,7 @@ begin
 	end;
 	Bounds(4, B.Top + 2, Self.Width - 9, 1, B);
 	TextAttr := ColorLabel;
-	with PLabel(New(PLabel, Create(@Self, 'SOUND.TOGGLE')))^ do begin
+	with PLabel(New(PLabel, Create(@Self, 'SOUND.LABEL')))^ do begin
 		T := B;
 		T.Width := T.Width - 12;
 		SetBounds(T);
