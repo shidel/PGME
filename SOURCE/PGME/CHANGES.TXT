@@ -2,10 +2,7 @@
 
 Next release
 
-2022-01-30
-
 	Including updated and additional language translations, fonts and themes.
-
 
 2021-08-20
 
