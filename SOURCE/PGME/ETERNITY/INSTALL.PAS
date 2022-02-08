@@ -23,7 +23,7 @@ close the program. There are several other ways to accomplish the same result, b
 this is one of the easiest. }
 
 uses QCrt, QCLass, QStrings, QFmtStr, QFiles, QDos, QErrors, QObjects,
-    QControls,	QFileDlg, QResrc;
+    QControls,	QFileDlg, QResrc, QPatches;
 
 {$I LICENSE.INC}
 

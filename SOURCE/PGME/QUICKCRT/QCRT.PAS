@@ -729,6 +729,7 @@ interface
 
   procedure SetMachineInfo;
 
+  procedure RestoreInt15Patch;
 
 implementation
 {$F+}
@@ -4464,6 +4465,12 @@ begin
     else if SearchRAM($f000, $2000, 'VMWARE VIRTUAL PLATFORM') then
         SystemPlatform.L := $40;
 end;
+
+procedure RestoreInt15Patch;
+begin
+   SetIntVec($15, @OldInt15);
+end;
+
 
 begin
     SetMachineInfo;

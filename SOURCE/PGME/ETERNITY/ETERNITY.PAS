@@ -12,7 +12,7 @@
 program Program_Manager_Eternity_Main_Application; { X Series }
 
 uses QCrt, QErrors, QStrings, QDos, QFiles, QClass, QObjects, QControls, QFmtStr, PGM_Call,
-	EConst, ECache, EDialogs, EPGM;
+	EConst, ECache, EDialogs, EPGM, QPatches;
 
 	procedure RunEternity;
 	begin

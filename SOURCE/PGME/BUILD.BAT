@@ -483,7 +483,7 @@ goto DoneMakeSub
 
     call ..\%SELF% COMPILE QOBJECTS QCRT QSTRINGS QERRORS QDOS
     if exist FAILED goto ErrorMAKESUB
-    call ..\%SELF% COMPILE QBIOS QFILES
+    call ..\%SELF% COMPILE QPATCHES QBIOS QFILES
     if exist FAILED goto ErrorMAKESUB
     rem call ..\%SELF% COMPILE QDIR QVESA
     rem if exist FAILED goto ErrorMAKESUB
