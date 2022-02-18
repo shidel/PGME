@@ -16,9 +16,9 @@ interface
 
 implementation
 
-	uses QCrt, QDos, QStrings;
+{	uses QCrt, QDos, QStrings; }
 
 begin
-    if (UCase(GetEnv('LANG')) <> 'EN') and (UCase(GetEnv('LANG')) <> '') then
-    	RestoreInt15Patch;
+ {   if (UCase(GetEnv('LANG')) <> 'EN') and (UCase(GetEnv('LANG')) <> '') then
+    	RestoreInt15Patch; }
 end.

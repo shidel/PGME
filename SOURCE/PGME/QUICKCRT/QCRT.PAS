@@ -1789,12 +1789,14 @@ end;
       INC  SysReqBreak
     @Bye:
       POP  DS
+      MOV  AX, 0
       POPF
+      CLC
       IRET
     @Done:
       POP  DS
-      CALL DWORD PTR CS:[OFFSET SysReqPtr]
-      IRET
+      POPF
+      JMP DWORD PTR CS:[OFFSET SysReqPtr]
     end;
 
 (* New Interrupt 1B *)

@@ -2,6 +2,9 @@
 
 Next release
 
+	Found issue causing double keypresses, removed work-around. Returned flag
+		from interrupt 15 hook was not being set/cleared.
+
 2022-02-08
 
 	Work-around for double keypresses under some VMs when internation keyboard

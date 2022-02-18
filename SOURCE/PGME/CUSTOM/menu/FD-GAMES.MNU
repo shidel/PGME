@@ -37,6 +37,18 @@
         TITLE.GERMAN=Jenseits der Titanic (Textabenteuer)
         TONE=
 
+[BLKDROP]
+        CLASS=PROGRAM
+        FILE=C:\GAMES\BLKDROP\BLKDROP.EXE
+        GROUP=FD-GAMES
+        HIDE=AUTO
+        TITLE=BlockDrop
+        TITLE.EN_US=BlockDrop
+        TITLE.FRENCH=BlockDrop
+        TITLE.TURKISH=BlockDrop
+        TONE=
+        WAIT=5
+
 [BOLITARE]
         CLASS=PROGRAM
         CPUCACHE=TRUE
@@ -246,6 +258,26 @@
         TITLE.FRENCH=FreeDOOM (Clone de DOOM)
         TITLE.TURKISH=FreeDOOM (DOOM Klonu)
         TITLE.GERMAN=FreeDOOM (DOOM Klon)
+        TONE=
+        WAIT=5
+
+[FRDMDPH1]
+        CLASS=PROGRAM
+        FILE=C:\GAMES\FREEDOOM\PHASE1\SMMU.EXE
+        GROUP=FD-GAMES
+        HIDE=AUTO
+        TITLE=FreeDOOM, Phase 1
+        TITLE.EN_US=FreeDOOM, Phase 1
+        TONE=
+        WAIT=5
+
+[FRDMDPH2]
+        CLASS=PROGRAM
+        FILE=C:\GAMES\FREEDOOM\PHASE2\SMMU.EXE
+        GROUP=FD-GAMES
+        HIDE=AUTO
+        TITLE=FreeDOOM, Phase 2
+        TITLE.EN_US=FreeDOOM, Phase 2
         TONE=
         WAIT=5
 
@@ -460,6 +492,18 @@
         TITLE.TURKISH=row4t: peüpeüe dîrt
         TITLE.GERMAN=row4t: Vier in einer Reihe
         TONE=
+
+[SAYSWHO]
+        CLASS=PROGRAM
+        FILE=C:\GAMES\SAYSWHO\SAYSWHO.EXE
+        GROUP=FD-GAMES
+        HIDE=AUTO
+        TITLE=Says Who (a memory game)
+        TITLE.EN_US=Says Who (a memory game)
+        TITLE.FRENCH=Says Who (un jeu de mÇmoire)
+        TITLE.TURKISH=Says Who (bir hafçza oyunu)
+        TONE=
+        WAIT=5
 
 [SMLLTTRR]
         CLASS=PROGRAM
