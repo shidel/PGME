@@ -5,7 +5,7 @@
         FILE.DATE=0[X3.2],1[L2],2[Z2];%1/%2/%0
         FILE.NONE=<none>
         FILE.TIME=0[Z2],1[L2],2[Z2],3[Z2],4{a,p};%1:%2%4
-        ID=GERMAN
+        ID=German
         MERGE=
         NAME=Deutsche Sprachdatei fÅr die PGME-Installation
         TYPE=LANGUAGE
@@ -229,14 +229,14 @@
 
 [STRINGS]
         INSTALLER.BROWSER.BUTTON.CANCEL=Abbrechen
-        INSTALLER.BROWSER.BUTTON.MAKEDIR=Erstelle Verz.
+        INSTALLER.BROWSER.BUTTON.MAKEDIR=Erstelle Verzeichnis
         INSTALLER.BROWSER.BUTTON.OK=Ok
-        INSTALLER.BROWSER.DIRECTORY.COLUMN.NONE=
-        INSTALLER.BROWSER.FRAME.TITLE= Verzeichn. wÑhlen
+        INSTALLER.BROWSER.DIRECTORY.COLUMN.NONE= 
+        INSTALLER.BROWSER.FRAME.TITLE= WÑhle Verzeichnis 
         INSTALLER.BROWSER.PATH.LIST.FRAME.TITLE=
-        INSTALLER.BROWSER.PATH.LIST.LIST.COLUMN.NONE=
+        INSTALLER.BROWSER.PATH.LIST.LIST.COLUMN.NONE= 
         INSTALLER.ERROR.EXIT=Ende
-        INSTALLER.ERROR.FRAME.TITLE= Oh nein!
+        INSTALLER.ERROR.FRAME.TITLE= Oh nein! 
         INSTALLER.ERROR.MESSAGE=0;
 
                 +=0;Ein "%0" Fehler ist aufgetreten.
@@ -250,7 +250,7 @@
         INSTALLER.EXIT.MESSAGE.LAUNCH=0; Er kann durch Eingabe von "%0" in der Kommandozeile gestartet werden.
         INSTALLER.HELP.FRAME.TITLE=0; Hilfe zu "%0"
         INSTALLER.INSTALL.DONE=Fertig.
-        INSTALLER.INSTALL.FRAME.TITLE= Installiere Eternity
+        INSTALLER.INSTALL.FRAME.TITLE= Installiere Eternity 
         INSTALLER.INSTALL.INSTALLING=
         INSTALLER.INSTALL.INSTALLING.COMPLETE=Fertig
         INSTALLER.INSTALL.INSTALLING.NAME=DATEINAME.EXE
@@ -266,15 +266,15 @@
                 +=kînnen Sie eine erhalten unter:
                 +=http://www.gnu.org/licenses/gpl-2.0.txt.
 
-        INSTALLER.OPTIONS.BROWSE=Suche
+        INSTALLER.OPTIONS.BROWSE=Browse
         INSTALLER.OPTIONS.FRAME.TITLE= Installationsoptionen
         INSTALLER.OPTIONS.INSTALL=Installiere
         INSTALLER.OPTIONS.LAUNCH=Lage des PGM.BAT Starters im PFAD:
         INSTALLER.OPTIONS.LAUNCH.DROP.LIST.FRAME.TITLE=
-        INSTALLER.OPTIONS.LAUNCH.DROP.LIST.LIST.COLUMN.NONE=
+        INSTALLER.OPTIONS.LAUNCH.DROP.LIST.LIST.COLUMN.NONE= 
         INSTALLER.OPTIONS.PATH=Zielpfad der Installation:
         INSTALLER.THANKS.EXIT=Ende
-        INSTALLER.THANKS.FRAME.TITLE= Vielen Dank!
+        INSTALLER.THANKS.FRAME.TITLE= Vielen Dank! 
         INSTALLER.THANKS.MESSAGE=
 
                 +=Die Installation ist jetzt vollstÑndig.

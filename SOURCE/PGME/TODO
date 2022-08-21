@@ -20,19 +20,20 @@ Bugs and Known Issues:
 
 Maybe Eventual Improvements:
 
-	Convert PMGE Launcher to assembly.
-	General perfomance enhancements.
-	Restore all paths on exit.
-	Do QDETUNE.
-	Import of PMI from within PGME.
-	Add prompting and parsing for custom options in menu launchers.
-	Add PGME Value as Formatting to Options like %E for eternity path...
-	    (for improved program launching flexibility)
-	Change searching to search programs in order of appearance, not order of ID.
-	Ticker style viewing of really long text when selected or mouse is over.
+    Convert PMGE Launcher to assembly.
+    General perfomance enhancements.
+    Restore all paths on exit.
+    Do QDETUNE.
+    Import of PMI from within PGME.
+    Add prompting and parsing for custom options in menu launchers.
+    Add PGME Value as Formatting to Options like %E for eternity path...
+        (for improved program launching flexibility)
+    Change searching to search programs in order of appearance, not order of ID.
+    Ticker style viewing of really long text when selected or mouse is over.
 
 Todo Someday:
 
+    Rework mouse handler draw/undraw in QCrt to eliminate flickering.
     Improve memory management and ETERNITY memory usage. (It wastes a lot)
 	Add Auto-detect of CD/DVD insertion.
 	Add more custom themes.

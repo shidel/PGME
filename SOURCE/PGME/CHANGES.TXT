@@ -1,17 +1,22 @@
 ### The Program Manager Eternity What's Up File
 
-Next release
+Next Release
 
-	Found issue causing double keypresses, removed work-around. Returned flag
-		from interrupt 15 hook was not being set/cleared.
+2022-08-21
+
+    Reduced mouse flicker a little. (getting rid of it completely will require
+        changing how the QCrt unit handles it. More work than I want to do now)
+    Improved compatibility with non-CTMouse drivers. (Like MS Mouse Driver)
+    Found issue causing double keypresses, removed work-around. Returned flag
+        from interrupt 15 hook was not being set/cleared.
 
 2022-02-08
 
-	Work-around for double keypresses under some VMs when internation keyboard
-		driver is loaded.
-	Fix label for Sound effects toggle using wrong component id.
-	Build script improvements and fixes.
-	Including updated and additional language translations, fonts and themes.
+    Work-around for double keypresses under some VMs when internation keyboard
+        driver is loaded.
+    Fix label for Sound effects toggle using wrong component id.
+    Build script improvements and fixes.
+    Including updated and additional language translations, fonts and themes.
 
 2021-08-20
 
@@ -63,21 +68,22 @@ Next release
 	Some grammer and spelling corrections.
 
 2015-07-26
- 	Fixed non-FreeDOS/DosBox "Path Not Found" compatibility issue.
-	Some grammer and spelling corrections.
+
+    Fixed non-FreeDOS/DosBox "Path Not Found" compatibility issue.
+    Some grammer and spelling corrections.
 
 2015-07-09
 
-	Added Whatsnew.txt (this file)
-	QScroll Added Line to separate multiple files when loading more than one.
-	QScroll Added command line switch /S- to set smooth scrolling to off.
-		(/S and /S+ turn it on which is the default for now);
-	QScroll Pressing "S" key toggles smooth scrolling.
-	QScroll Exit on mouse click.
-	QScroll Scroll by mouse movement.
-	Improved compatibility for keyboards without insert lock key.
+    Added Whatsnew.txt (this file)
+    QScroll Added Line to separate multiple files when loading more than one.
+    QScroll Added command line switch /S- to set smooth scrolling to off.
+        (/S and /S+ turn it on which is the default for now);
+    QScroll Pressing "S" key toggles smooth scrolling.
+    QScroll Exit on mouse click.
+    QScroll Scroll by mouse movement.
+    Improved compatibility for keyboards without insert lock key.
 
 2015-07-05
 
-	Initial Beta Version. Mostly Functional.
+    Initial Beta Version. Mostly Functional.
 

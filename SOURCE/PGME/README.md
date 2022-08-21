@@ -6,9 +6,37 @@ GNU General Public License, version 2.0
 
 This version of **_Program Manager Eternity_** and related files are released under the GNU GPL v2.0.
 
-## What's Up
+## Contributing language translations, document corrections, themes, etc.
+
+Please do not submit language translations, menu updates, document revisions,
+font or theme files directly to this project. Those files *(if any)* that may
+be in this source tree are **NOT** included in the software releases. If any
+exist in this project, they are for my development purposes only. When a
+version or release of this project done, all those files are pulled directly
+from their actual home, the [PGME](https://github.com/shidel/fd-nls/pgme)
+directory in the [FD-NLS](https://github.com/shidel/fd-nls) translations
+project.
+
+If you wish to provide an additional translations, make corrections to an
+existing files, provide new fonts, etc. please issue a pull request or submit
+them to the [FD-NLS](https://github.com/shidel/fd-nls) translations project.## What's Up
+
+## Updates, changes and improvements
 
 ### Next release
+
+### 2022-08-21
+
+* Reduced mouse flicker a little. (getting rid of it completely will require changing how the QCrt unit handles it. More work than I want to do now)
+* Improved compatibility with non-CTMouse drivers. (Like MS Mouse Driver)
+* Found issue causing double keypresses, removed work-around. Returned flag from interrupt 15 hook was not being set/cleared.
+
+### 2022-02-08
+
+* Work-around for double keypresses under some VMs when internation keyboard driver is loaded.
+* Fix label for Sound effects toggle using wrong component id.
+* Build script improvements and fixes.
+* Including updated and additional language translations, fonts and themes.
 
 ### 2021-08-20
 

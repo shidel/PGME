@@ -1,4 +1,4 @@
-{ Copyright 2015-2021 Jerome Shidel }
+{ Copyright 2015-2022 Jerome Shidel }
 
 
 (*
@@ -8,7 +8,7 @@
 
 *)
 
-unit QCrt; { QuickCRT, version 8.40 }
+unit QCrt; { QuickCRT, version 8.41 }
 (*
 	QCrt is the text mode CRT video unit of QuickCrt.
 	When version 9+ of QCrt is begun, it will be removed from the QuickCrt project
@@ -1269,15 +1269,23 @@ end;
 (* Internal Mouse Routines *)
   function ResetMouse(var Found : boolean; var Buttons : integer) : Boolean; assembler;
     asm
-      MOV   AX, 0
+      XOR   AX, AX
       INT   33h
-      CMP   AX, 0
-      JE    @NoMouse
-      MOV   AL, True
+      MOV   BX, AX
+      TEST  AX, AX
+      JNZ   @MousePresent
+      MOV   AL, False
+      XOR   BX, BX
       JMP   @Done
-    @NoMouse:
-      MOV  BX, 0
-      MOV  AL, False
+    @MousePresent:
+      MOV   AX, 1
+      CMP   BX, AX
+      JBE   @Done
+      CMP   BX, $FFFF
+      JNE   @NotTwoButton
+      MOV   BX, 2
+    @NotTwoButton:
+      MOV   AL, True
     @Done:
       LES   DI, Buttons
       MOV   ES:[DI], BX
@@ -1360,11 +1368,14 @@ end;
       MOV  ES:[DI], CX
     end;
 
+  const
+      LastMouseX : word = 0;
+      LastMouseY : word = 0;
+
+
   procedure MouseHandler ( Flags, CS, IP, AX, BX, CX, DX, SI,
     DI, DS, ES, BP : word); interrupt;
     const
-      LastX : word = 0;
-      LastY : word = 0;
       LastB : word = 0;
       LastC : array[0..15] of LongInt = (0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0);
     var
@@ -1372,6 +1383,10 @@ end;
       I     : byte;
       PutIt : boolean;
     begin
+    	asm
+    		pushf
+    		cli
+    	end;
       {
         AX = Event Flag
         BX = Button State
@@ -1387,7 +1402,7 @@ end;
       Event.Buttons     := BX;
       Event.Where.X     := (CX shr Lo(MouseShift)) + 1;
       Event.Where.Y     := (DX shr Hi(MouseShift)) + 1;
-      if (Event.Where.X <> LastX) or (Event.Where.Y <> LastY) then
+      if (Event.Where.X <> LastMouseX) or (Event.Where.Y <> LastMouseY) then
         begin
           PutIt      := True;
           Event.What := Event.What or evMouseMove;
@@ -1407,11 +1422,12 @@ end;
                 end;
               end;
         end;
-      LastX := Event.Where.X;
-      LastY := Event.Where.Y;
+      LastMouseX := Event.Where.X;
+      LastMouseY := Event.Where.Y;
       LastB := Event.Buttons;
       if PutIt then PutEvent(Event);
       asm
+      	popf
         MOV  AX, 0Bh
         INT  33h
         MOV  SP,BP
@@ -1626,9 +1642,23 @@ end;
   	PreMouse : boolean = false;
 
   procedure PreWriteMouseProc; far;
+  var
+  	MX, MY, B : integer;
     begin
       PreMouse := MouseAvail and (VideoPtr = OrigVideoPtr);
-      if PreMouse then HideMouse;
+      if PreMouse then begin
+      	      asm
+      		 pushf
+      		 cli
+              end;
+	      PreMouse :=
+	         (LastMouseX >= Lo(WindMin)) and (LastMouseX <= Lo(WindMax)) and
+	         (LastMouseY >= Hi(WindMin)) and (LastMouseY <= Hi(WindMax));
+	      if PreMouse then HideMouse;
+	      asm
+	      	 popf
+	      end;
+      end;
       PreWriteProc;
     end;
 
@@ -4476,5 +4506,5 @@ end;
 
 begin
     SetMachineInfo;
-	InitQCrtUnit;
+    InitQCrtUnit;
 end.

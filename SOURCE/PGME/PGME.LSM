@@ -10,5 +10,5 @@ Primary-site:   http://sourceforge.net/projects/pgme/
 Original-site:  http://up.lod.bz/PGME/
 Platforms:      DOS
 Copying-policy: GNU General Public License, Version 2
-Changes:        Bug fix and NLS improvements
+Changes:        Improved mouse handler compatibility with various other non-CTMouse drivers.
 End
