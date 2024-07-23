@@ -191,13 +191,16 @@ interface
     evMouseUp   = $0002; { Mouse button released }
     evMouseMove = $0004; { Mouse changed location }
     evMouseAuto = $0008; { Periodic event while mouse button held down }
-    evMouse     = $000F; { Mouse event }
+    evMouseWheel= $0800; { Mouse Wheel Event}
+    evMouse     = $080F; { Mouse event }
+    
     evKeyDown   = $0010; { Key pressed }
     evKeyboard  = $0010; { Keyboard event }
     evCommand   = $0100; { Command event }
     evBroadcast = $0200; { Broadcast event }
     evSystem    = $0400; { System Event }
-    evMessage   = $FF00; { Message (command, broadcast, or user-defined) event }
+    
+    evMessage   = $F700; { Message (command, broadcast, or user-defined) event }
 
   { Predefined System Event Commands }
     cmNone          = $0000;
@@ -425,6 +428,7 @@ interface
         evNothing: ();
         evMouse: (
           Buttons: Byte;
+          Wheel : ShortInt;
           Double: Boolean;
           Where: TPoint);
         evKeyDown: (
@@ -507,6 +511,7 @@ interface
     UserFontSize: byte;
     UserFontPtr: Pointer;
     MouseAvail: Boolean;
+    MouseWheel: Boolean;
     MouseShift: word;
     MouseDouble: LongInt;
     MouseHomeX : integer;
@@ -547,6 +552,7 @@ interface
     UserFontSize: byte;     { Height of user defined font }
     UserFontPtr: Pointer;   { Pointer to user defined font }
     MouseAvail: Boolean;    { Enables mouse functions and cursor }
+    MouseWheel: Boolean;    { Enables mouse scroll wheel support }
     MouseButtons: integer;  { Number of mouse buttons }
     MouseShift: word;       { Value shift mouse for Screen Cooridinates }
     MouseDouble: LongInt;   { Mouse Double Click Speed }
@@ -564,7 +570,7 @@ interface
 	MinMemAvail, MinMaxAvail : LongInt;    { Lowest amount of memory available during execution }
 	KeyboardIgnore : word;     { Keyboard status flags to ignore }
 	SystemPlatform : dword;    { Sytem hardware flags }
-
+	
 { Interface procedures }
   procedure AssignCrt(var F : Text);
 
@@ -1291,8 +1297,19 @@ end;
       MOV   ES:[DI], BX
       LES   DI, Found
       MOV   ES:[DI], AL
+      PUSH  AX
+      MOV     MouseWheel, FALSE 
+      MOV     AX, $0011
+      INT     33h
+      CMP     AX, $574D
+      JNE     @NotSupported
+      TEST    CX, 1
+      JZ      @NotSupported
+      MOV     MouseWheel, True
+    @NotSupported:      
+      POP   AX
     end;
-
+    
   procedure ShowMouse; assembler;
     asm
       MOV  AX, 1
@@ -1377,7 +1394,7 @@ end;
     DI, DS, ES, BP : word); interrupt;
     const
       LastB : word = 0;
-      LastC : array[0..15] of LongInt = (0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0);
+      LastC : array[0..7] of LongInt = (0,0,0,0,0,0,0,0);
     var
       Event : TEvent;
       I     : byte;
@@ -1399,9 +1416,18 @@ end;
       PutIt             := False;
       Event.What        := evNothing;
       Event.Double      := False;
-      Event.Buttons     := BX;
+      Event.Buttons     := Lo(BX);
+      if MouseWheel then
+          Event.Wheel       := ShortInt(Hi(BX))
+      else
+          Event.Wheel       := 0;
       Event.Where.X     := (CX shr Lo(MouseShift)) + 1;
       Event.Where.Y     := (DX shr Hi(MouseShift)) + 1;
+      if (Event.Wheel <> 0) then
+        begin
+          PutIt      := True;
+          Event.What := Event.What or evMouseWheel;
+        end;
       if (Event.Where.X <> LastMouseX) or (Event.Where.Y <> LastMouseY) then
         begin
           PutIt      := True;
@@ -1410,7 +1436,7 @@ end;
       if (Event.Buttons <> LastB) then
         begin
           PutIt := True;
-          for I := 0 to 15 do
+          for I := 0 to 7 do
             if LastB and (1 shl I) <> Event.Buttons and (1 shl I) then
               case Event.Buttons and (1 shl I) = (1 shl I) of
                 False : Event.What := Event.What or evMouseUp;
@@ -1426,6 +1452,7 @@ end;
       LastMouseY := Event.Where.Y;
       LastB := Event.Buttons;
       if PutIt then PutEvent(Event);
+      
       asm
       	popf
         MOV  AX, 0Bh
@@ -1925,6 +1952,7 @@ end;
       Check101      := (Mem[Seg0040:$0096]) and $10 = $10;
       CheckTab 		:= False;
       MouseAvail    := False;
+      MouseWheel    := False;
       MouseButtons  := 0;
       MouseShift    := $0303;
       MouseDouble   := DefaultDoubleClick;
@@ -4362,6 +4390,7 @@ end;
     ASettings.UserFontSize := UserFontSize;
     ASettings.UserFontPtr := UserFontPtr;
     ASettings.MouseAvail := MouseAvail;
+    ASettings.MouseWheel := MouseWheel;
     ASettings.MouseShift := MouseShift;
     ASettings.MouseDouble := MouseDouble;
     ASettings.MouseHomeX := MouseHomeX;
@@ -4404,6 +4433,7 @@ end;
     UserFontSize := ASettings.UserFontSize;
     UserFontPtr := ASettings.UserFontPtr;
     MouseAvail := ASettings.MouseAvail;
+    MouseWheel := ASettings.MouseWheel;
     MouseShift := ASettings.MouseShift;
     MouseDouble := ASettings.MouseDouble;
     MouseHomeX := ASettings.MouseHomeX;

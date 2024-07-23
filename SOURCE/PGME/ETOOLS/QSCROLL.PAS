@@ -317,6 +317,14 @@ begin
 		GotoXY(1,Hi(ScreenMax)+1);
 		ClearEvent(E);
 		While E.What = evNothing do GetEvent(E);
+		if E.What and evMouseWheel = evMouseWheel then begin   
+            if E.Wheel < 0 then
+                MoveDown(ABS(E.Wheel))
+            else
+                MoveUp(ABS(E.Wheel));		    
+		    { E.What := E.What and (not evMouseWheel); }
+            ClearEvent(E);
+		end;
 		if E.What and evKeyboard <> evNothing then begin
 			if UCase(E.CharCode) = 'S' then begin
 				ClearEvent(E);
@@ -326,7 +334,7 @@ begin
 				ClearEvent(E);
 				SmoothUp := not SmoothUp;
 			end;
-		end else if E.What and evMouseMove <> evNothing then begin
+		end else if (E.What and evMouseMove <> evNothing) and (not MouseWheel) then begin
 			ClearEvent(E);
 			B := E.Where.Y - MouseHomeY;
 			SetMousePos(MouseHomeX, MouseHomeY);
@@ -407,10 +415,12 @@ end;
 begin
     Smooth := IsDOSBox or (not IsVirtual);
     SmoothUp := Smooth;
+
 	TurnMouseOff;
+	
 	if ParamCount = 0 then
 		ShowHelp
 	else
-		Viewer;
+		Viewer; 
 end.
 
