@@ -2,9 +2,11 @@
 
 Next Release
 
+2024-07-24
+
     Added auto switching for QScroll's scrolling between Wheel and Movement based on the 
         presence of scroll wheel support.
-    Added Scroll Wheel support to QScroll.
+    Added Mouse Wheel support. Wheel generates cmUp/cmDown Command Events.
     Improved compatibility when executing of some programs that have unusual command line 
         string requirements.
 

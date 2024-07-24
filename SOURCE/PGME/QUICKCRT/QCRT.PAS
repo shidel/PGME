@@ -191,8 +191,7 @@ interface
     evMouseUp   = $0002; { Mouse button released }
     evMouseMove = $0004; { Mouse changed location }
     evMouseAuto = $0008; { Periodic event while mouse button held down }
-    evMouseWheel= $0800; { Mouse Wheel Event}
-    evMouse     = $080F; { Mouse event }
+    evMouse     = $000F; { Mouse event }
     
     evKeyDown   = $0010; { Key pressed }
     evKeyboard  = $0010; { Keyboard event }
@@ -200,7 +199,7 @@ interface
     evBroadcast = $0200; { Broadcast event }
     evSystem    = $0400; { System Event }
     
-    evMessage   = $F700; { Message (command, broadcast, or user-defined) event }
+    evMessage   = $FF00; { Message (command, broadcast, or user-defined) event }
 
   { Predefined System Event Commands }
     cmNone          = $0000;
@@ -428,7 +427,6 @@ interface
         evNothing: ();
         evMouse: (
           Buttons: Byte;
-          Wheel : ShortInt;
           Double: Boolean;
           Where: TPoint);
         evKeyDown: (
@@ -1413,21 +1411,20 @@ end;
         DI = Y Movement
         DS = Mouse Driver Data Segment
       }
+      if MouseWheel then begin
+            if (ShortInt(Hi(BX)) < 0) then
+                PutCommand(cmUp, nil)
+            else
+            if (ShortInt(Hi(BX)) > 0) then
+                PutCommand(cmDown, nil);
+      end;            
+
       PutIt             := False;
       Event.What        := evNothing;
       Event.Double      := False;
       Event.Buttons     := Lo(BX);
-      if MouseWheel then
-          Event.Wheel       := ShortInt(Hi(BX))
-      else
-          Event.Wheel       := 0;
       Event.Where.X     := (CX shr Lo(MouseShift)) + 1;
       Event.Where.Y     := (DX shr Hi(MouseShift)) + 1;
-      if (Event.Wheel <> 0) then
-        begin
-          PutIt      := True;
-          Event.What := Event.What or evMouseWheel;
-        end;
       if (Event.Where.X <> LastMouseX) or (Event.Where.Y <> LastMouseY) then
         begin
           PutIt      := True;

@@ -1,4 +1,4 @@
-{ Copyright 2015-2021 Jerome Shidel }
+{ Copyright 2015-2024 Jerome Shidel }
 
 (*
 
@@ -983,8 +983,9 @@ uses QStrings;
   		Command := Command + #0;
   	P.EnvSeg := 0;
   	P.CmdLn := @P.Params;
-  	P.Params := Params + #$0d;
-  	DoExec ($00, Command, P); { Load and Exec }
+  	P.Params := Params + #$0d + #0;
+    Dec(P.Params[0],2);
+ 	DoExec ($00, Command, P); { Load and Exec }
   	(*
   	DoExec ($03, Command[1], PSP); { Load Only }
   	DoExec ($04, Command[1], PSP); { Load and Spawn }

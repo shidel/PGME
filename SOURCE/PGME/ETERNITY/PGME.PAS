@@ -1,4 +1,4 @@
-{ Copyright 2015-2021 Jerome Shidel }
+{ Copyright 2015-2024 Jerome Shidel }
 
 (*
 
@@ -156,7 +156,8 @@ begin
   		Command := Command + #0;
   	ParamBlock.EnvSeg := 0;
   	ParamBlock.CmdLn := @ParamBlock.Params;
-  	ParamBlock.Params := Params + #$0d;
+  	ParamBlock.Params := Params + #$0d + #0;
+    Dec(ParamBlock.Params[0],2);
   	DoExec ($00, Command, ParamBlock); { Load and Exec }
 end;
 
@@ -200,4 +201,5 @@ begin
 			Halt(DosError);
 		end;
 	until (not Buffer.S);
-end.
+end.
+
