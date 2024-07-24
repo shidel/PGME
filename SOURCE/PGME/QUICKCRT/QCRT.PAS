@@ -1,4 +1,4 @@
-{ Copyright 2015-2022 Jerome Shidel }
+{ Copyright 2015-2024 Jerome Shidel }
 
 
 (*
@@ -8,7 +8,7 @@
 
 *)
 
-unit QCrt; { QuickCRT, version 8.41 }
+unit QCrt; { QuickCRT, version 8.42 }
 (*
 	QCrt is the text mode CRT video unit of QuickCrt.
 	When version 9+ of QCrt is begun, it will be removed from the QuickCrt project

@@ -2,7 +2,7 @@
 
 Next Release
 
-    Added auto switching for QScroll'd scrolling between Wheel and Movement based on the 
+    Added auto switching for QScroll's scrolling between Wheel and Movement based on the 
         presence of scroll wheel support.
     Added Scroll Wheel support to QScroll.
     Improved compatibility when executing of some programs that have unusual command line 
