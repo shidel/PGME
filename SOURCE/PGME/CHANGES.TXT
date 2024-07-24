@@ -1,5 +1,7 @@
 ### The Program Manager Eternity What's Up File
 
+As always, be sure to backup your Menus and Settings before updating PGME!
+
 Next Release
 
 2024-07-24

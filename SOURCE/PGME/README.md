@@ -23,7 +23,13 @@ them to the [FD-NLS](https://github.com/shidel/fd-nls) translations project.## W
 
 ## Updates, changes and improvements
 
-### Next release
+**_As always, be sure to backup your Menus and Settings before updating PGME!_**
+
+### 2024-07-24
+
+* Added auto switching for QScroll's scrolling between Wheel and Movement based on the presence of scroll wheel support.
+* Added Mouse Wheel support. Wheel generates cmUp/cmDown Command Events.
+* Improved compatibility when executing of some programs that have unusual command line string requirements.
 
 ### 2022-08-21
 
