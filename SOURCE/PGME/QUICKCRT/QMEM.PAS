@@ -16,7 +16,7 @@ interface
 	
 const
     XMS_Present     : Boolean = false;
-	XMS_Result      : Word = 0;
+	MEM_Result      : Word = 0;
 
     function  XMS_Avail : LongInt;                      { returns largest free block }
     function  XMS_GetMem(Size : LongInt) : Word;        { returns 0xffff if failed }
@@ -26,7 +26,12 @@ const
     function  UMB_Avail : LongInt;                      { returns largest free UMB }
     function  UMB_GetMem(Size :LongInt) : word;         { returns segment, or 0xffff }
     procedure UMB_FreeMem(Segment : word);              { releases UMB block }
-    
+
+    { DOS memory is not much use under Pascal when you could use the heap }
+    function  DOS_Avail : LongInt;                      { returns largest free lower }
+    function  DOS_GetMem(Size :LongInt) : word;         { returns segment, or 0xffff }
+    procedure DOS_FreeMem(Segment : word);              { releases lower block }
+  
 {$UNDEF INTERFACE}
 
 implementation
@@ -50,12 +55,14 @@ Excluded XMS functions of limited general program usage:
     04, Disable Global A20
     05, Enable Local A20
     06, Disable Local A20
-    07
+    07, Query A20
     08, (only total XMS available)
+    0b, Move XMS Mlock
     0c, Lock XMS Handle
     0d, Unlock XMS Handle
     0e, (only Get XMS Lock state, Available Handles)
     0f, Resize XMS Handle
+    12, Resize UMB Segment
 
 Note:
     XMS memory is in 1 Kilobyte (1024 byte) blocks.     Request Maximum of 63   Mb
@@ -95,7 +102,7 @@ asm
     xor         ax, ax
 @@Done:
     xor         bh, bh
-    mov         [XMS_Result], bx
+    mov         [MEM_Result], bx
     mov         dx, 1024
     mul         dx
 end;
@@ -124,7 +131,7 @@ asm
 @@ValueReady:
 
     mov         dx, ax          { Size in KB }
-    mov         ah, $09         { Request Memory }
+    mov         ah, $09         { Request XMS Memory }
     call        [XMS_Driver]
     test        ax, ax          { 0=Failure, 1=Success}
     jz          @@Error
@@ -138,7 +145,7 @@ asm
     mov         ax, $ffff       { -1 }   
 @@Done:
     xor         bh, bh
-    mov         [XMS_Result], bx
+    mov         [MEM_Result], bx
 end;
 
 procedure XMS_FreeMem(Handle : Word); assembler;
@@ -159,7 +166,7 @@ asm
 @@Error:
 @@Done:
     xor         bh, bh
-    mov         [XMS_Result], bx
+    mov         [MEM_Result], bx
 
 end;
 
@@ -185,7 +192,7 @@ asm
     xor         dx, dx
 @@Done:
     xor         bh, bh
-    mov         [XMS_Result], bx
+    mov         [MEM_Result], bx
 
 end;
 
@@ -208,17 +215,147 @@ asm
     xor         ax, ax
 @@Done:
     xor         bh, bh
-    mov         [XMS_Result], bx
+    mov         [MEM_Result], bx
     mov         dx, 16
     mul         dx
 end;
 
-function  UMB_GetMem(Size :LongInt) : word; assembler;
+function  UMB_GetMem(Size : LongInt) : word; assembler;
 asm
+    cmp         [XMS_Present], False
+    je          @@NoXMS
+    les         di, Size
+    mov         dx, es
+    mov         ax, di
+    cmp         dx, $000f          
+    jb          @@ValueConvert  { <= 15 is ok }
+    ja          @@ValueTooBig   { > 15 is no good }
+    cmp         ax, $fff0           
+    jbe         @@ValueConvert  { = 15 and <= 65520 is fine }
+@@ValueTooBig:
+    mov         bl, $08         { out of memory }
+    jmp         @@Error
+@@ValueConvert:
+    mov         cx, $0010      
+    div         cx              { divide dx:ax / 16 }
+    test        dx, dx
+    jz          @@ValueReady
+    inc         ax
+@@ValueReady:
+
+    mov         dx, ax          { Size in KB }
+    mov         ah, $10         { Request UMB Memory }
+    call        [XMS_Driver]
+    test        ax, ax          { 0=Failure, 1=Success}
+    jz          @@Error
+    mov         ax, bx          { save segment }
+    xor         bl, bl
+    jmp         @@Done
+
+@@NoXMS:
+    mov         bl, $01
+@@Error:
+    mov         ax, $ffff       { -1 }   
+@@Done:
+    xor         bh, bh
+    mov         [MEM_Result], bx
 end;
 
 procedure UMB_FreeMem(Segment : word); assembler;
 asm
+    cmp         [XMS_Present], False
+    je          @@NoXMS
+
+    mov         dx, Segment
+    mov         ah, $11         { Free Memory }
+    call        [XMS_Driver]
+    test        ax, ax          { 0=Failure, 1=Success}
+    jz          @@Error
+    xor         bl, bl
+    jmp         @@Done
+
+@@NoXMS:
+    mov         bl, $01
+@@Error:
+@@Done:
+    xor         bh, bh
+    mov         [MEM_Result], bx
+
+end;
+
+{ -------------------------------------------------------------------------- }
+
+function  DOS_Avail : LongInt; assembler;
+asm
+    mov         ah, $48         { Allocate DOS }
+    mov         bx, $ffff       { In paragraphs, so 1023 kb (way to big) }
+    int         $21   
+    xchg        bx, ax
+    cmp         bl, $08         { check for too big error }
+    jne         @@Error
+    xor         bl, bl          { clear error }
+    jmp         @@Done
+@@Error:
+    xor         ax, ax
+@@Done:
+    xor         bh, bh
+    mov         [MEM_Result], bx
+    mov         dx, 16
+    mul         dx
+end;
+
+function  DOS_GetMem(Size : LongInt) : word; assembler;
+asm
+    les         di, Size
+    mov         dx, es
+    mov         ax, di
+    cmp         dx, $000f          
+    jb          @@ValueConvert  { <= 15 is ok }
+    ja          @@ValueTooBig   { > 15 is no good }
+    cmp         ax, $fff0           
+    jbe         @@ValueConvert  { = 15 and <= 65520 is fine }
+@@ValueTooBig:
+    mov         bl, $08         { out of memory }
+    jmp         @@Error
+@@ValueConvert:
+    mov         cx, $0010      
+    div         cx              { divide dx:ax / 16 }
+    test        dx, dx
+    jz          @@ValueReady
+    inc         ax
+@@ValueReady:
+
+    mov         bx, ax          { Size in KB }
+    mov         ah, $48         { Request DOS Memory }
+    int         $21
+    jc          @@Error
+    xor         bl, bl
+    jmp         @@Done
+
+@@Error:
+    mov         bx, ax
+    mov         ax, $ffff       { -1 }   
+@@Done:
+    xor         bh, bh
+    mov         [MEM_Result], bx
+end;
+
+procedure DOS_FreeMem(Segment : word); assembler;
+asm
+    push        es
+    mov         es, Segment
+    mov         ah, $49         { Free Memory }
+    int         $21
+    jc          @@Error
+    xor         bl, bl
+    jmp         @@Done
+
+@@Error:
+    mov         bx, ax
+@@Done:
+    pop         es
+    xor         bh, bh
+    mov         [MEM_Result], bx
 end;
 
 { -------------------------------------------------------------------------- }
