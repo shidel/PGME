@@ -21,16 +21,18 @@ const
     function  XMS_Avail : LongInt;                      { returns largest free block }
     function  XMS_GetMem(Size : LongInt) : Word;        { returns 0xffff if failed }
     procedure XMS_FreeMem(Handle : Word);               { releases XMS memory}
-    function  XMS_MemSize(Handle : Word) : LongInt;     { returns size of XMS block }
+    function  XMS_MemSize(Handle : Word) : LongInt;     { returns size of block }
     
     function  UMB_Avail : LongInt;                      { returns largest free UMB }
     function  UMB_GetMem(Size :LongInt) : word;         { returns segment, or 0xffff }
     procedure UMB_FreeMem(Segment : word);              { releases UMB block }
+    function  UMB_MemSize(Segment : Word) : LongInt;    { returns size of block }
 
-    { DOS memory is not much use under Pascal when you could use the heap }
+    { Generally, DOS memory is not much use. You could probably use the heap instead. }
     function  DOS_Avail : LongInt;                      { returns largest free lower }
     function  DOS_GetMem(Size :LongInt) : word;         { returns segment, or 0xffff }
     procedure DOS_FreeMem(Segment : word);              { releases lower block }
+    function  DOS_MemSize(Segment : Word) : LongInt;    { returns size of block }
   
 {$UNDEF INTERFACE}
 
@@ -283,6 +285,11 @@ asm
 
 end;
 
+function  UMB_MemSize(Segment : Word) : LongInt;    
+begin
+    UMB_MemSize:=DOS_MemSize(Segment);
+end;
+
 { -------------------------------------------------------------------------- }
 
 function  DOS_Avail : LongInt; assembler;
@@ -356,6 +363,37 @@ asm
     pop         es
     xor         bh, bh
     mov         [MEM_Result], bx
+end;
+
+function DOS_MemSize(Segment : Word) : LongInt; assembler;
+asm
+    push        es
+    mov         ax, Segment
+    dec         ax
+    mov         es, ax
+    mov         al, $4d
+    cmp         [es:$0000], al
+    je          @@MCBChain
+    mov         al, $5d
+    cmp         [es:$0000], al
+    jne         @@Error
+@@MCBChain:
+    
+    mov         ax, [es:$0003]
+    mov         dx, $10
+    mul         dx
+    xor         bl, bl
+    jmp         @@Done
+
+@@Error:
+    mov         bl, $09         { invalid MCB }
+    xor         ax, ax
+    xor         dx, dx
+@@Done:
+    pop         es
+    xor         bh, bh
+    mov         [MEM_Result], bx
+
 end;
 
 { -------------------------------------------------------------------------- }
