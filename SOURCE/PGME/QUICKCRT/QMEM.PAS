@@ -7,7 +7,7 @@
 	
 *)
 
-unit QMem; { QuickCRT Memory Unit }
+unit QMem; { QuickCRT Very Low Level Memory Functions }
 {$I QCRT.DEF}
 
 interface
@@ -21,22 +21,26 @@ const
 	MEM_Result      : Word = 0;
 
     function  XMS_Avail : LongInt;                      { returns largest free block }
+    function  XMS_BlockSize(Value : LongInt) : word;    { returns size in blocks }
     function  XMS_GetMem(Size : LongInt) : Word;        { returns 0xffff if failed }
     procedure XMS_FreeMem(Handle : Word);               { release XMS memory block }
     function  XMS_MemSize(Handle : Word) : LongInt;     { returns size of block }
     
     function  UMB_Avail : LongInt;                      { returns largest free UMB }
+    function  UMB_BlockSize(Value : LongInt) : word;    { returns size in blocks }
     function  UMB_GetMem(Size :LongInt) : word;         { returns 0xffff if failed }
     procedure UMB_FreeMem(Segment : word);              { release UMB memory block }
     function  UMB_MemSize(Segment : Word) : LongInt;    { returns size of block }
 
     function  EMS_Avail : LongInt;                      { returns largest free EMS }
+    function  EMS_BlockSize(Value : LongInt) : word;    { returns size in blocks }
     function  EMS_GetMem(Size :LongInt) : word;         { returns 0xffff if failed }
     procedure EMS_FreeMem(Handle : word);               { releases EMS memory block }
     function  EMS_MemSize(Handle : Word) : LongInt;     { returns size of block }
 
     { Generally, DOS memory is not much use. You could probably use the heap instead. }
     function  DOS_Avail : LongInt;                      { returns largest free lower }
+    function  DOS_BlockSize(Value : LongInt) : word;    { returns size in blocks }
     function  DOS_GetMem(Size :LongInt) : word;         { returns 0xffff if failed }
     procedure DOS_FreeMem(Segment : word);              { release lower memory block }
     function  DOS_MemSize(Segment : Word) : LongInt;    { returns size of block }
@@ -51,7 +55,7 @@ type
         DstPtr      : Pointer;      { +12 }
     end;                            { =16 }
     
-    function XMS_Move(const MoveParams) : word;               { Send/Receive data to XMS }
+    function XMS_Move(const MoveParams) : word;         { Send/Receive data to XMS }
   
 {$UNDEF INTERFACE}
 
@@ -610,6 +614,47 @@ asm
     mov         [MEM_Result], bx
 
 end;
+
+{ -------------------------------------------------------------------------- }
+
+
+
+{ -------------------------------------------------------------------------- }
+
+function CalcBlockSize(Value, Block : Longint) : word;
+var
+    X : LongInt;
+begin
+    X := Value div Block;
+    if X * Block <> Value then Inc(X);
+    if (X >= 0) and (X <= $ffff) then
+        CalcBlockSize := X
+    else begin
+        CalcBlockSize := 0; 
+        MEM_Result := 1;
+    end;
+end;
+
+function  XMS_BlockSize(Value : LongInt) : word;
+begin
+    XMS_BlockSize:=CalcBlockSize(Value, 1024);
+end;
+
+function  EMS_BlockSize(Value : LongInt) : word;
+begin
+    EMS_BlockSize:=CalcBlockSize(Value, 16384);
+end;
+
+function  UMB_BlockSize(Value : LongInt) : word;
+begin
+    UMB_BlockSize:=CalcBlockSize(Value, 16);
+end;
+
+function  DOS_BlockSize(Value : LongInt) : word;
+begin
+    DOS_BlockSize:=CalcBlockSize(Value, 16);
+end;
+
 { -------------------------------------------------------------------------- }
 
 procedure ExitMemoryUnit; far;
