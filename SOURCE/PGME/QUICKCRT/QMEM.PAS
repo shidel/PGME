@@ -40,6 +40,18 @@ const
     function  DOS_GetMem(Size :LongInt) : word;         { returns 0xffff if failed }
     procedure DOS_FreeMem(Segment : word);              { release lower memory block }
     function  DOS_MemSize(Segment : Word) : LongInt;    { returns size of block }
+    
+    { Memory type specific types and functions }
+type
+    TXMS_MoveParams = record
+        Count       : LongInt;      { +0 }
+        SrcHandle   : Word;         { +4 }
+        SrcPtr      : Pointer;      { +6 }
+        DstHandle   : Word;         { +10 }
+        DstPtr      : Pointer;      { +12 }
+    end;                            { =16 }
+    
+    function XMS_Move(const MoveParams) : word;               { Send/Receive data to XMS }
   
 {$UNDEF INTERFACE}
 
@@ -80,6 +92,15 @@ Excluded EMS functions  that are of limited general program usage:
     40,Get Manager Status
     42,(only Get total page count)
     46,Get Version
+    47,Save Mapping Context
+    48,Restore Mapping Context
+    49,Get Port Addresses
+    4a,Get translation array
+    4b,Get Number of Handles
+    4d,Get Pages for all Handles
+    4e,Get or set page map
+    All EMS 4.0 functions
+    
 
 Note:
     XMS memory is in 1 Kilobyte (1024 byte) blocks.     Request Maximum of 63   Mb
@@ -560,6 +581,35 @@ asm
     mov         [MEM_Result], bx
 end;
 
+{ -------------------------------------------------------------------------- }
+
+function XMS_Move(const MoveParams) : word; assembler;
+asm
+    push        ds
+    push        es
+    cmp         [XMS_Present], False
+    je          @@NoXMS
+
+    mov         ah, $0b         
+    push        ds
+    pop         es
+    lds         si, MoveParams
+    call        [es:XMS_Driver]
+    test        ax, ax          
+    jz          @@Error
+    xor         bl, bl
+    jmp         @@Done
+
+@@NoXMS:
+    mov         bl, $01
+@@Error:
+@@Done:
+    pop         es
+    pop         ds
+    xor         bh, bh
+    mov         [MEM_Result], bx
+
+end;
 { -------------------------------------------------------------------------- }
 
 procedure ExitMemoryUnit; far;

@@ -60,7 +60,11 @@ end;
 
 procedure XMS_Memory_Test;
 var     
-    Handle : word;
+    Handle  : word;
+    Params  : TXMS_MoveParams;
+    Buffer  : array[0..1024] of word;
+    I       : word;
+    Verify  : boolean;
 begin
     WriteLn('XMS Memory Tests');
     if not XMS_Present then begin
@@ -73,7 +77,28 @@ begin
 	WriteLn('   Handle    ', Handle );
     if Handle <> $ffff then begin
         WriteLn('   Allocated ', XMS_MemSize(Handle), ' (', MEM_Result, ')');   
-        WriteLn('   Available ', XMS_Avail, ' (', MEM_Result, ')');   	
+        WriteLn('   Available ', XMS_Avail, ' (', MEM_Result, ')'); 
+        { Test XMS Move }
+        for I := Low(Buffer) to High(Buffer) do Buffer[I] := I;
+        Params.Count := Sizeof(Buffer);
+        Params.SrcHandle := 0;
+        Params.DstHandle := Handle;
+        Params.SrcPtr    := @Buffer;
+        Params.DstPtr    := Pointer(0);
+        XMS_Move(Params);
+        WriteLn('   Send      ', '(', MEM_Result, ')');   
+        FillChar(Buffer, Sizeof(Buffer), 0);
+        Params.SrcHandle := Handle;
+        Params.DstHandle := 0;
+        Params.SrcPtr    := Pointer(0);
+        Params.DstPtr    := @Buffer;
+        XMS_Move(Params);
+        WriteLn('   Receive   ', '(', MEM_Result, ')'); 
+        Verify := True;  
+        for I := Low(Buffer) to High(Buffer) do 
+            if Buffer[I] <> I then Verify := False;
+        WriteLn('   Verify    ', Verify); 
+        { Free Memory }  	
         XMS_FreeMem(Handle);
         WriteLn('   Release   ', '(', MEM_Result, ')');   
         WriteLn('   Available ', XMS_Avail, ' (', MEM_Result, ')');   	
@@ -109,10 +134,11 @@ begin
 {
     DOS_Memory_Test;
     UMB_Memory_Test;
-    XMS_Memory_Test;	
 }
-    WriteLn('!');
+    XMS_Memory_Test;	
+{
     EMS_Memory_Test;
+}
 end;
 
 begin	
