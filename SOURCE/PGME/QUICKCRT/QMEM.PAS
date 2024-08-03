@@ -55,19 +55,29 @@ type
         DstPtr      : Pointer;      { +12 }
     end;                            { =16 }
     
-    function XMS_Move(const MoveParams) : word;         { Send/Receive data to XMS }
+    procedure XMS_Move(const MoveParams);               { Send/Receive data to XMS }
+    
+type
+    TEMS_Page = array [0..16383] of byte;
+    PEMS_Page = ^TEMS_Page;
+    
+const
+    EMS_Page : array[0..3] of pointer = (nil, nil, nil, nil);
+    
+    procedure EMS_MapPage(Handle : Word;                { Change mapped EMS page }
+        Physical : Byte; Logical : Word ); 
   
 {$UNDEF INTERFACE}
 
 implementation
-
+   
 var
 	OldExitProc : Pointer;
 		
 const 
 	XMS_Driver      : Pointer = nil;
 	EMM_DEVICE_ID   : String[8] = 'EMMXXXX0';
-	EMS_Page_Frame  : word = $ffff;
+	EMS_Page_Frames : word = $ffff;
 
 {$DEFINE IMPLEMENTATION}
 
@@ -211,7 +221,6 @@ asm
 @@Done:
     xor         bh, bh
     mov         [MEM_Result], bx
-
 end;
 
 function XMS_MemSize(Handle : Word) : LongInt; assembler;
@@ -328,7 +337,6 @@ asm
 @@Done:
     xor         bh, bh
     mov         [MEM_Result], bx
-
 end;
 
 function  UMB_MemSize(Segment : Word) : LongInt;    
@@ -458,7 +466,7 @@ asm
     int         $67
     test        ah, ah
     jnz         @@Done
-    mov         [EMS_Page_Frame], bx
+    mov         [EMS_Page_Frames], bx
     mov         [EMS_Present], true
     xor         bl, bl
     jmp         @@Done
@@ -543,19 +551,14 @@ asm
     mov         dx, Handle
     mov         ah, $45         { Free Memory }
     int         $67
-    test        ah, ah
-    jnz         @@Error
-    xor         bl, bl
     jmp         @@Done
 
 @@NoEMS:
     mov         ah, $01
-@@Error:
-    mov         bl, ah
 @@Done:
+    mov         bl, ah
     xor         bh, bh
     mov         [MEM_Result], bx
-
 end;
 
 
@@ -587,7 +590,7 @@ end;
 
 { -------------------------------------------------------------------------- }
 
-function XMS_Move(const MoveParams) : word; assembler;
+procedure XMS_Move(const MoveParams); assembler;
 asm
     push        ds
     push        es
@@ -612,12 +615,29 @@ asm
     pop         ds
     xor         bh, bh
     mov         [MEM_Result], bx
-
 end;
 
 { -------------------------------------------------------------------------- }
 
+procedure EMS_MapPage(Handle : Word; Physical : Byte; Logical : Word ); assembler;
+asm
+    cmp         [EMS_Present], False
+    je          @@NoEMS
 
+    mov         dx, Handle
+    mov         al, Physical
+    mov         bx, Logical
+    mov         ah, $44         { Map Memory }
+    int         $67
+    jmp         @@Done
+
+@@NoEMS:
+    mov         ah, $01
+@@Done:
+    mov         bl, ah
+    xor         bh, bh
+    mov         [MEM_Result], bx
+end;
 
 { -------------------------------------------------------------------------- }
 
@@ -669,6 +689,12 @@ begin
 	XMS_Check;
 	UMB_Check;
 	EMS_Check;
+	if EMS_Present then begin
+    	EMS_Page[0] := Ptr(EMS_Page_Frames, 0);
+    	EMS_Page[1] := Ptr(EMS_Page_Frames + $0400, 0);
+    	EMS_Page[2] := Ptr(EMS_Page_Frames + $0800, 0);
+    	EMS_Page[3] := Ptr(EMS_Page_Frames + $0c00, 0);
+    end;
 end;
 
 {$UNDEF IMPLEMENTATION}

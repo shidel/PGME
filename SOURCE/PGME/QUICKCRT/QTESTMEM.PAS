@@ -11,7 +11,6 @@
 {$M 50000,0,1024} (* Memory: Largest Stack, No Minimum Free, Use All Ram *)
 program QMemory_Memory_Test_Program; { X Series }
 
-
 uses QMem;
 
 const
@@ -105,9 +104,24 @@ begin
 	end;
 end;
 
+function Frame : word; assembler;
+asm
+    mov         ah, $41
+    int         $67
+    mov         ax, bx
+end;
+
 procedure EMS_Memory_Test;
+const
+    E_Size = 16384 * 8; { 128k, 8 pages }
+type
+    TWords  = array[0..8191] of word;
 var     
-    Handle : word;
+    Handle  : word;
+    I, J    : word;
+    K       : Byte;
+    Verify  : boolean;
+    Success : boolean;
 begin
     WriteLn('EMS Memory Tests');
     if not EMS_Present then begin
@@ -116,12 +130,43 @@ begin
     end;
     
 	WriteLn('   Available ', EMS_Avail, ' (', MEM_Result, ')');   
-    Handle := EMS_GetMem(Alloc_Size);
-	WriteLn('   Allocate  ', Alloc_Size, ' (', MEM_Result, ')');   
+    Handle := EMS_GetMem(E_Size);
+	WriteLn('   Allocate  ', E_Size, ' (', MEM_Result, ')');   
 	WriteLn('   Handle    ', Handle );
     if Handle <> $ffff then begin
         WriteLn('   Allocated ', EMS_MemSize(Handle), ' (', MEM_Result, ')');   
-        WriteLn('   Available ', EMS_Avail, ' (', MEM_Result, ')');   	
+        WriteLn('   Available ', EMS_Avail, ' (', MEM_Result, ')'); 
+        { Test EMS Pages }
+        for K := 0 to 0 do begin            
+            Write( '        Physical Page ', K, ' as Logical ');
+            for J := 0 to 7 do begin
+                EMS_MapPage(Handle, K, J);
+                Write(J, '(', MEM_Result, ') ');
+                for I := Low(TWords) to High(TWords) do 
+                    TWords(EMS_Page[K]^)[I] := I + J;   
+            end;
+            WriteLn;
+        end;
+        Success := True;
+        for K := 0 to 3  do begin
+           Write( '        Verify   Page ', K, ' is Logical ');
+           for J := 0 to 7 do begin
+                EMS_MapPage(Handle, K, J);            
+                Verify := True;  
+                for I := Low(TWords) to High(TWords) do 
+                    if TWords(EMS_Page[K]^)[I] <> I + J then 
+                        Verify := False;
+                if Verify then 
+                    Write(J, ' Y  ')
+                else
+                    Write(J, ' n  ');
+                Success := Success and Verify;
+            end;
+            WriteLn;
+        end;
+        WriteLn('   Success   ', Success);   
+        { Free Memory }  
+        	
         EMS_FreeMem(Handle);
         WriteLn('   Release   ', '(', MEM_Result, ')');   
         WriteLn('   Available ', EMS_Avail, ' (', MEM_Result, ')');   	
@@ -131,14 +176,10 @@ end;
 
 procedure All_Memory_Tests;
 begin
-{
     DOS_Memory_Test;
     UMB_Memory_Test;
-}
     XMS_Memory_Test;	
-{
     EMS_Memory_Test;
-}
 end;
 
 begin	
